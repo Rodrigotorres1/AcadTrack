@@ -1,4 +1,19 @@
-BoundedContext DominioPrincipal {
+BoundedContext GestaoAcademica {
   type = CORE_DOMAIN
   domainVisionStatement = "Gerenciar simulados, notas e rankings acadêmicos"
+}
+
+BoundedContext Avaliacao {
+  type = SUPPORTING_DOMAIN
+  domainVisionStatement = "Processar notas, médias e classificação dos alunos"
+}
+
+BoundedContext Usuarios {
+  type = GENERIC_DOMAIN
+  domainVisionStatement = "Gerenciar usuários e perfis de acesso do sistema"
+}
+
+ContextMap {
+  GestaoAcademica -> Avaliacao
+  GestaoAcademica -> Usuarios
 }
