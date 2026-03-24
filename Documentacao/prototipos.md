@@ -11,14 +11,14 @@ Os protótipos do sistema AcadTrack estão disponíveis na pasta `prototipos/`.
 
 ## Descrição
 
-### Tela de Login
-Permite autenticação do usuário.
+### Login
+![Login](../prototipos/tela-login.png)
 
 ### Dashboard
-Apresenta visão geral do sistema.
+![Dashboard](../prototipos/tela-dashboard.png)
 
 ### Cadastro de Simulado
-Permite criar simulados com disciplinas e pesos.
+![Cadastro](../prototipos/tela-cadastro-simulado.png)
 
 ### Ranking
-Exibe a classificação dos alunos com base nas notas.
+![Ranking](../prototipos/tela-ranking.png)
