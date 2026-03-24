@@ -1,0 +1,4 @@
+BoundedContext DominioPrincipal {
+  type = CORE_DOMAIN
+  domainVisionStatement = "Gerenciar simulados, notas e rankings acadêmicos"
+}
