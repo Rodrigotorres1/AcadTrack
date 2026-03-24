@@ -1,0 +1,15 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>br.com.acadtrack</groupId>
+    <artifactId>acadtrack</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>dominio-principal</module>
+        <module>aplicacao</module>
+        <module>infraestrutura</module>
+        <module>apresentacao-backend</module>
+    </modules>
+</project>
