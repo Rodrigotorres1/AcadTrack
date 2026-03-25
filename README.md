@@ -18,3 +18,4 @@ Este repositório contém os artefatos exigidos para a 1ª entrega:
 - `prototipos/`: telas em baixa ou alta fidelidade
 - `acadtrack.cml`: modelo de subdomínios e contextos
 - `bdd/acadtrackbdd/`: cenários BDD e automação com Cucumber
+- `pom.xml`: configuração Maven do módulo de testes BDD
