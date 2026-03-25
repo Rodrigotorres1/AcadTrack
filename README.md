@@ -17,4 +17,4 @@ Este repositório contém os artefatos exigidos para a 1ª entrega:
 - `Documentacao/`: artefatos textuais da entrega
 - `prototipos/`: telas em baixa ou alta fidelidade
 - `acadtrack.cml`: modelo de subdomínios e contextos
-- `bdd/acadtrack-bdd/`: cenários BDD e automação com Cucumber
+- `bdd/acadtrackbdd/`: cenários BDD e automação com Cucumber
