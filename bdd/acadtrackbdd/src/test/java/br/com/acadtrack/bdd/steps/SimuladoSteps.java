@@ -5,77 +5,69 @@ import io.cucumber.java.pt.E;
 import io.cucumber.java.pt.Quando;
 import io.cucumber.java.pt.Então;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class SimuladoSteps {
 
     private String titulo;
     private String data;
+    private String nomeSimulado;
     private String disciplina;
-    private Double peso;
-    private boolean resultado;
-    private boolean simuladoExiste;
+    private Integer peso;
+    private String mensagem;
 
-    @Dado("que o coordenador informou um título válido para o simulado")
-    public void tituloValido() {
-        titulo = "Simulado AV1";
+    @Dado("que o coordenador informou o título {string} e a data {string}")
+    public void queOCoordenadorInformouOTituloEAData(String titulo, String data) {
+        this.titulo = titulo;
+        this.data = data;
     }
 
-    @Dado("que o coordenador não informou um título para o simulado")
-    public void tituloInvalido() {
-        titulo = "";
+    @Quando("o coordenador tentar cadastrar o simulado")
+    public void oCoordenadorTentarCadastrarOSimulado() {
+        if (titulo == null || titulo.isBlank()) {
+            mensagem = "O sistema informa que o título do simulado é obrigatório";
+        } else {
+            mensagem = "O sistema cadastra o simulado com sucesso";
+        }
     }
 
-    @E("informou uma data válida para o simulado")
-    public void dataValida() {
-        data = "2026-04-10";
+    @Então("o sistema cadastra o simulado com sucesso")
+    public void oSistemaCadastraOSimuladoComSucesso() {
+        assertEquals("O sistema cadastra o simulado com sucesso", mensagem);
     }
 
-    @Quando("solicitar o cadastro do simulado")
-    public void cadastrarSimulado() {
-        resultado = titulo != null && !titulo.isBlank() && data != null && !data.isBlank();
+    @Então("o sistema informa que o título do simulado é obrigatório")
+    public void oSistemaInformaQueOTituloDoSimuladoEObrigatorio() {
+        assertEquals("O sistema informa que o título do simulado é obrigatório", mensagem);
     }
 
-    @Então("o simulado deve ser cadastrado com sucesso")
-    public void simuladoCadastrado() {
-        assertTrue(resultado);
+    @Dado("que existe o simulado {string} cadastrado")
+    public void queExisteOSimuladoCadastrado(String nomeSimulado) {
+        this.nomeSimulado = nomeSimulado;
     }
 
-    @Então("o sistema deve impedir o cadastro do simulado")
-    public void simuladoNaoCadastrado() {
-        assertFalse(resultado);
+    @E("que o coordenador informou a disciplina {string} com peso {int}")
+    public void queOCoordenadorInformouADisciplinaComPeso(String disciplina, Integer peso) {
+        this.disciplina = disciplina;
+        this.peso = peso;
     }
 
-    @Dado("que existe um simulado já cadastrado")
-    public void existeSimulado() {
-        simuladoExiste = true;
+    @Quando("o coordenador tentar adicionar a disciplina ao simulado")
+    public void oCoordenadorTentarAdicionarADisciplinaAoSimulado() {
+        if (nomeSimulado != null && peso != null && peso > 0) {
+            mensagem = "O sistema adiciona a disciplina ao simulado com sucesso";
+        } else {
+            mensagem = "O sistema informa que o peso da disciplina deve ser maior que zero";
+        }
     }
 
-    @E("o coordenador informou uma disciplina com peso válido")
-    public void disciplinaPesoValido() {
-        disciplina = "Matemática";
-        peso = 2.0;
+    @Então("o sistema adiciona a disciplina ao simulado com sucesso")
+    public void oSistemaAdicionaADisciplinaAoSimuladoComSucesso() {
+        assertEquals("O sistema adiciona a disciplina ao simulado com sucesso", mensagem);
     }
 
-    @E("o coordenador informou uma disciplina com peso inválido")
-    public void disciplinaPesoInvalido() {
-        disciplina = "Matemática";
-        peso = -1.0;
-    }
-
-    @Quando("solicitar a adição da disciplina ao simulado")
-    public void adicionarDisciplina() {
-        resultado = simuladoExiste && disciplina != null && !disciplina.isBlank() && peso != null && peso > 0;
-    }
-
-    @Então("a disciplina deve ser adicionada com sucesso")
-    public void disciplinaAdicionada() {
-        assertTrue(resultado);
-    }
-
-    @Então("o sistema deve impedir a adição da disciplina")
-    public void disciplinaNaoAdicionada() {
-        assertFalse(resultado);
+    @Então("o sistema informa que o peso da disciplina deve ser maior que zero")
+    public void oSistemaInformaQueOPesoDaDisciplinaDeveSerMaiorQueZero() {
+        assertEquals("O sistema informa que o peso da disciplina deve ser maior que zero", mensagem);
     }
 }

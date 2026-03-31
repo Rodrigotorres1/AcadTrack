@@ -1,24 +1,24 @@
 # language: pt
 Funcionalidade: Gestão de turmas e alunos
 
-  Cenário: Cadastrar turma com identificação válida
-    Dado que o coordenador informou um nome válido para a turma
-    Quando solicitar o cadastro da turma
-    Então a turma deve ser cadastrada com sucesso
+  Cenário: Coordenador cadastra turma com nome válido
+    Dado que o coordenador informou o nome da turma "3A"
+    Quando o coordenador tentar cadastrar a turma
+    Então o sistema cadastra a turma com sucesso
 
-  Cenário: Não cadastrar turma sem identificação
-    Dado que o coordenador não informou um nome para a turma
-    Quando solicitar o cadastro da turma
-    Então o sistema deve impedir o cadastro da turma
+  Cenário: Coordenador tenta cadastrar turma sem nome
+    Dado que o coordenador informou o nome da turma ""
+    Quando o coordenador tentar cadastrar a turma
+    Então o sistema informa que o nome da turma é obrigatório
 
-  Cenário: Vincular aluno a uma turma sem duplicidade
-    Dado que existe uma turma cadastrada
-    E existe um aluno ainda não vinculado à turma
-    Quando o coordenador solicitar a vinculação do aluno à turma
-    Então o aluno deve ser vinculado com sucesso
+  Cenário: Coordenador vincula aluno ainda não vinculado à turma
+    Dado que existe a turma "3A" cadastrada
+    E que o aluno "João Silva" não está vinculado à turma "3A"
+    Quando o coordenador tentar vincular João Silva à turma "3A"
+    Então o sistema vincula João Silva à turma com sucesso
 
-  Cenário: Não vincular aluno já vinculado à turma
-    Dado que existe uma turma cadastrada
-    E existe um aluno já vinculado à turma
-    Quando o coordenador solicitar a vinculação do aluno à turma
-    Então o sistema deve impedir a vinculação duplicada
+  Cenário: Coordenador tenta vincular aluno já vinculado à turma
+    Dado que existe a turma "3A" cadastrada
+    E que o aluno "João Silva" já está vinculado à turma "3A"
+    Quando o coordenador tentar vincular João Silva à turma "3A" novamente
+    Então o sistema informa que João Silva já está vinculado à turma

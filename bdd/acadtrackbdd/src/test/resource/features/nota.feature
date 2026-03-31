@@ -1,26 +1,26 @@
 # language: pt
 Funcionalidade: Gestão de notas
 
-  Cenário: Lançar nota válida para aluno
-    Dado que existe um aluno matriculado em uma turma
-    E o professor informou uma nota válida
-    Quando solicitar o lançamento da nota
-    Então a nota deve ser registrada com sucesso
+  Cenário: Professor lança nota válida para aluno
+    Dado que o aluno "João Silva" está matriculado na turma "3A"
+    E que o professor informou a nota 8.5 para João Silva
+    Quando o professor tentar lançar a nota de João Silva
+    Então o sistema registra a nota com sucesso
 
-  Cenário: Não lançar nota fora do intervalo permitido
-    Dado que existe um aluno matriculado em uma turma
-    E o professor informou uma nota inválida
-    Quando solicitar o lançamento da nota
-    Então o sistema deve impedir o registro da nota
+  Cenário: Professor tenta lançar nota fora do intervalo permitido
+    Dado que o aluno "João Silva" está matriculado na turma "3A"
+    E que o professor informou a nota 12.0 para João Silva
+    Quando o professor tentar lançar a nota de João Silva
+    Então o sistema informa que a nota deve estar entre 0 e 10
 
-  Cenário: Corrigir uma nota já lançada
-    Dado que existe uma nota já registrada para o aluno
-    E o professor informou um novo valor válido para a nota
-    Quando solicitar a correção da nota
-    Então a nota deve ser atualizada com sucesso
+  Cenário: Professor corrige nota já lançada para aluno
+    Dado que João Silva já possui a nota 6.0 registrada
+    E que o professor informou a nova nota 7.5 para João Silva
+    Quando o professor tentar corrigir a nota de João Silva
+    Então o sistema atualiza a nota de João Silva com sucesso
 
-  Cenário: Não corrigir nota inexistente
-    Dado que não existe nota registrada para o aluno
-    E o professor informou um novo valor válido para a nota
-    Quando solicitar a correção da nota
-    Então o sistema deve impedir a correção da nota
+  Cenário: Professor tenta corrigir nota inexistente
+    Dado que João Silva não possui nota registrada
+    E que o professor informou a nova nota 7.5 para João Silva
+    Quando o professor tentar corrigir a nota de João Silva
+    Então o sistema informa que não existe nota cadastrada para João Silva
