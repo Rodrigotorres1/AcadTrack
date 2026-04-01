@@ -45,8 +45,14 @@ Os principais atores do sistema são o coordenador, o professor e o aluno. O coo
 
 # Regras de negócio principais
 
-- Um simulado deve possuir pelo menos uma disciplina
-- Cada disciplina pode possuir peso
-- A média final deve considerar os pesos definidos
-- O ranking deve ordenar os alunos do maior para o menor desempenho
-- Um simulado encerrado não pode ser alterado
+- Um simulado deve possuir pelo menos uma disciplina associada para ser criado
+- Cada disciplina associada a um simulado pode possuir um peso específico, que deve ser considerado no cálculo da média
+- A média ponderada do aluno deve ser calculada com base nas notas obtidas em cada disciplina e nos respectivos pesos definidos
+- O sistema deve permitir o lançamento de notas apenas para alunos vinculados à turma do simulado
+- Um simulado finalizado não pode ser editado nem ter disciplinas ou pesos alterados
+- O ranking deve ser gerado automaticamente com base na média ponderada dos alunos, ordenando do maior para o menor desempenho
+- Em caso de empate no ranking, o sistema deve aplicar um critério de desempate (ex: maior nota na disciplina de maior peso)
+- A solicitação de retificação de nota deve ser registrada e não altera automaticamente a nota, dependendo de validação do professor
+- Apenas professores ou coordenadores podem alterar notas ou validar retificações
+- Um aluno só pode estar vinculado a uma turma por vez no contexto de um mesmo período acadêmico
+- O sistema deve garantir a integridade dos dados, impedindo inconsistências como notas sem aluno, disciplina ou simulado associado
