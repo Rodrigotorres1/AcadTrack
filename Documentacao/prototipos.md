@@ -4,10 +4,11 @@ Os protótipos do sistema AcadTrack estão disponíveis na pasta `prototipos/`.
 
 ## Telas
 
-- Tela de Login
-- Dashboard
-- Cadastro de Simulado
+- Criação de Simlado
+- Lançamento de Notas
 - Ranking
+- Solicitação de Retificação de Nota
+- Vincular aluno à turma
 
 ## Descrição
 
