@@ -4,7 +4,7 @@ Os protótipos do sistema AcadTrack estão disponíveis na pasta `prototipos/`.
 
 ## Telas
 
-- Criação de Simlado
+- Criação de Simulado
 - Lançamento de Notas
 - Ranking
 - Solicitação de Retificação de Nota
@@ -12,9 +12,9 @@ Os protótipos do sistema AcadTrack estão disponíveis na pasta `prototipos/`.
 
 ## Descrição
 
-## Criação de Simlado
+## Criação de Simulado
 
-![Criação de Simlado](../prototipos/tela_criacao_simulado.png)
+![Criação de Simulado](../prototipos/tela_criacao_simulado.png)
 
 ## Lançamento de Notas
 
