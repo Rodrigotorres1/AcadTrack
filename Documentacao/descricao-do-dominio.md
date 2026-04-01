@@ -30,18 +30,23 @@ Os principais atores do sistema são o coordenador, o professor e o aluno. O coo
 
 ---
 
-# Jornada do usuário
-
-O fluxo principal do sistema ocorre de forma sequencial, iniciando com o coordenador, que cria um simulado e define suas disciplinas e pesos. Em seguida, os alunos são organizados em turmas para participar das avaliações. Após a realização dos simulados, o professor lança as notas dos alunos para cada disciplina. O sistema, então, realiza automaticamente o cálculo da média final ponderada com base nas regras definidas. A partir desses resultados, o sistema gera o ranking dos alunos considerando o desempenho. Por fim, o aluno acessa o sistema para visualizar seus resultados e sua posição no ranking.
-
----
-
 # Linguagem onipresente
 
-No contexto do sistema, alguns termos são fundamentais para a comunicação entre os envolvidos. O aluno é o participante que realiza o simulado. O professor é o responsável por lançar e acompanhar as notas. O coordenador é o responsável pela gestão acadêmica do sistema. O simulado representa a avaliação organizada no sistema, enquanto a disciplina corresponde ao componente avaliado. A nota é o resultado obtido pelo aluno, e o ranking é a classificação dos alunos com base no desempenho. Já a média ponderada é o cálculo da média considerando os pesos definidos para cada disciplina.
+- Aluno: participante que realiza o simulado
+- Professor: responsável por lançar e acompanhar notas
+- Coordenador: responsável pela gestão acadêmica
+- Simulado: avaliação organizada no sistema
+- Disciplina: componente avaliado
+- Nota: resultado obtido pelo aluno
+- Ranking: classificação dos alunos com base no desempenho
+- Média ponderada: cálculo da média considerando pesos das disciplinas
 
 ---
 
 # Regras de negócio principais
 
-O sistema segue algumas regras fundamentais para garantir seu funcionamento adequado. Todo simulado deve possuir pelo menos uma disciplina associada. Cada disciplina pode possuir um peso, que influencia diretamente no cálculo da média final. A média final deve considerar obrigatoriamente os pesos definidos. O ranking deve ordenar os alunos do maior para o menor desempenho. Além disso, um simulado encerrado não pode sofrer alterações, garantindo a integridade dos dados.
+- Um simulado deve possuir pelo menos uma disciplina
+- Cada disciplina pode possuir peso
+- A média final deve considerar os pesos definidos
+- O ranking deve ordenar os alunos do maior para o menor desempenho
+- Um simulado encerrado não pode ser alterado
