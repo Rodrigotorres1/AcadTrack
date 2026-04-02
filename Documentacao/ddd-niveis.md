@@ -1,23 +1,37 @@
 # DDD - Níveis
 
 ## Nível preliminar
-Identificação do problema: gerenciar simulados e desempenho acadêmico.
+Identificação do problema: gerenciar simulados acadêmicos e acompanhar o desempenho dos alunos, incluindo cálculo de médias e geração de ranking.
 
 ## Nível estratégico
 Subdomínios:
-- Gestão Acadêmica
-- Avaliação
-- Usuários
+
+- Gestão Acadêmica (Core Domain)
+  Responsável pelas principais regras de negócio, como criação de simulados, definição de disciplinas e pesos, cálculo de médias e geração de ranking.
+
+- Avaliação (Domínio de Suporte)
+  Responsável pelo processamento das notas, cálculo de médias ponderadas e classificação dos alunos.
+
+- Usuários (Domínio Genérico)
+  Responsável pelo gerenciamento de usuários, autenticação, autorização e controle de acesso.
 
 ## Nível tático
-Entidades:
+
+### Entidades:
 - Aluno
 - Simulado
 - Disciplina
 - Nota
+- Turma
+- Professor
 
-Serviço:
+### Serviços:
 - Geração de ranking
+- Cálculo de média ponderada
+- Processamento de notas
 
 ## Nível operacional
-Cenários BDD automatizados com Cucumber para validar o comportamento do sistema.
+- Implementação das regras de negócio no backend utilizando Spring Boot
+- Persistência em banco de dados relacional com JPA
+- Interface web para interação dos usuários
+- Cenários BDD automatizados com Cucumber para validação do comportamento do sistema
