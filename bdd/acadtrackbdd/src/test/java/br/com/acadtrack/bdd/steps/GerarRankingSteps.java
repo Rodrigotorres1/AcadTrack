@@ -5,72 +5,49 @@ import io.cucumber.java.pt.Dado;
 import io.cucumber.java.pt.Quando;
 import io.cucumber.java.pt.Então;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-
 import static org.junit.jupiter.api.Assertions.*;
 
-public class GerarRankingSteps {
+public class VincularResponsavelSteps {
 
-    private final TestContext context = new TestContext();
+    private final TestContext context;
 
-    @Dado("que existem alunos com notas lançadas no simulado")
-    public void queExistemAlunosComNotasLancadasNoSimulado() {
-        context.notasAluno.clear();
-        context.notasAluno.put("João Silva", 8.5);
-        context.notasAluno.put("Maria Souza", 9.0);
-        context.notasAluno.put("Pedro Lima", 7.0);
-        context.ranking.clear();
-        context.mensagem = null;
-        context.operacaoExecutada = false;
+    public VincularResponsavelSteps(TestContext context) {
+        this.context = context;
     }
 
-    @Dado("que não existem notas lançadas no simulado")
-    public void queNaoExistemNotasLancadasNoSimulado() {
-        context.notasAluno.clear();
-        context.ranking.clear();
-        context.mensagem = null;
-        context.operacaoExecutada = false;
+    @Dado("que o aluno {string} não possui responsável vinculado")
+    public void queOAlunoNaoPossuiResponsavelVinculado(String aluno) {
+        context.getResponsaveisAluno().remove(aluno);
+        context.resetMensagens();
     }
 
-    @Quando("o sistema gera o ranking")
-    public void oSistemaGeraORanking() {
-        if (context.notasAluno.isEmpty()) {
-            context.mensagem = "Não há dados suficientes para gerar o ranking";
-            context.operacaoExecutada = false;
+    @Quando("o coordenador vincula o responsável {string} ao aluno {string}")
+    public void oCoordenadorVinculaOResponsavelAoAluno(String responsavel, String aluno) {
+        context.getResponsaveisAluno().put(aluno, responsavel);
+        context.setOperacaoExecutada(true);
+    }
+
+    @Quando("o coordenador tenta desvincular um responsável do aluno {string}")
+    public void oCoordenadorTentaDesvincularUmResponsavelDoAluno(String aluno) {
+        if (!context.getResponsaveisAluno().containsKey(aluno)) {
+            context.setMensagem("Não há responsável vinculado ao aluno");
+            context.setOperacaoExecutada(false);
             return;
         }
 
-        List<Map.Entry<String, Double>> lista = new ArrayList<>(context.notasAluno.entrySet());
-        lista.sort((a, b) -> Double.compare(b.getValue(), a.getValue()));
-
-        context.ranking.clear();
-        for (Map.Entry<String, Double> entry : lista) {
-            context.ranking.add(entry.getKey());
-        }
-
-        context.operacaoExecutada = true;
+        context.getResponsaveisAluno().remove(aluno);
+        context.setOperacaoExecutada(true);
     }
 
-    @Quando("o sistema tenta gerar o ranking")
-    public void oSistemaTentaGerarORanking() {
-        oSistemaGeraORanking();
+    @Então("o sistema registra o responsável {string} para o aluno {string}")
+    public void oSistemaRegistraOResponsavelParaOAluno(String responsavel, String aluno) {
+        assertTrue(context.isOperacaoExecutada());
+        assertEquals(responsavel, context.getResponsaveisAluno().get(aluno));
     }
 
-    @Então("os alunos são ordenados do maior para o menor desempenho")
-    public void osAlunosSaoOrdenadosDoMaiorParaOMenorDesempenho() {
-        assertTrue(context.operacaoExecutada);
-        assertEquals(3, context.ranking.size());
-        assertEquals("Maria Souza", context.ranking.get(0));
-        assertEquals("João Silva", context.ranking.get(1));
-        assertEquals("Pedro Lima", context.ranking.get(2));
-    }
-
-    @Então("o sistema informa que não há dados suficientes para gerar o ranking")
-    public void oSistemaInformaQueNaoHaDadosSuficientesParaGerarORanking() {
-        assertFalse(context.operacaoExecutada);
-        assertEquals("Não há dados suficientes para gerar o ranking", context.mensagem);
+    @Então("o sistema informa que não há responsável vinculado ao aluno")
+    public void oSistemaInformaQueNaoHaResponsavelVinculadoAoAluno() {
+        assertFalse(context.isOperacaoExecutada());
+        assertEquals("Não há responsável vinculado ao aluno", context.getMensagem());
     }
 }
