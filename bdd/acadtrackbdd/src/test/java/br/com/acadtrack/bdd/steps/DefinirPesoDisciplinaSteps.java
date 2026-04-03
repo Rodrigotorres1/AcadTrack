@@ -9,37 +9,42 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class DefinirPesoDisciplinaSteps {
 
-    private final TestContext context = new TestContext();
+    private final TestContext context;
     private String disciplinaAtual;
+
+    public DefinirPesoDisciplinaSteps(TestContext context) {
+        this.context = context;
+    }
 
     @Dado("que o simulado possui a disciplina {string}")
     public void queOSimuladoPossuiADisciplina(String disciplina) {
-        disciplinaAtual = disciplina;
-        context.mensagem = null;
-        context.operacaoExecutada = false;
+        this.disciplinaAtual = disciplina;
+        context.resetMensagens();
     }
 
     @Quando("o coordenador define o peso {double} para a disciplina {string}")
     public void oCoordenadorDefineOPesoParaADisciplina(Double peso, String disciplina) {
-        if (peso <= 0) {
-            context.mensagem = "O peso deve ser válido";
-            context.operacaoExecutada = false;
+        this.disciplinaAtual = disciplina;
+
+        if (peso == null || peso <= 0) {
+            context.setMensagem("O peso deve ser válido");
+            context.setOperacaoExecutada(false);
             return;
         }
 
-        context.pesosDisciplinas.put(disciplina, peso);
-        context.operacaoExecutada = true;
+        context.getPesosDisciplinas().put(disciplina, peso);
+        context.setOperacaoExecutada(true);
     }
 
     @Então("o sistema registra o peso da disciplina corretamente")
     public void oSistemaRegistraOPesoDaDisciplinaCorretamente() {
-        assertTrue(context.operacaoExecutada);
-        assertNotNull(context.pesosDisciplinas.get(disciplinaAtual));
+        assertTrue(context.isOperacaoExecutada());
+        assertNotNull(context.getPesosDisciplinas().get(disciplinaAtual));
     }
 
     @Então("o sistema informa que o peso deve ser válido")
     public void oSistemaInformaQueOPesoDeveSerValido() {
-        assertFalse(context.operacaoExecutada);
-        assertEquals("O peso deve ser válido", context.mensagem);
+        assertFalse(context.isOperacaoExecutada());
+        assertEquals("O peso deve ser válido", context.getMensagem());
     }
 }
