@@ -9,36 +9,42 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class LancarNotaSteps {
 
-    private final TestContext context = new TestContext();
+    private final TestContext context;
     private String alunoAtual;
+
+    public LancarNotaSteps(TestContext context) {
+        this.context = context;
+    }
 
     @Dado("que o aluno {string} realizou o simulado")
     public void queOAlunoRealizouOSimulado(String aluno) {
-        alunoAtual = aluno;
-        context.mensagem = null;
-        context.operacaoExecutada = false;
+        this.alunoAtual = aluno;
+        context.resetMensagens();
     }
 
     @Quando("o professor lança a nota {double} para o aluno {string}")
     public void oProfessorLancaANotaParaOAluno(Double nota, String aluno) {
-        if (nota < 0 || nota > 10) {
-            context.mensagem = "A nota é inválida";
-            context.operacaoExecutada = false;
+        this.alunoAtual = aluno;
+
+        if (nota == null || nota < 0 || nota > 10) {
+            context.setMensagem("A nota é inválida");
+            context.setOperacaoExecutada(false);
             return;
         }
-        context.notasAluno.put(aluno, nota);
-        context.operacaoExecutada = true;
+
+        context.getNotasAluno().put(aluno, nota);
+        context.setOperacaoExecutada(true);
     }
 
     @Então("o sistema registra a nota do aluno")
     public void oSistemaRegistraANotaDoAluno() {
-        assertTrue(context.operacaoExecutada);
-        assertNotNull(context.notasAluno.get(alunoAtual));
+        assertTrue(context.isOperacaoExecutada());
+        assertNotNull(context.getNotasAluno().get(alunoAtual));
     }
 
     @Então("o sistema informa que a nota é inválida")
     public void oSistemaInformaQueANotaEInvalida() {
-        assertFalse(context.operacaoExecutada);
-        assertEquals("A nota é inválida", context.mensagem);
+        assertFalse(context.isOperacaoExecutada());
+        assertEquals("A nota é inválida", context.getMensagem());
     }
 }
