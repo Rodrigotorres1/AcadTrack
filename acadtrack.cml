@@ -1,19 +1,156 @@
-BoundedContext GestaoAcademica {
-  type = CORE_DOMAIN
-  domainVisionStatement = "Gerenciar simulados, notas e rankings acadêmicos"
+Domain AcadTrack {
+
+  Subdomain GestaoAcademica
+  Subdomain AvaliacaoDesempenho
+  Subdomain Usuarios
 }
 
-BoundedContext Avaliacao {
-  type = SUPPORTING_DOMAIN
-  domainVisionStatement = "Processar notas, médias e classificação dos alunos"
+BoundedContext GestaoAcademicaContext implements GestaoAcademica {
+
+  Aggregate Turma {
+    Entity Turma
+    aggregateRoot
+
+    String id
+    String nome
+    boolean ativa
+  }
+
+  Aggregate Aluno {
+    Entity Aluno
+    aggregateRoot
+
+    String id
+    String nome
+    String matricula
+    boolean ativo
+    -Turma turma
+  }
+
+  Aggregate Simulado {
+    Entity Simulado
+    aggregateRoot
+
+    String id
+    String nome
+    boolean finalizado
+    -Turma turma
+    List<DisciplinaSimulado> disciplinas
+  }
+
+  Entity DisciplinaSimulado {
+    String nomeDisciplina
+    double peso
+  }
+
+  ValueObject PesoDisciplina {
+    double valor
+  }
+
+  Service GestaoAcademicaService {
+    void vincularAlunoATurma(Aluno aluno, Turma turma)
+    void criarSimuladoComDisciplinas(Simulado simulado)
+    void definirPesoEDisciplinaNoSimulado(Simulado simulado)
+    void finalizarSimulado(Simulado simulado)
+  }
+
+  Repository AlunoRepository {
+    Aluno findById(String id)
+    List<Aluno> findAll()
+  }
+
+  Repository TurmaRepository {
+    Turma findById(String id)
+    List<Turma> findAll()
+  }
+
+  Repository SimuladoRepository {
+    Simulado findById(String id)
+    List<Simulado> findAll()
+  }
 }
 
-BoundedContext Usuarios {
-  type = GENERIC_DOMAIN
-  domainVisionStatement = "Gerenciar usuários e perfis de acesso do sistema"
+BoundedContext AvaliacaoDesempenhoContext implements AvaliacaoDesempenho {
+
+  Aggregate Nota {
+    Entity Nota
+    aggregateRoot
+
+    String id
+    double valor
+    String alunoId
+    String simuladoId
+    String disciplina
+  }
+
+  Aggregate RetificacaoNota {
+    Entity RetificacaoNota
+    aggregateRoot
+
+    String id
+    String justificativa
+    String status
+    String notaId
+  }
+
+  ValueObject MediaPonderada {
+    double valor
+  }
+
+  Service AvaliacaoService {
+    void lancarNotaIndividual(Nota nota)
+    double calcularMediaPonderada(String alunoId, String simuladoId)
+    void gerarRanking(String simuladoId)
+    void solicitarRetificacaoDeNota(RetificacaoNota retificacao)
+  }
+
+  Repository NotaRepository {
+    Nota findById(String id)
+    List<Nota> findAll()
+  }
+
+  Repository RetificacaoNotaRepository {
+    RetificacaoNota findById(String id)
+    List<RetificacaoNota> findAll()
+  }
 }
 
-ContextMap {
-  GestaoAcademica -> Avaliacao
-  GestaoAcademica -> Usuarios
+BoundedContext UsuariosContext implements Usuarios {
+
+  Aggregate Professor {
+    Entity Professor
+    aggregateRoot
+
+    String id
+    String nome
+    String email
+  }
+
+  Aggregate Responsavel {
+    Entity Responsavel
+    aggregateRoot
+
+    String id
+    String nome
+    String email
+  }
+
+  ValueObject Email {
+    String endereco
+  }
+
+  Service UsuariosService {
+    void vincularResponsavel(String alunoId, Responsavel responsavel)
+    void desvincularResponsavel(String alunoId, Responsavel responsavel)
+  }
+
+  Repository ProfessorRepository {
+    Professor findById(String id)
+    List<Professor> findAll()
+  }
+
+  Repository ResponsavelRepository {
+    Responsavel findById(String id)
+    List<Responsavel> findAll()
+  }
 }
