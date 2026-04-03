@@ -9,41 +9,44 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class SolicitarRetificacaoNotaSteps {
 
-    private final TestContext context = new TestContext();
+    private final TestContext context;
     private String alunoAtual;
     private String justificativaAtual;
 
+    public SolicitarRetificacaoNotaSteps(TestContext context) {
+        this.context = context;
+    }
+
     @Dado("que o aluno {string} possui uma nota lançada")
     public void queOAlunoPossuiUmaNotaLancada(String aluno) {
-        alunoAtual = aluno;
-        context.notasAluno.put(aluno, 7.0);
-        context.mensagem = null;
-        context.operacaoExecutada = false;
+        this.alunoAtual = aluno;
+        context.getNotasAluno().put(aluno, 7.0);
+        context.resetMensagens();
     }
 
     @Quando("ele solicita retificação informando uma justificativa")
     public void eleSolicitaRetificacaoInformandoUmaJustificativa() {
         justificativaAtual = "Houve erro na correção da questão discursiva";
-        context.operacaoExecutada = true;
+        context.setOperacaoExecutada(true);
     }
 
     @Quando("ele solicita retificação sem justificativa")
     public void eleSolicitaRetificacaoSemJustificativa() {
         justificativaAtual = "";
-        context.mensagem = "A justificativa é obrigatória";
-        context.operacaoExecutada = false;
+        context.setMensagem("A justificativa é obrigatória");
+        context.setOperacaoExecutada(false);
     }
 
     @Então("o sistema registra a solicitação de retificação")
     public void oSistemaRegistraASolicitacaoDeRetificacao() {
-        assertTrue(context.operacaoExecutada);
+        assertTrue(context.isOperacaoExecutada());
         assertNotNull(justificativaAtual);
         assertFalse(justificativaAtual.isBlank());
     }
 
     @Então("o sistema informa que a justificativa é obrigatória")
     public void oSistemaInformaQueAJustificativaEObrigatoria() {
-        assertFalse(context.operacaoExecutada);
-        assertEquals("A justificativa é obrigatória", context.mensagem);
+        assertFalse(context.isOperacaoExecutada());
+        assertEquals("A justificativa é obrigatória", context.getMensagem());
     }
 }
