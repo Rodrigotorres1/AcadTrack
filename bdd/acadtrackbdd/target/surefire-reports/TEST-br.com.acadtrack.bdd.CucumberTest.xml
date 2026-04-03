@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="br.com.acadtrack.bdd.CucumberTest" time="0.318" tests="16" errors="0" skipped="0" failures="0">
+  <properties>
+    <property name="java.specification.version" value="17"/>
+    <property name="sun.cpu.isalist" value="amd64"/>
+    <property name="sun.jnu.encoding" value="Cp1252"/>
+    <property name="java.class.path" value="C:\Users\rodri\OneDrive\Documents\Cesar_CC_2026.1\Requisitos\AcadTrack\bdd\acadtrackbdd\target\test-classes;C:\Users\rodri\OneDrive\Documents\Cesar_CC_2026.1\Requisitos\AcadTrack\bdd\acadtrackbdd\target\classes;C:\Users\rodri\.m2\repository\io\cucumber\cucumber-java\7.15.0\cucumber-java-7.15.0.jar;C:\Users\rodri\.m2\repository\io\cucumber\cucumber-core\7.15.0\cucumber-core-7.15.0.jar;C:\Users\rodri\.m2\repository\io\cucumber\cucumber-gherkin\7.15.0\cucumber-gherkin-7.15.0.jar;C:\Users\rodri\.m2\repository\io\cucumber\cucumber-gherkin-messages\7.15.0\cucumber-gherkin-messages-7.15.0.jar;C:\Users\rodri\.m2\repository\io\cucumber\gherkin\26.2.0\gherkin-26.2.0.jar;C:\Users\rodri\.m2\repository\io\cucumber\messages\22.0.0\messages-22.0.0.jar;C:\Users\rodri\.m2\repository\io\cucumber\tag-expressions\6.0.0\tag-expressions-6.0.0.jar;C:\Users\rodri\.m2\repository\io\cucumber\cucumber-expressions\17.0.1\cucumber-expressions-17.0.1.jar;C:\Users\rodri\.m2\repository\io\cucumber\datatable\7.15.0\datatable-7.15.0.jar;C:\Users\rodri\.m2\repository\io\cucumber\cucumber-plugin\7.15.0\cucumber-plugin-7.15.0.jar;C:\Users\rodri\.m2\repository\io\cucumber\docstring\7.15.0\docstring-7.15.0.jar;C:\Users\rodri\.m2\repository\io\cucumber\html-formatter\20.4.0\html-formatter-20.4.0.jar;C:\Users\rodri\.m2\repository\io\cucumber\junit-xml-formatter\0.2.0\junit-xml-formatter-0.2.0.jar;C:\Users\rodri\.m2\repository\io\cucumber\ci-environment\10.0.0\ci-environment-10.0.0.jar;C:\Users\rodri\.m2\repository\org\apiguardian\apiguardian-api\1.1.2\apiguardian-api-1.1.2.jar;C:\Users\rodri\.m2\repository\io\cucumber\cucumber-junit-platform-engine\7.15.0\cucumber-junit-platform-engine-7.15.0.jar;C:\Users\rodri\.m2\repository\org\junit\platform\junit-platform-engine\1.10.1\junit-platform-engine-1.10.1.jar;C:\Users\rodri\.m2\repository\io\cucumber\cucumber-picocontainer\7.15.0\cucumber-picocontainer-7.15.0.jar;C:\Users\rodri\.m2\repository\org\picocontainer\picocontainer\2.15\picocontainer-2.15.jar;C:\Users\rodri\.m2\repository\org\junit\platform\junit-platform-suite\1.10.2\junit-platform-suite-1.10.2.jar;C:\Users\rodri\.m2\repository\org\junit\platform\junit-platform-suite-api\1.10.2\junit-platform-suite-api-1.10.2.jar;C:\Users\rodri\.m2\repository\org\junit\platform\junit-platform-suite-engine\1.10.2\junit-platform-suite-engine-1.10.2.jar;C:\Users\rodri\.m2\repository\org\junit\platform\junit-platform-suite-commons\1.10.2\junit-platform-suite-commons-1.10.2.jar;C:\Users\rodri\.m2\repository\org\junit\platform\junit-platform-launcher\1.10.2\junit-platform-launcher-1.10.2.jar;C:\Users\rodri\.m2\repository\org\junit\jupiter\junit-jupiter-api\5.10.2\junit-jupiter-api-5.10.2.jar;C:\Users\rodri\.m2\repository\org\opentest4j\opentest4j\1.3.0\opentest4j-1.3.0.jar;C:\Users\rodri\.m2\repository\org\junit\platform\junit-platform-commons\1.10.2\junit-platform-commons-1.10.2.jar;"/>
+    <property name="java.vm.vendor" value="Oracle Corporation"/>
+    <property name="sun.arch.data.model" value="64"/>
+    <property name="user.variant" value=""/>
+    <property name="java.vendor.url" value="https://java.oracle.com/"/>
+    <property name="user.timezone" value="America/Sao_Paulo"/>
+    <property name="os.name" value="Windows 11"/>
+    <property name="java.vm.specification.version" value="17"/>
+    <property name="sun.java.launcher" value="SUN_STANDARD"/>
+    <property name="user.country" value="BR"/>
+    <property name="sun.boot.library.path" value="C:\Program Files\Java\jdk-17\bin"/>
+    <property name="sun.java.command" value="C:\Users\rodri\AppData\Local\Temp\surefire18317576352578808473\surefirebooter-20260403164514702_3.jar C:\Users\rodri\AppData\Local\Temp\surefire18317576352578808473 2026-04-03T16-45-13_026-jvmRun1 surefire-20260403164514702_1tmp surefire_0-20260403164514702_2tmp"/>
+    <property name="jdk.debug" value="release"/>
+    <property name="surefire.test.class.path" value="C:\Users\rodri\OneDrive\Documents\Cesar_CC_2026.1\Requisitos\AcadTrack\bdd\acadtrackbdd\target\test-classes;C:\Users\rodri\OneDrive\Documents\Cesar_CC_2026.1\Requisitos\AcadTrack\bdd\acadtrackbdd\target\classes;C:\Users\rodri\.m2\repository\io\cucumber\cucumber-java\7.15.0\cucumber-java-7.15.0.jar;C:\Users\rodri\.m2\repository\io\cucumber\cucumber-core\7.15.0\cucumber-core-7.15.0.jar;C:\Users\rodri\.m2\repository\io\cucumber\cucumber-gherkin\7.15.0\cucumber-gherkin-7.15.0.jar;C:\Users\rodri\.m2\repository\io\cucumber\cucumber-gherkin-messages\7.15.0\cucumber-gherkin-messages-7.15.0.jar;C:\Users\rodri\.m2\repository\io\cucumber\gherkin\26.2.0\gherkin-26.2.0.jar;C:\Users\rodri\.m2\repository\io\cucumber\messages\22.0.0\messages-22.0.0.jar;C:\Users\rodri\.m2\repository\io\cucumber\tag-expressions\6.0.0\tag-expressions-6.0.0.jar;C:\Users\rodri\.m2\repository\io\cucumber\cucumber-expressions\17.0.1\cucumber-expressions-17.0.1.jar;C:\Users\rodri\.m2\repository\io\cucumber\datatable\7.15.0\datatable-7.15.0.jar;C:\Users\rodri\.m2\repository\io\cucumber\cucumber-plugin\7.15.0\cucumber-plugin-7.15.0.jar;C:\Users\rodri\.m2\repository\io\cucumber\docstring\7.15.0\docstring-7.15.0.jar;C:\Users\rodri\.m2\repository\io\cucumber\html-formatter\20.4.0\html-formatter-20.4.0.jar;C:\Users\rodri\.m2\repository\io\cucumber\junit-xml-formatter\0.2.0\junit-xml-formatter-0.2.0.jar;C:\Users\rodri\.m2\repository\io\cucumber\ci-environment\10.0.0\ci-environment-10.0.0.jar;C:\Users\rodri\.m2\repository\org\apiguardian\apiguardian-api\1.1.2\apiguardian-api-1.1.2.jar;C:\Users\rodri\.m2\repository\io\cucumber\cucumber-junit-platform-engine\7.15.0\cucumber-junit-platform-engine-7.15.0.jar;C:\Users\rodri\.m2\repository\org\junit\platform\junit-platform-engine\1.10.1\junit-platform-engine-1.10.1.jar;C:\Users\rodri\.m2\repository\io\cucumber\cucumber-picocontainer\7.15.0\cucumber-picocontainer-7.15.0.jar;C:\Users\rodri\.m2\repository\org\picocontainer\picocontainer\2.15\picocontainer-2.15.jar;C:\Users\rodri\.m2\repository\org\junit\platform\junit-platform-suite\1.10.2\junit-platform-suite-1.10.2.jar;C:\Users\rodri\.m2\repository\org\junit\platform\junit-platform-suite-api\1.10.2\junit-platform-suite-api-1.10.2.jar;C:\Users\rodri\.m2\repository\org\junit\platform\junit-platform-suite-engine\1.10.2\junit-platform-suite-engine-1.10.2.jar;C:\Users\rodri\.m2\repository\org\junit\platform\junit-platform-suite-commons\1.10.2\junit-platform-suite-commons-1.10.2.jar;C:\Users\rodri\.m2\repository\org\junit\platform\junit-platform-launcher\1.10.2\junit-platform-launcher-1.10.2.jar;C:\Users\rodri\.m2\repository\org\junit\jupiter\junit-jupiter-api\5.10.2\junit-jupiter-api-5.10.2.jar;C:\Users\rodri\.m2\repository\org\opentest4j\opentest4j\1.3.0\opentest4j-1.3.0.jar;C:\Users\rodri\.m2\repository\org\junit\platform\junit-platform-commons\1.10.2\junit-platform-commons-1.10.2.jar;"/>
+    <property name="sun.cpu.endian" value="little"/>
+    <property name="user.home" value="C:\Users\rodri"/>
+    <property name="user.language" value="pt"/>
+    <property name="java.specification.vendor" value="Oracle Corporation"/>
+    <property name="java.version.date" value="2024-07-16"/>
+    <property name="java.home" value="C:\Program Files\Java\jdk-17"/>
+    <property name="file.separator" value="\"/>
+    <property name="basedir" value="C:\Users\rodri\OneDrive\Documents\Cesar_CC_2026.1\Requisitos\AcadTrack\bdd\acadtrackbdd"/>
+    <property name="java.vm.compressedOopsMode" value="Zero based"/>
+    <property name="line.separator" value="&#10;"/>
+    <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
+    <property name="java.specification.name" value="Java Platform API Specification"/>
+    <property name="surefire.real.class.path" value="C:\Users\rodri\AppData\Local\Temp\surefire18317576352578808473\surefirebooter-20260403164514702_3.jar"/>
+    <property name="user.script" value=""/>
+    <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
+    <property name="java.runtime.version" value="17.0.12+8-LTS-286"/>
+    <property name="user.name" value="rodri"/>
+    <property name="path.separator" value=";"/>
+    <property name="os.version" value="10.0"/>
+    <property name="java.runtime.name" value="Java(TM) SE Runtime Environment"/>
+    <property name="file.encoding" value="Cp1252"/>
+    <property name="java.vm.name" value="Java HotSpot(TM) 64-Bit Server VM"/>
+    <property name="localRepository" value="C:\Users\rodri\.m2\repository"/>
+    <property name="java.vendor.url.bug" value="https://bugreport.java.com/bugreport/"/>
+    <property name="java.io.tmpdir" value="C:\Users\rodri\AppData\Local\Temp\"/>
+    <property name="java.version" value="17.0.12"/>
+    <property name="user.dir" value="C:\Users\rodri\OneDrive\Documents\Cesar_CC_2026.1\Requisitos\AcadTrack\bdd\acadtrackbdd"/>
+    <property name="os.arch" value="amd64"/>
+    <property name="java.vm.specification.name" value="Java Virtual Machine Specification"/>
+    <property name="sun.os.patch.level" value=""/>
+    <property name="native.encoding" value="Cp1252"/>
+    <property name="java.library.path" value="C:\Program Files\Java\jdk-17\bin;C:\WINDOWS\Sun\Java\bin;C:\WINDOWS\system32;C:\WINDOWS;c:\Users\rodri\AppData\Roaming\Code\User\globalStorage\github.copilot-chat\debugCommand;c:\Users\rodri\AppData\Roaming\Code\User\globalStorage\github.copilot-chat\copilotCli;C:\Users\rodri\AppData\Local\Programs\Microsoft VS Code;C:\Program Files\Common Files\Oracle\Java\javapath;C:\ProgramData\Oracle\Java\javapath;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Program Files\Git\cmd;C:\Program Files\dotnet\;c:\Users\rodri\AppData\Local\Programs\cursor\resources\app\bin;c:\Users\rodri\AppData\Local\Programs\cursor\resources\app\bin;C:\Program Files\nodejs\;C:\Users\rodri\Downloads\apache-maven-3.9.14\bin;C:\Users\rodri\AppData\Local\Programs\Python\Python312\Scripts\;C:\Users\rodri\AppData\Local\Programs\Python\Python312\;C:\Users\rodri\AppData\Local\Microsoft\WindowsApps;C:\Program Files\JetBrains\PyCharm 2023.1.3\bin;;C:\Users\rodri\AppData\Local\Programs\Microsoft VS Code\bin;C:\MinGW\bin;C:\Users\rodri\AppData\Local\GitHubDesktop\bin;C:\Program Files\PostgreSQL\17\bin;C:\Users\rodri\AppData\Local\Programs\cursor\resources\app\bin;C:\Users\rodri\AppData\Roaming\npm;c:\Users\rodri\.vscode\extensions\vscjava.vscode-java-debug-0.58.5\bundled\scripts\noConfigScripts;."/>
+    <property name="java.vm.info" value="mixed mode, sharing"/>
+    <property name="java.vendor" value="Oracle Corporation"/>
+    <property name="java.vm.version" value="17.0.12+8-LTS-286"/>
+    <property name="sun.io.unicode.encoding" value="UnicodeLittle"/>
+    <property name="java.class.version" value="61.0"/>
+  </properties>
+  <testcase name="Calcular média com pesos definidos" classname="Calcular média ponderada" time="0.083">
+    <system-out><![CDATA[
+Scenario: Calcular mÃ©dia com pesos definidos &amp#27;[90m# features/calcular_media_ponderada.feature:3&amp#27;[0m
+]]></system-out>
+  </testcase>
+  <testcase name="Não calcular média sem pesos definidos" classname="Calcular média ponderada" time="0.01">
+    <system-out><![CDATA[
+Scenario: NÃ£o calcular mÃ©dia sem pesos definidos &amp#27;[90m# features/calcular_media_ponderada.feature:8&amp#27;[0m
+]]></system-out>
+  </testcase>
+  <testcase name="Criar simulado com disciplinas vinculadas" classname="Criar simulado com disciplinas vinculadas" time="0.006">
+    <system-out><![CDATA[
+Scenario: Criar simulado com disciplinas vinculadas &amp#27;[90m# features/criar_simulado.feature:3&amp#27;[0m
+]]></system-out>
+  </testcase>
+  <testcase name="Não permitir criar simulado sem disciplinas" classname="Criar simulado com disciplinas vinculadas" time="0.009">
+    <system-out><![CDATA[
+Scenario: NÃ£o permitir criar simulado sem disciplinas &amp#27;[90m# features/criar_simulado.feature:8&amp#27;[0m
+]]></system-out>
+  </testcase>
+  <testcase name="Definir peso válido para disciplina" classname="Definir peso e disciplina no simulado" time="0.009">
+    <system-out><![CDATA[
+Scenario: Definir peso vÃ¡lido para disciplina &amp#27;[90m# features/definir_peso_disciplina.feature:3&amp#27;[0m
+]]></system-out>
+  </testcase>
+  <testcase name="Não permitir peso inválido" classname="Definir peso e disciplina no simulado" time="0.007">
+    <system-out><![CDATA[
+Scenario: NÃ£o permitir peso invÃ¡lido &amp#27;[90m# features/definir_peso_disciplina.feature:8&amp#27;[0m
+]]></system-out>
+  </testcase>
+  <testcase name="Gerar ranking com alunos ordenados" classname="Gerar ranking" time="0.004">
+    <system-out><![CDATA[
+Scenario: Gerar ranking com alunos ordenados &amp#27;[90m# features/gerar_ranking.feature:3&amp#27;[0m
+]]></system-out>
+  </testcase>
+  <testcase name="Não gerar ranking sem notas" classname="Gerar ranking" time="0.011">
+    <system-out><![CDATA[
+Scenario: NÃ£o gerar ranking sem notas &amp#27;[90m# features/gerar_ranking.feature:8&amp#27;[0m
+]]></system-out>
+  </testcase>
+  <testcase name="Lançar nota válida" classname="Lançar nota individual" time="0.005">
+    <system-out><![CDATA[
+Scenario: LanÃ§ar nota vÃ¡lida &amp#27;[90m# features/lancar_nota.feature:3&amp#27;[0m
+]]></system-out>
+  </testcase>
+  <testcase name="Não permitir nota inválida" classname="Lançar nota individual" time="0.009">
+    <system-out><![CDATA[
+Scenario: NÃ£o permitir nota invÃ¡lida &amp#27;[90m# features/lancar_nota.feature:8&amp#27;[0m
+]]></system-out>
+  </testcase>
+  <testcase name="Solicitar retificação com justificativa" classname="Solicitar retificação de nota" time="0.005">
+    <system-out><![CDATA[
+Scenario: Solicitar retificaÃ§Ã£o com justificativa &amp#27;[90m# features/solicitar_retificacao_nota.feature:3&amp#27;[0m
+]]></system-out>
+  </testcase>
+  <testcase name="Não permitir solicitação sem justificativa" classname="Solicitar retificação de nota" time="0.007">
+    <system-out><![CDATA[
+Scenario: NÃ£o permitir solicitaÃ§Ã£o sem justificativa &amp#27;[90m# features/solicitar_retificacao_nota.feature:8&amp#27;[0m
+]]></system-out>
+  </testcase>
+  <testcase name="Vincular aluno a uma turma com sucesso" classname="Vincular aluno à turma" time="0.005">
+    <system-out><![CDATA[
+Scenario: Vincular aluno a uma turma com sucesso &amp#27;[90m# features/vincular_aluno_turma.feature:3&amp#27;[0m
+]]></system-out>
+  </testcase>
+  <testcase name="Não permitir vincular aluno já vinculado a outra turma" classname="Vincular aluno à turma" time="0.005">
+    <system-out><![CDATA[
+Scenario: NÃ£o permitir vincular aluno jÃ¡ vinculado a outra turma &amp#27;[90m# features/vincular_aluno_turma.feature:8&amp#27;[0m
+]]></system-out>
+  </testcase>
+  <testcase name="Vincular responsável ao aluno" classname="Vincular ou desvincular responsável" time="0.006">
+    <system-out><![CDATA[
+Scenario: Vincular responsÃ¡vel ao aluno &amp#27;[90m# features/vincular_responsavel.feature:3&amp#27;[0m
+]]></system-out>
+  </testcase>
+  <testcase name="Não permitir desvincular responsável inexistente" classname="Vincular ou desvincular responsável" time="0.005">
+    <system-out><![CDATA[
+Scenario: NÃ£o permitir desvincular responsÃ¡vel inexistente &amp#27;[90m# features/vincular_responsavel.feature:8&amp#27;[0m
+]]></system-out>
+  </testcase>
+</testsuite>
