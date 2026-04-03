@@ -9,28 +9,32 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class VincularAlunoTurmaSteps {
 
-    private final TestContext context = new TestContext();
+    private final TestContext context;
+
+    public VincularAlunoTurmaSteps(TestContext context) {
+        this.context = context;
+    }
 
     @Dado("que o aluno {string} não está vinculado a nenhuma turma")
     public void queOAlunoNaoEstaVinculadoANenhumaTurma(String aluno) {
-        context.vinculosAlunoTurma.remove(aluno);
-        context.mensagem = null;
+        context.getVinculosAlunoTurma().remove(aluno);
+        context.resetMensagens();
     }
 
     @Dado("que o aluno {string} já está vinculado à turma {string}")
     public void queOAlunoJaEstaVinculadoATurma(String aluno, String turma) {
-        context.vinculosAlunoTurma.put(aluno, turma);
-        context.mensagem = null;
+        context.getVinculosAlunoTurma().put(aluno, turma);
+        context.resetMensagens();
     }
 
     @Quando("o coordenador vincula o aluno {string} à turma {string}")
     public void oCoordenadorVinculaOAlunoATurma(String aluno, String turma) {
-        if (context.vinculosAlunoTurma.containsKey(aluno)) {
-            context.mensagem = "O aluno já está vinculado a uma turma";
-            context.operacaoExecutada = false;
+        if (context.getVinculosAlunoTurma().containsKey(aluno)) {
+            context.setMensagem("O aluno já está vinculado a uma turma");
+            context.setOperacaoExecutada(false);
         } else {
-            context.vinculosAlunoTurma.put(aluno, turma);
-            context.operacaoExecutada = true;
+            context.getVinculosAlunoTurma().put(aluno, turma);
+            context.setOperacaoExecutada(true);
         }
     }
 
@@ -41,13 +45,13 @@ public class VincularAlunoTurmaSteps {
 
     @Então("o sistema registra o vínculo do aluno {string} à turma {string}")
     public void oSistemaRegistraOVinculoDoAlunoATurma(String aluno, String turma) {
-        assertTrue(context.operacaoExecutada);
-        assertEquals(turma, context.vinculosAlunoTurma.get(aluno));
+        assertTrue(context.isOperacaoExecutada());
+        assertEquals(turma, context.getVinculosAlunoTurma().get(aluno));
     }
 
     @Então("o sistema informa que o aluno já está vinculado a uma turma")
     public void oSistemaInformaQueOAlunoJaEstaVinculadoAUmaTurma() {
-        assertFalse(context.operacaoExecutada);
-        assertEquals("O aluno já está vinculado a uma turma", context.mensagem);
+        assertFalse(context.isOperacaoExecutada());
+        assertEquals("O aluno já está vinculado a uma turma", context.getMensagem());
     }
 }
