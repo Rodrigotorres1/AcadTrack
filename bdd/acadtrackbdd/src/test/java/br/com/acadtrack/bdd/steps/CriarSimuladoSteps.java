@@ -11,40 +11,40 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class CriarSimuladoSteps {
 
-    private final TestContext context = new TestContext();
-    private String nomeSimulado = "Simulado Principal";
-    private String disciplinasInformadas;
+    private final TestContext context;
+    private final String nomeSimulado = "Simulado Principal";
+
+    public CriarSimuladoSteps(TestContext context) {
+        this.context = context;
+    }
 
     @Dado("que o coordenador deseja criar um simulado")
     public void queOCoordenadorDesejaCriarUmSimulado() {
-        context.mensagem = null;
-        context.operacaoExecutada = false;
-        disciplinasInformadas = null;
+        context.resetMensagens();
     }
 
     @Quando("ele informa as disciplinas {string} e {string}")
     public void eleInformaAsDisciplinasE(String d1, String d2) {
-        disciplinasInformadas = d1 + "," + d2;
-        context.simuladoDisciplinas.put(nomeSimulado, Arrays.asList(d1, d2));
-        context.operacaoExecutada = true;
+        context.getSimuladoDisciplinas().put(nomeSimulado, Arrays.asList(d1, d2));
+        context.setOperacaoExecutada(true);
     }
 
     @Quando("ele não informa nenhuma disciplina")
     public void eleNaoInformaNenhumaDisciplina() {
-        context.mensagem = "O simulado deve possuir pelo menos uma disciplina";
-        context.operacaoExecutada = false;
+        context.setMensagem("O simulado deve possuir pelo menos uma disciplina");
+        context.setOperacaoExecutada(false);
     }
 
     @Então("o sistema cria o simulado com as disciplinas informadas")
     public void oSistemaCriaOSimuladoComAsDisciplinasInformadas() {
-        assertTrue(context.operacaoExecutada);
-        assertNotNull(context.simuladoDisciplinas.get(nomeSimulado));
-        assertEquals(2, context.simuladoDisciplinas.get(nomeSimulado).size());
+        assertTrue(context.isOperacaoExecutada());
+        assertNotNull(context.getSimuladoDisciplinas().get(nomeSimulado));
+        assertEquals(2, context.getSimuladoDisciplinas().get(nomeSimulado).size());
     }
 
     @Então("o sistema informa que o simulado deve possuir pelo menos uma disciplina")
     public void oSistemaInformaQueOSimuladoDevePossuirPeloMenosUmaDisciplina() {
-        assertFalse(context.operacaoExecutada);
-        assertEquals("O simulado deve possuir pelo menos uma disciplina", context.mensagem);
+        assertFalse(context.isOperacaoExecutada());
+        assertEquals("O simulado deve possuir pelo menos uma disciplina", context.getMensagem());
     }
 }
