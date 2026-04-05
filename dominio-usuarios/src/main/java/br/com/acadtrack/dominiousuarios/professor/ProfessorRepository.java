@@ -4,7 +4,7 @@ import java.util.Optional;
 
 public interface ProfessorRepository {
 
-    void salvar(Professor professor);
+    Professor salvar(Professor professor);
 
     Optional<Professor> buscarPorId(Long id);
 }

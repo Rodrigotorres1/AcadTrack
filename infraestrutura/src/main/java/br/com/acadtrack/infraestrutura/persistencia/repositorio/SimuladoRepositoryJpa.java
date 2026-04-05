@@ -1,7 +1,7 @@
 package br.com.acadtrack.infraestrutura.persistencia.repositorio;
 
-import br.com.acadtrack.dominioacademico.simulado.Simulado;
-import br.com.acadtrack.dominioacademico.simulado.SimuladoRepository;
+import br.com.acadtrack.dominioavaliacao.simulado.Simulado;
+import br.com.acadtrack.dominioavaliacao.simulado.SimuladoRepository;
 import br.com.acadtrack.infraestrutura.persistencia.entidade.SimuladoJpaEntity;
 import br.com.acadtrack.infraestrutura.persistencia.springdata.SimuladoSpringDataRepository;
 import org.springframework.stereotype.Repository;
@@ -18,12 +18,18 @@ public class SimuladoRepositoryJpa implements SimuladoRepository {
     }
 
     @Override
-    public void salvar(Simulado simulado) {
+    public Simulado salvar(Simulado simulado) {
         SimuladoJpaEntity entity = new SimuladoJpaEntity(
                 simulado.getId(),
                 simulado.getDescricao()
         );
-        repository.save(entity);
+
+        SimuladoJpaEntity salvo = repository.save(entity);
+
+        return new Simulado(
+                salvo.getId(),
+                salvo.getDescricao()
+        );
     }
 
     @Override

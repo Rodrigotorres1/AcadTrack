@@ -13,8 +13,8 @@ public class CriarProfessorUseCase {
         this.professorRepository = professorRepository;
     }
 
-    public void executar(Long id, String nome, String email) {
-        Professor professor = new Professor(id, nome, email);
-        professorRepository.salvar(professor);
+    public Professor executar(String nome, String email) {
+        Professor professor = new Professor(null, nome, email);
+        return professorRepository.salvar(professor);
     }
 }

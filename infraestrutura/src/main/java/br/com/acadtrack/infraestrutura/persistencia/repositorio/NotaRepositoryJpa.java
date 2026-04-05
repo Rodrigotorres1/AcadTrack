@@ -20,7 +20,7 @@ public class NotaRepositoryJpa implements NotaRepository {
     }
 
     @Override
-    public void salvar(Nota nota) {
+    public Nota salvar(Nota nota) {
         NotaJpaEntity entity = new NotaJpaEntity(
                 nota.getId(),
                 nota.getAlunoId(),
@@ -28,7 +28,16 @@ public class NotaRepositoryJpa implements NotaRepository {
                 nota.getDisciplina(),
                 nota.getValor()
         );
-        repository.save(entity);
+
+        NotaJpaEntity salvo = repository.save(entity);
+
+        return new Nota(
+                salvo.getId(),
+                salvo.getAlunoId(),
+                salvo.getSimuladoId(),
+                salvo.getDisciplina(),
+                salvo.getValor()
+        );
     }
 
     @Override
@@ -70,4 +79,18 @@ public class NotaRepositoryJpa implements NotaRepository {
                 ))
                 .collect(Collectors.toList());
     }
+
+    @Override
+        public List<Nota> buscarTodas() {
+                return repository.findAll()
+                .stream()
+                .map(entity -> new Nota(
+                        entity.getId(),
+                        entity.getAlunoId(),
+                        entity.getSimuladoId(),
+                        entity.getDisciplina(),
+                        entity.getValor()
+                ))
+                .collect(Collectors.toList());
+}
 }

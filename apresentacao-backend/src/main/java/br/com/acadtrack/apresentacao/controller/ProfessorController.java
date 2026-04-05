@@ -2,6 +2,9 @@ package br.com.acadtrack.apresentacao.controller;
 
 import br.com.acadtrack.aplicacao.professor.CriarProfessorUseCase;
 import br.com.acadtrack.apresentacao.dto.CriarProfessorRequest;
+import br.com.acadtrack.apresentacao.dto.ProfessorResponse;
+import br.com.acadtrack.dominiousuarios.professor.Professor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,12 +19,14 @@ public class ProfessorController {
     }
 
     @PostMapping
-    public ResponseEntity<String> criar(@RequestBody CriarProfessorRequest request) {
-        criarProfessorUseCase.executar(
-                request.getId(),
+    public ResponseEntity<ProfessorResponse> criar(@RequestBody CriarProfessorRequest request) {
+        Professor professor = criarProfessorUseCase.executar(
                 request.getNome(),
                 request.getEmail()
         );
-        return ResponseEntity.ok("Professor criado com sucesso");
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(ProfessorResponse.fromDomain(professor));
     }
 }

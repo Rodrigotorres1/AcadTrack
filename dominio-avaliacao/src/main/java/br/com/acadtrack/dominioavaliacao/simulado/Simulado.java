@@ -1,4 +1,4 @@
-package br.com.acadtrack.dominioacademico.simulado;
+package br.com.acadtrack.dominioavaliacao.simulado;
 
 public class Simulado {
 
@@ -7,7 +7,7 @@ public class Simulado {
 
     public Simulado(Long id, String descricao) {
         if (descricao == null || descricao.isBlank()) {
-            throw new IllegalArgumentException("Descrição inválida");
+            throw new IllegalArgumentException("Descrição do simulado não pode ser vazia");
         }
 
         this.id = id;

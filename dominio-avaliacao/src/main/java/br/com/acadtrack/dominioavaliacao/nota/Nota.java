@@ -21,8 +21,8 @@ public class Nota {
             throw new IllegalArgumentException("Disciplina é obrigatória");
         }
 
-        if (valor < 0 || valor > 10) {
-            throw new IllegalArgumentException("Nota inválida");
+        if (valor < 0) {
+            throw new IllegalArgumentException("Valor da nota não pode ser negativo");
         }
 
         this.id = id;
@@ -50,12 +50,5 @@ public class Nota {
 
     public double getValor() {
         return valor;
-    }
-
-    public void alterarValor(double novoValor) {
-        if (novoValor < 0 || novoValor > 10) {
-            throw new IllegalArgumentException("Nota inválida");
-        }
-        this.valor = novoValor;
     }
 }

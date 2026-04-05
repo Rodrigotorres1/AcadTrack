@@ -18,13 +18,20 @@ public class ProfessorRepositoryJpa implements ProfessorRepository {
     }
 
     @Override
-    public void salvar(Professor professor) {
+    public Professor salvar(Professor professor) {
         ProfessorJpaEntity entity = new ProfessorJpaEntity(
                 professor.getId(),
                 professor.getNome(),
                 professor.getEmail()
         );
-        repository.save(entity);
+
+        ProfessorJpaEntity salvo = repository.save(entity);
+
+        return new Professor(
+                salvo.getId(),
+                salvo.getNome(),
+                salvo.getEmail()
+        );
     }
 
     @Override

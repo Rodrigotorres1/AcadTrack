@@ -1,6 +1,8 @@
 package br.com.acadtrack.infraestrutura.persistencia.entidade;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
@@ -9,7 +11,9 @@ import jakarta.persistence.Table;
 public class NotaJpaEntity {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private Long alunoId;
     private Long simuladoId;
     private String disciplina;
@@ -44,5 +48,25 @@ public class NotaJpaEntity {
 
     public double getValor() {
         return valor;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public void setAlunoId(Long alunoId) {
+        this.alunoId = alunoId;
+    }
+
+    public void setSimuladoId(Long simuladoId) {
+        this.simuladoId = simuladoId;
+    }
+
+    public void setDisciplina(String disciplina) {
+        this.disciplina = disciplina;
+    }
+
+    public void setValor(double valor) {
+        this.valor = valor;
     }
 }

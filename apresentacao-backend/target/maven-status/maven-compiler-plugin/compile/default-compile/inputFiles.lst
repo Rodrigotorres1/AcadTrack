@@ -1,4 +1,4 @@
-C:\Users\rodri\OneDrive\Documents\Cesar_CC_2026.1\Requisitos\AcadTrack\apresentacao-backend\src\main\java\br\com\acadtrack\apresentacao\AcadTrackApplication.java
+C:\Users\rodri\OneDrive\Documents\Cesar_CC_2026.1\Requisitos\AcadTrack\apresentacao-backend\src\main\java\br\com\acadtrack\AcadTrackApplication.java
 C:\Users\rodri\OneDrive\Documents\Cesar_CC_2026.1\Requisitos\AcadTrack\apresentacao-backend\src\main\java\br\com\acadtrack\apresentacao\controller\AlunoController.java
 C:\Users\rodri\OneDrive\Documents\Cesar_CC_2026.1\Requisitos\AcadTrack\apresentacao-backend\src\main\java\br\com\acadtrack\apresentacao\controller\NotaController.java
 C:\Users\rodri\OneDrive\Documents\Cesar_CC_2026.1\Requisitos\AcadTrack\apresentacao-backend\src\main\java\br\com\acadtrack\apresentacao\controller\ProfessorController.java
@@ -10,4 +10,7 @@ C:\Users\rodri\OneDrive\Documents\Cesar_CC_2026.1\Requisitos\AcadTrack\apresenta
 C:\Users\rodri\OneDrive\Documents\Cesar_CC_2026.1\Requisitos\AcadTrack\apresentacao-backend\src\main\java\br\com\acadtrack\apresentacao\dto\CriarProfessorRequest.java
 C:\Users\rodri\OneDrive\Documents\Cesar_CC_2026.1\Requisitos\AcadTrack\apresentacao-backend\src\main\java\br\com\acadtrack\apresentacao\dto\CriarSimuladoRequest.java
 C:\Users\rodri\OneDrive\Documents\Cesar_CC_2026.1\Requisitos\AcadTrack\apresentacao-backend\src\main\java\br\com\acadtrack\apresentacao\dto\LancarNotaRequest.java
+C:\Users\rodri\OneDrive\Documents\Cesar_CC_2026.1\Requisitos\AcadTrack\apresentacao-backend\src\main\java\br\com\acadtrack\apresentacao\dto\NotaResponse.java
+C:\Users\rodri\OneDrive\Documents\Cesar_CC_2026.1\Requisitos\AcadTrack\apresentacao-backend\src\main\java\br\com\acadtrack\apresentacao\dto\ProfessorResponse.java
+C:\Users\rodri\OneDrive\Documents\Cesar_CC_2026.1\Requisitos\AcadTrack\apresentacao-backend\src\main\java\br\com\acadtrack\apresentacao\dto\SimuladoResponse.java
 C:\Users\rodri\OneDrive\Documents\Cesar_CC_2026.1\Requisitos\AcadTrack\apresentacao-backend\src\main\java\br\com\acadtrack\apresentacao\dto\SolicitarRetificacaoRequest.java

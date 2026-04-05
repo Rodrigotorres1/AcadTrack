@@ -1,29 +1,73 @@
 package br.com.acadtrack.apresentacao.controller;
 
+import br.com.acadtrack.aplicacao.nota.BuscarNotasPorAlunoUseCase;
+import br.com.acadtrack.aplicacao.nota.CalcularMediaAlunoUseCase;
 import br.com.acadtrack.aplicacao.nota.LancarNotaUseCase;
+import br.com.acadtrack.aplicacao.nota.RankingAlunosUseCase;
 import br.com.acadtrack.apresentacao.dto.LancarNotaRequest;
+import br.com.acadtrack.apresentacao.dto.NotaResponse;
+import br.com.acadtrack.dominioavaliacao.nota.Nota;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/notas")
 public class NotaController {
 
     private final LancarNotaUseCase lancarNotaUseCase;
+    private final BuscarNotasPorAlunoUseCase buscarNotasPorAlunoUseCase;
+    private final CalcularMediaAlunoUseCase calcularMediaAlunoUseCase;
+    private final RankingAlunosUseCase rankingAlunosUseCase;
 
-    public NotaController(LancarNotaUseCase lancarNotaUseCase) {
-        this.lancarNotaUseCase = lancarNotaUseCase;
-    }
+public NotaController(LancarNotaUseCase lancarNotaUseCase,
+                      BuscarNotasPorAlunoUseCase buscarNotasPorAlunoUseCase,
+                      CalcularMediaAlunoUseCase calcularMediaAlunoUseCase,
+                      RankingAlunosUseCase rankingAlunosUseCase) {
+    this.lancarNotaUseCase = lancarNotaUseCase;
+    this.buscarNotasPorAlunoUseCase = buscarNotasPorAlunoUseCase;
+    this.calcularMediaAlunoUseCase = calcularMediaAlunoUseCase;
+    this.rankingAlunosUseCase = rankingAlunosUseCase;
+}
 
     @PostMapping
-    public ResponseEntity<String> lancar(@RequestBody LancarNotaRequest request) {
-        lancarNotaUseCase.executar(
-                request.getId(),
+    public ResponseEntity<NotaResponse> criar(@RequestBody LancarNotaRequest request) {
+        Nota nota = lancarNotaUseCase.executar(
                 request.getAlunoId(),
                 request.getSimuladoId(),
                 request.getDisciplina(),
                 request.getValor()
         );
-        return ResponseEntity.ok("Nota lançada com sucesso");
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(NotaResponse.fromDomain(nota));
     }
+
+    @GetMapping("/aluno/{alunoId}")
+    public ResponseEntity<List<NotaResponse>> buscarPorAluno(@PathVariable Long alunoId) {
+        List<NotaResponse> response = buscarNotasPorAlunoUseCase.executar(alunoId)
+                .stream()
+                .map(NotaResponse::fromDomain)
+                .toList();
+
+        return ResponseEntity.ok(response);
+    }
+    @GetMapping("/aluno/{id}/media")
+    public ResponseEntity<Double> calcularMedia(@PathVariable Long id) {
+        double media = calcularMediaAlunoUseCase.executar(id);
+        return ResponseEntity.ok(media);
+    }
+    @GetMapping("/ranking")
+    public ResponseEntity<List<Map<String, Object>>> ranking() {
+        return ResponseEntity.ok(rankingAlunosUseCase.executar());
+}
+
+    @GetMapping("/ranking/top")
+    public ResponseEntity<Map<String, Object>> top() {
+        return ResponseEntity.ok(rankingAlunosUseCase.executar().get(0));
+}
 }

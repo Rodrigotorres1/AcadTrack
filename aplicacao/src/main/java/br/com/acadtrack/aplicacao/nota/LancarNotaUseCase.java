@@ -13,8 +13,8 @@ public class LancarNotaUseCase {
         this.notaRepository = notaRepository;
     }
 
-    public void executar(Long id, Long alunoId, Long simuladoId, String disciplina, double valor) {
-        Nota nota = new Nota(id, alunoId, simuladoId, disciplina, valor);
-        notaRepository.salvar(nota);
+    public Nota executar(Long alunoId, Long simuladoId, String disciplina, double valor) {
+        Nota nota = new Nota(null, alunoId, simuladoId, disciplina, valor);
+        return notaRepository.salvar(nota);
     }
 }

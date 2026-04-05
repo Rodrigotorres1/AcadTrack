@@ -5,11 +5,14 @@ import java.util.Optional;
 
 public interface NotaRepository {
 
-    void salvar(Nota nota);
+    Nota salvar(Nota nota);
 
     Optional<Nota> buscarPorId(Long id);
 
     List<Nota> buscarPorAlunoId(Long alunoId);
 
     List<Nota> buscarPorSimuladoId(Long simuladoId);
+
+    List<Nota> buscarTodas();
+
 }

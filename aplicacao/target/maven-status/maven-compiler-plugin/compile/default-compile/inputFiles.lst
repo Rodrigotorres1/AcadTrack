@@ -5,7 +5,10 @@ C:\Users\rodri\OneDrive\Documents\Cesar_CC_2026.1\Requisitos\AcadTrack\aplicacao
 C:\Users\rodri\OneDrive\Documents\Cesar_CC_2026.1\Requisitos\AcadTrack\aplicacao\src\main\java\br\com\acadtrack\aplicacao\dto\LancarNotaCommand.java
 C:\Users\rodri\OneDrive\Documents\Cesar_CC_2026.1\Requisitos\AcadTrack\aplicacao\src\main\java\br\com\acadtrack\aplicacao\dto\ResultadoRankingDto.java
 C:\Users\rodri\OneDrive\Documents\Cesar_CC_2026.1\Requisitos\AcadTrack\aplicacao\src\main\java\br\com\acadtrack\aplicacao\dto\SolicitarRetificacaoCommand.java
+C:\Users\rodri\OneDrive\Documents\Cesar_CC_2026.1\Requisitos\AcadTrack\aplicacao\src\main\java\br\com\acadtrack\aplicacao\nota\BuscarNotasPorAlunoUseCase.java
+C:\Users\rodri\OneDrive\Documents\Cesar_CC_2026.1\Requisitos\AcadTrack\aplicacao\src\main\java\br\com\acadtrack\aplicacao\nota\CalcularMediaAlunoUseCase.java
 C:\Users\rodri\OneDrive\Documents\Cesar_CC_2026.1\Requisitos\AcadTrack\aplicacao\src\main\java\br\com\acadtrack\aplicacao\nota\LancarNotaUseCase.java
+C:\Users\rodri\OneDrive\Documents\Cesar_CC_2026.1\Requisitos\AcadTrack\aplicacao\src\main\java\br\com\acadtrack\aplicacao\nota\RankingAlunosUseCase.java
 C:\Users\rodri\OneDrive\Documents\Cesar_CC_2026.1\Requisitos\AcadTrack\aplicacao\src\main\java\br\com\acadtrack\aplicacao\professor\CriarProfessorUseCase.java
 C:\Users\rodri\OneDrive\Documents\Cesar_CC_2026.1\Requisitos\AcadTrack\aplicacao\src\main\java\br\com\acadtrack\aplicacao\ranking\GerarRankingUseCase.java
 C:\Users\rodri\OneDrive\Documents\Cesar_CC_2026.1\Requisitos\AcadTrack\aplicacao\src\main\java\br\com\acadtrack\aplicacao\responsavel\DesvincularResponsavelUseCase.java

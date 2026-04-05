@@ -1,11 +1,10 @@
-package br.com.acadtrack.dominioacademico.simulado;
+package br.com.acadtrack.dominioavaliacao.simulado;
 
 import java.util.Optional;
 
 public interface SimuladoRepository {
 
-    void salvar(Simulado simulado);
+    Simulado salvar(Simulado simulado);
 
     Optional<Simulado> buscarPorId(Long id);
-
 }
