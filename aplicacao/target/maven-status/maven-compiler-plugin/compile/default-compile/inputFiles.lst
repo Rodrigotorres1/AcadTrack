@@ -1,0 +1,16 @@
+C:\Users\rodri\OneDrive\Documents\Cesar_CC_2026.1\Requisitos\AcadTrack\aplicacao\src\main\java\br\com\acadtrack\aplicacao\aluno\CriarAlunoUseCase.java
+C:\Users\rodri\OneDrive\Documents\Cesar_CC_2026.1\Requisitos\AcadTrack\aplicacao\src\main\java\br\com\acadtrack\aplicacao\dto\CriarAlunoCommand.java
+C:\Users\rodri\OneDrive\Documents\Cesar_CC_2026.1\Requisitos\AcadTrack\aplicacao\src\main\java\br\com\acadtrack\aplicacao\dto\CriarProfessorCommand.java
+C:\Users\rodri\OneDrive\Documents\Cesar_CC_2026.1\Requisitos\AcadTrack\aplicacao\src\main\java\br\com\acadtrack\aplicacao\dto\CriarSimuladoCommand.java
+C:\Users\rodri\OneDrive\Documents\Cesar_CC_2026.1\Requisitos\AcadTrack\aplicacao\src\main\java\br\com\acadtrack\aplicacao\dto\LancarNotaCommand.java
+C:\Users\rodri\OneDrive\Documents\Cesar_CC_2026.1\Requisitos\AcadTrack\aplicacao\src\main\java\br\com\acadtrack\aplicacao\dto\ResultadoRankingDto.java
+C:\Users\rodri\OneDrive\Documents\Cesar_CC_2026.1\Requisitos\AcadTrack\aplicacao\src\main\java\br\com\acadtrack\aplicacao\dto\SolicitarRetificacaoCommand.java
+C:\Users\rodri\OneDrive\Documents\Cesar_CC_2026.1\Requisitos\AcadTrack\aplicacao\src\main\java\br\com\acadtrack\aplicacao\nota\LancarNotaUseCase.java
+C:\Users\rodri\OneDrive\Documents\Cesar_CC_2026.1\Requisitos\AcadTrack\aplicacao\src\main\java\br\com\acadtrack\aplicacao\professor\CriarProfessorUseCase.java
+C:\Users\rodri\OneDrive\Documents\Cesar_CC_2026.1\Requisitos\AcadTrack\aplicacao\src\main\java\br\com\acadtrack\aplicacao\ranking\GerarRankingUseCase.java
+C:\Users\rodri\OneDrive\Documents\Cesar_CC_2026.1\Requisitos\AcadTrack\aplicacao\src\main\java\br\com\acadtrack\aplicacao\responsavel\DesvincularResponsavelUseCase.java
+C:\Users\rodri\OneDrive\Documents\Cesar_CC_2026.1\Requisitos\AcadTrack\aplicacao\src\main\java\br\com\acadtrack\aplicacao\responsavel\VincularResponsavelUseCase.java
+C:\Users\rodri\OneDrive\Documents\Cesar_CC_2026.1\Requisitos\AcadTrack\aplicacao\src\main\java\br\com\acadtrack\aplicacao\retificacao\SolicitarRetificacaoNotaUseCase.java
+C:\Users\rodri\OneDrive\Documents\Cesar_CC_2026.1\Requisitos\AcadTrack\aplicacao\src\main\java\br\com\acadtrack\aplicacao\simulado\CriarSimuladoUseCase.java
+C:\Users\rodri\OneDrive\Documents\Cesar_CC_2026.1\Requisitos\AcadTrack\aplicacao\src\main\java\br\com\acadtrack\aplicacao\turma\CriarTurmaUseCase.java
+C:\Users\rodri\OneDrive\Documents\Cesar_CC_2026.1\Requisitos\AcadTrack\aplicacao\src\main\java\br\com\acadtrack\aplicacao\turma\VincularAlunoTurmaUseCase.java

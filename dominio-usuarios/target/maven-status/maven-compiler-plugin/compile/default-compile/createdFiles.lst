@@ -1,0 +1,4 @@
+br\com\acadtrack\dominiousuarios\professor\Professor.class
+br\com\acadtrack\dominiousuarios\professor\ProfessorRepository.class
+br\com\acadtrack\dominiousuarios\responsavel\ResponsavelRepository.class
+br\com\acadtrack\dominiousuarios\responsavel\Responsavel.class

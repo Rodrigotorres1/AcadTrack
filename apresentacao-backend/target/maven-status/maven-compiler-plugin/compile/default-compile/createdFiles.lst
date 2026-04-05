@@ -1,0 +1,13 @@
+br\com\acadtrack\apresentacao\controller\RankingController.class
+br\com\acadtrack\apresentacao\dto\CriarAlunoRequest.class
+br\com\acadtrack\apresentacao\controller\NotaController.class
+br\com\acadtrack\apresentacao\controller\SimuladoController.class
+br\com\acadtrack\apresentacao\dto\CriarSimuladoRequest.class
+br\com\acadtrack\apresentacao\controller\AlunoController.class
+br\com\acadtrack\apresentacaobackend\controller\ProfessorController.class
+br\com\acadtrack\apresentacaobackend\dto\CriarProfessorRequest.class
+br\com\acadtrack\apresentacaobackend\dto\SolicitarRetificacaoRequest.class
+br\com\acadtrack\AcadTrackApplication.class
+br\com\acadtrack\apresentacao\dto\LancarNotaRequest.class
+br\com\acadtrack\apresentacao\dto\AlunoResponse.class
+br\com\acadtrack\apresentacaobackend\controller\RetificacaoController.class

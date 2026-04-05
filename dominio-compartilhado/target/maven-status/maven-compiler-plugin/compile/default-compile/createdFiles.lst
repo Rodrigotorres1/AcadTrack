@@ -1,0 +1,6 @@
+br\com\acadtrack\dominiocompartilhado\excecao\EntidadeNaoEncontradaException.class
+br\com\acadtrack\dominiocompartilhado\excecao\RegraDeNegocioException.class
+br\com\acadtrack\dominiocompartilhado\identificador\SimuladoId.class
+br\com\acadtrack\dominiocompartilhado\validacao\ValidadorNumero.class
+br\com\acadtrack\dominiocompartilhado\identificador\AlunoId.class
+br\com\acadtrack\dominiocompartilhado\validacao\ValidadorTexto.class

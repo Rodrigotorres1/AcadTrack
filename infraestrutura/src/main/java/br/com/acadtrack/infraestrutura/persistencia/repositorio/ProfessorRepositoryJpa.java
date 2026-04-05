@@ -1,0 +1,39 @@
+package br.com.acadtrack.infraestrutura.persistencia.repositorio;
+
+import br.com.acadtrack.dominiousuarios.professor.Professor;
+import br.com.acadtrack.dominiousuarios.professor.ProfessorRepository;
+import br.com.acadtrack.infraestrutura.persistencia.entidade.ProfessorJpaEntity;
+import br.com.acadtrack.infraestrutura.persistencia.springdata.ProfessorSpringDataRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
+
+@Repository
+public class ProfessorRepositoryJpa implements ProfessorRepository {
+
+    private final ProfessorSpringDataRepository repository;
+
+    public ProfessorRepositoryJpa(ProfessorSpringDataRepository repository) {
+        this.repository = repository;
+    }
+
+    @Override
+    public void salvar(Professor professor) {
+        ProfessorJpaEntity entity = new ProfessorJpaEntity(
+                professor.getId(),
+                professor.getNome(),
+                professor.getEmail()
+        );
+        repository.save(entity);
+    }
+
+    @Override
+    public Optional<Professor> buscarPorId(Long id) {
+        return repository.findById(id)
+                .map(entity -> new Professor(
+                        entity.getId(),
+                        entity.getNome(),
+                        entity.getEmail()
+                ));
+    }
+}

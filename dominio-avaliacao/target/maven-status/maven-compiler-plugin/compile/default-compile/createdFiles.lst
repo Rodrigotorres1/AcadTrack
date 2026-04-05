@@ -1,0 +1,7 @@
+br\com\acadtrack\dominioavaliacao\ranking\ResultadoRanking.class
+br\com\acadtrack\dominioavaliacao\disciplina\PesoDisciplina.class
+br\com\acadtrack\dominioavaliacao\retificacao\SolicitacaoRetificacaoRepository.class
+br\com\acadtrack\dominioavaliacao\nota\NotaRepository.class
+br\com\acadtrack\dominioavaliacao\nota\Nota.class
+br\com\acadtrack\dominioavaliacao\ranking\GeradorRankingService.class
+br\com\acadtrack\dominioavaliacao\retificacao\SolicitacaoRetificacao.class
