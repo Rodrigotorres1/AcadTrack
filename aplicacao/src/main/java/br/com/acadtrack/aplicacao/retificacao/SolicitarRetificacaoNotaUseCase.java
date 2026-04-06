@@ -1,5 +1,6 @@
 package br.com.acadtrack.aplicacao.retificacao;
 
+import br.com.acadtrack.dominioavaliacao.nota.NotaRepository;
 import br.com.acadtrack.dominioavaliacao.retificacao.SolicitacaoRetificacao;
 import br.com.acadtrack.dominioavaliacao.retificacao.SolicitacaoRetificacaoRepository;
 import org.springframework.stereotype.Service;
@@ -7,16 +8,28 @@ import org.springframework.stereotype.Service;
 @Service
 public class SolicitarRetificacaoNotaUseCase {
 
+    private final NotaRepository notaRepository;
     private final SolicitacaoRetificacaoRepository solicitacaoRetificacaoRepository;
 
-    public SolicitarRetificacaoNotaUseCase(SolicitacaoRetificacaoRepository solicitacaoRetificacaoRepository) {
+    public SolicitarRetificacaoNotaUseCase(
+            NotaRepository notaRepository,
+            SolicitacaoRetificacaoRepository solicitacaoRetificacaoRepository
+    ) {
+        this.notaRepository = notaRepository;
         this.solicitacaoRetificacaoRepository = solicitacaoRetificacaoRepository;
     }
 
-    public void executar(Long id, Long notaId, String justificativa) {
-        SolicitacaoRetificacao solicitacao =
-                new SolicitacaoRetificacao(id, notaId, justificativa);
+    public SolicitacaoRetificacao executar(Long notaId, String justificativa) {
+        notaRepository.buscarPorId(notaId)
+                .orElseThrow(() -> new RuntimeException("Nota não encontrada"));
 
-        solicitacaoRetificacaoRepository.salvar(solicitacao);
+        SolicitacaoRetificacao solicitacao = new SolicitacaoRetificacao(
+                null,
+                notaId,
+                justificativa,
+                "PENDENTE"
+        );
+
+        return solicitacaoRetificacaoRepository.salvar(solicitacao);
     }
 }

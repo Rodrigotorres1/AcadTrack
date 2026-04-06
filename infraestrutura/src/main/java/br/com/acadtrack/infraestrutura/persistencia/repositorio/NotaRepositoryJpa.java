@@ -79,7 +79,13 @@ public class NotaRepositoryJpa implements NotaRepository {
 
     @Override
     public Optional<Nota> buscarPorId(Long id) {
-        throw new UnsupportedOperationException("Unimplemented method 'buscarPorId'");
+        return repository.findById(id)
+                .map(entity -> new Nota(
+                        entity.getAlunoId(),
+                        entity.getSimuladoId(),
+                        entity.getDisciplinaId(),
+                        entity.getValor()
+                ));
     }
 
     @Override

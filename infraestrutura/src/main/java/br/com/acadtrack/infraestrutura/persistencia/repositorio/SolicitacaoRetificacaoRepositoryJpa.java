@@ -6,6 +6,7 @@ import br.com.acadtrack.infraestrutura.persistencia.entidade.SolicitacaoRetifica
 import br.com.acadtrack.infraestrutura.persistencia.springdata.SolicitacaoRetificacaoSpringDataRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -18,30 +19,45 @@ public class SolicitacaoRetificacaoRepositoryJpa implements SolicitacaoRetificac
     }
 
     @Override
-    public void salvar(SolicitacaoRetificacao solicitacao) {
+    public SolicitacaoRetificacao salvar(SolicitacaoRetificacao solicitacao) {
         SolicitacaoRetificacaoJpaEntity entity = new SolicitacaoRetificacaoJpaEntity(
                 solicitacao.getId(),
                 solicitacao.getNotaId(),
                 solicitacao.getJustificativa(),
                 solicitacao.getStatus()
         );
-        repository.save(entity);
+
+        SolicitacaoRetificacaoJpaEntity salva = repository.save(entity);
+
+        return new SolicitacaoRetificacao(
+                salva.getId(),
+                salva.getNotaId(),
+                salva.getJustificativa(),
+                salva.getStatus()
+        );
     }
 
     @Override
     public Optional<SolicitacaoRetificacao> buscarPorId(Long id) {
         return repository.findById(id)
-                .map(entity -> {
-                    SolicitacaoRetificacao solicitacao =
-                            new SolicitacaoRetificacao(entity.getId(), entity.getNotaId(), entity.getJustificativa());
+                .map(entity -> new SolicitacaoRetificacao(
+                        entity.getId(),
+                        entity.getNotaId(),
+                        entity.getJustificativa(),
+                        entity.getStatus()
+                ));
+    }
 
-                    if ("APROVADA".equals(entity.getStatus())) {
-                        solicitacao.aprovar();
-                    } else if ("REJEITADA".equals(entity.getStatus())) {
-                        solicitacao.rejeitar();
-                    }
-
-                    return solicitacao;
-                });
+    @Override
+    public List<SolicitacaoRetificacao> buscarTodas() {
+        return repository.findAll()
+                .stream()
+                .map(entity -> new SolicitacaoRetificacao(
+                        entity.getId(),
+                        entity.getNotaId(),
+                        entity.getJustificativa(),
+                        entity.getStatus()
+                ))
+                .toList();
     }
 }

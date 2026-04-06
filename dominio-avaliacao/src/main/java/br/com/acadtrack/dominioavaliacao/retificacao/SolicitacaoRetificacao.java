@@ -7,7 +7,7 @@ public class SolicitacaoRetificacao {
     private String justificativa;
     private String status;
 
-    public SolicitacaoRetificacao(Long id, Long notaId, String justificativa) {
+    public SolicitacaoRetificacao(Long id, Long notaId, String justificativa, String status) {
         if (notaId == null) {
             throw new IllegalArgumentException("Nota é obrigatória");
         }
@@ -19,7 +19,7 @@ public class SolicitacaoRetificacao {
         this.id = id;
         this.notaId = notaId;
         this.justificativa = justificativa;
-        this.status = "PENDENTE";
+        this.status = status;
     }
 
     public Long getId() {

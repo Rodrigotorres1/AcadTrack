@@ -14,6 +14,7 @@ br\com\acadtrack\AcadTrackApplication.class
 br\com\acadtrack\apresentacao\dto\CriarProfessorRequest.class
 br\com\acadtrack\apresentacao\dto\NotaResponse.class
 br\com\acadtrack\apresentacao\dto\AlunoResponse.class
+br\com\acadtrack\apresentacao\dto\SolicitacaoRetificacaoResponse.class
 br\com\acadtrack\apresentacao\dto\VincularResponsavelRequest.class
 br\com\acadtrack\apresentacao\controller\ResponsavelController.class
 br\com\acadtrack\apresentacao\dto\VincularAlunoTurmaRequest.class

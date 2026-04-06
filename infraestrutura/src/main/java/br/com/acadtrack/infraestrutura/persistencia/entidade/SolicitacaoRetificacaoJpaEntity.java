@@ -1,6 +1,8 @@
 package br.com.acadtrack.infraestrutura.persistencia.entidade;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
@@ -9,7 +11,9 @@ import jakarta.persistence.Table;
 public class SolicitacaoRetificacaoJpaEntity {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private Long notaId;
     private String justificativa;
     private String status;
@@ -38,5 +42,21 @@ public class SolicitacaoRetificacaoJpaEntity {
 
     public String getStatus() {
         return status;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public void setNotaId(Long notaId) {
+        this.notaId = notaId;
+    }
+
+    public void setJustificativa(String justificativa) {
+        this.justificativa = justificativa;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }
