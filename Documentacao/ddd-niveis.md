@@ -24,15 +24,6 @@ Modelagem do domínio com:
 - Serviços: Geração de ranking, cálculo de média ponderada, lançamento de notas
 - Repositórios: interfaces para persistência dos agregados
 
-
-## Nível tático
-Modelagem do domínio com:
-- Entidades: Aluno, Turma, Simulado, Nota, Professor, Responsável
-- Objetos de valor: PesoDisciplina, MediaPonderada, Email
-- Agregados: Aluno, Simulado, Nota, RetificacaoNota
-- Serviços: Geração de ranking, cálculo de média ponderada, lançamento de notas
-- Repositórios: interfaces para persistência dos agregados
-
 ### Entidades:
 - Aluno
 - Simulado
