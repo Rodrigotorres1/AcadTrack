@@ -23,7 +23,8 @@ public class AlunoRepositoryJpa implements AlunoRepository {
                 aluno.getId(),
                 aluno.getNome(),
                 aluno.getEmail(),
-                aluno.getTurmaId()
+                aluno.getTurmaId(),
+                aluno.getResponsavelId()
         );
 
         AlunoJpaEntity salvo = repository.save(entity);
@@ -32,7 +33,8 @@ public class AlunoRepositoryJpa implements AlunoRepository {
                 salvo.getId(),
                 salvo.getNome(),
                 salvo.getEmail(),
-                salvo.getTurmaId()
+                salvo.getTurmaId(),
+                salvo.getResponsavelId()
         );
     }
 
@@ -43,7 +45,8 @@ public class AlunoRepositoryJpa implements AlunoRepository {
                         entity.getId(),
                         entity.getNome(),
                         entity.getEmail(),
-                        entity.getTurmaId()
+                        entity.getTurmaId(),
+                        entity.getResponsavelId()
                 ));
     }
 }

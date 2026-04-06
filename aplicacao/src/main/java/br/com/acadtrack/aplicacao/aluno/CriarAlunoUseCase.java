@@ -14,7 +14,7 @@ public class CriarAlunoUseCase {
     }
 
     public Aluno executar(String nome, String email) {
-        Aluno aluno = new Aluno(null, nome, email, null);
+        Aluno aluno = new Aluno(null, nome, email, null, null);
         return alunoRepository.salvar(aluno);
     }
 }

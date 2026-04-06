@@ -6,20 +6,14 @@ public class Aluno {
     private String nome;
     private String email;
     private Long turmaId;
+    private Long responsavelId;
 
-    public Aluno(Long id, String nome, String email, Long turmaId) {
-        if (nome == null || nome.isBlank()) {
-            throw new IllegalArgumentException("Nome do aluno não pode ser vazio");
-        }
-
-        if (email == null || email.isBlank()) {
-            throw new IllegalArgumentException("Email do aluno não pode ser vazio");
-        }
-
+    public Aluno(Long id, String nome, String email, Long turmaId, Long responsavelId) {
         this.id = id;
         this.nome = nome;
         this.email = email;
         this.turmaId = turmaId;
+        this.responsavelId = responsavelId;
     }
 
     public Long getId() {
@@ -38,17 +32,22 @@ public class Aluno {
         return turmaId;
     }
 
-    public void alterarNome(String novoNome) {
-        if (novoNome == null || novoNome.isBlank()) {
-            throw new IllegalArgumentException("Nome inválido");
-        }
-        this.nome = novoNome;
+    public Long getResponsavelId() {
+        return responsavelId;
     }
 
     public void vincularTurma(Long turmaId) {
-        if (turmaId == null) {
-            throw new IllegalArgumentException("Turma inválida");
-        }
         this.turmaId = turmaId;
-    }   
+    }
+
+    public void vincularResponsavel(Long responsavelId) {
+        this.responsavelId = responsavelId;
+    }
+
+    public void desvincularResponsavel() {
+        this.responsavelId = null;
+    }
+    public void vincularResponsavelId(Long responsavelId){
+        this.responsavelId = responsavelId;
+    }
 }

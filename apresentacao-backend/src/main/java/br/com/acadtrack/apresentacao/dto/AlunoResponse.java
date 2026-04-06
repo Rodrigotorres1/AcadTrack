@@ -8,12 +8,14 @@ public class AlunoResponse {
     private String nome;
     private String email;
     private Long turmaId;
+    private Long responsavelId;
 
-    public AlunoResponse(Long id, String nome, String email, Long turmaId) {
+    public AlunoResponse(Long id, String nome, String email, Long turmaId, Long responsavelId) {
         this.id = id;
         this.nome = nome;
         this.email = email;
         this.turmaId = turmaId;
+        this.responsavelId = responsavelId;
     }
 
     public static AlunoResponse fromDomain(Aluno aluno) {
@@ -21,7 +23,8 @@ public class AlunoResponse {
                 aluno.getId(),
                 aluno.getNome(),
                 aluno.getEmail(),
-                aluno.getTurmaId()
+                aluno.getTurmaId(),
+                aluno.getResponsavelId()
         );
     }
 
@@ -39,5 +42,9 @@ public class AlunoResponse {
 
     public Long getTurmaId() {
         return turmaId;
+    }
+
+    public Long getResponsavelId() {
+        return responsavelId;
     }
 }

@@ -14,12 +14,16 @@ br\com\acadtrack\AcadTrackApplication.class
 br\com\acadtrack\apresentacao\dto\CriarProfessorRequest.class
 br\com\acadtrack\apresentacao\dto\NotaResponse.class
 br\com\acadtrack\apresentacao\dto\AlunoResponse.class
+br\com\acadtrack\apresentacao\dto\VincularResponsavelRequest.class
+br\com\acadtrack\apresentacao\controller\ResponsavelController.class
 br\com\acadtrack\apresentacao\dto\VincularAlunoTurmaRequest.class
 br\com\acadtrack\apresentacao\dto\TurmaResponse.class
 br\com\acadtrack\apresentacao\dto\CriarTurmaRequest.class
 br\com\acadtrack\apresentacao\dto\ProfessorResponse.class
+br\com\acadtrack\apresentacao\dto\ResponsavelResponse.class
 br\com\acadtrack\apresentacao\dto\LancarNotaRequest.class
 br\com\acadtrack\apresentacao\controller\SimuladoDisciplinaController.class
+br\com\acadtrack\apresentacao\dto\CriarResponsavelRequest.class
 br\com\acadtrack\apresentacao\controller\DisciplinaController.class
 br\com\acadtrack\apresentacao\dto\VincularDisciplinaRequest.class
 br\com\acadtrack\apresentacao\controller\TurmaController.class

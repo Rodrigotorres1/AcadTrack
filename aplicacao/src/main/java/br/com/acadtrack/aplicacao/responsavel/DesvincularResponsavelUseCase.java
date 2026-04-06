@@ -1,27 +1,23 @@
 package br.com.acadtrack.aplicacao.responsavel;
 
-import br.com.acadtrack.dominiousuarios.responsavel.Responsavel;
-import br.com.acadtrack.dominiousuarios.responsavel.ResponsavelRepository;
+import br.com.acadtrack.dominioacademico.aluno.Aluno;
+import br.com.acadtrack.dominioacademico.aluno.AlunoRepository;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 
 @Service
 public class DesvincularResponsavelUseCase {
 
-    private final ResponsavelRepository responsavelRepository;
+    private final AlunoRepository alunoRepository;
 
-    public DesvincularResponsavelUseCase(ResponsavelRepository responsavelRepository) {
-        this.responsavelRepository = responsavelRepository;
+    public DesvincularResponsavelUseCase(AlunoRepository alunoRepository) {
+        this.alunoRepository = alunoRepository;
     }
 
-    public void executar(Long alunoId) {
-        Optional<Responsavel> responsavelOptional = responsavelRepository.buscarPorAlunoId(alunoId);
+    public Aluno executar(Long alunoId) {
+        Aluno aluno = alunoRepository.buscarPorId(alunoId)
+                .orElseThrow(() -> new RuntimeException("Aluno não encontrado"));
 
-        if (responsavelOptional.isEmpty()) {
-            throw new IllegalArgumentException("Não há responsável vinculado ao aluno");
-        }
-
-        responsavelRepository.desvincularDoAluno(alunoId);
+        aluno.desvincularResponsavel();
+        return alunoRepository.salvar(aluno);
     }
 }
