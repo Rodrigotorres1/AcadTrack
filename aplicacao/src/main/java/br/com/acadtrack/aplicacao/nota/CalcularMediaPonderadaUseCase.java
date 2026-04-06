@@ -23,22 +23,25 @@ public class CalcularMediaPonderadaUseCase {
     }
 
     public double executar(Long alunoId, Long simuladoId) {
-
         List<Nota> notas = notaRepository.buscarPorAlunoESimulado(alunoId, simuladoId);
         List<SimuladoDisciplina> disciplinas = simuladoDisciplinaRepository.buscarPorSimulado(simuladoId);
 
+        double somaPonderada = 0;
         double somaPesos = 0;
-        double soma = 0;
 
         for (Nota nota : notas) {
             for (SimuladoDisciplina sd : disciplinas) {
                 if (sd.getDisciplinaId().equals(nota.getDisciplinaId())) {
-                    soma += nota.getValor() * sd.getPeso();
+                    somaPonderada += nota.getValor() * sd.getPeso();
                     somaPesos += sd.getPeso();
                 }
             }
         }
 
-        return somaPesos == 0 ? 0 : soma / somaPesos;
+        if (somaPesos == 0) {
+            return 0;
+        }
+
+        return somaPonderada / somaPesos;
     }
 }

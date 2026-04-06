@@ -5,6 +5,7 @@ import br.com.acadtrack.dominioavaliacao.simulado.SimuladoDisciplinaRepository;
 import br.com.acadtrack.infraestrutura.persistencia.entidade.SimuladoDisciplinaJpaEntity;
 import br.com.acadtrack.infraestrutura.persistencia.springdata.SimuladoDisciplinaSpringDataRepository;
 import org.springframework.stereotype.Repository;
+
 import java.util.List;
 
 @Repository
@@ -36,16 +37,15 @@ public class SimuladoDisciplinaRepositoryJpa implements SimuladoDisciplinaReposi
     }
 
     @Override
-public List<SimuladoDisciplina> buscarPorSimulado(Long simuladoId) {
-
-    return repository.findBySimuladoId(simuladoId)
-            .stream()
-            .map(entity -> new SimuladoDisciplina(
-                    entity.getId(),
-                    entity.getSimuladoId(),
-                    entity.getDisciplinaId(),
-                    entity.getPeso()
-            ))
-            .toList();
-}
+    public List<SimuladoDisciplina> buscarPorSimulado(Long simuladoId) {
+        return repository.findBySimuladoId(simuladoId)
+                .stream()
+                .map(entity -> new SimuladoDisciplina(
+                        entity.getId(),
+                        entity.getSimuladoId(),
+                        entity.getDisciplinaId(),
+                        entity.getPeso()
+                ))
+                .toList();
+    }
 }

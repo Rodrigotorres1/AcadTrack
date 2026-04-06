@@ -6,6 +6,7 @@ C:\Users\rodri\OneDrive\Documents\Cesar_CC_2026.1\Requisitos\AcadTrack\apresenta
 C:\Users\rodri\OneDrive\Documents\Cesar_CC_2026.1\Requisitos\AcadTrack\apresentacao-backend\src\main\java\br\com\acadtrack\apresentacao\controller\RankingController.java
 C:\Users\rodri\OneDrive\Documents\Cesar_CC_2026.1\Requisitos\AcadTrack\apresentacao-backend\src\main\java\br\com\acadtrack\apresentacao\controller\RetificacaoController.java
 C:\Users\rodri\OneDrive\Documents\Cesar_CC_2026.1\Requisitos\AcadTrack\apresentacao-backend\src\main\java\br\com\acadtrack\apresentacao\controller\SimuladoController.java
+C:\Users\rodri\OneDrive\Documents\Cesar_CC_2026.1\Requisitos\AcadTrack\apresentacao-backend\src\main\java\br\com\acadtrack\apresentacao\controller\SimuladoDisciplinaController.java
 C:\Users\rodri\OneDrive\Documents\Cesar_CC_2026.1\Requisitos\AcadTrack\apresentacao-backend\src\main\java\br\com\acadtrack\apresentacao\controller\TurmaController.java
 C:\Users\rodri\OneDrive\Documents\Cesar_CC_2026.1\Requisitos\AcadTrack\apresentacao-backend\src\main\java\br\com\acadtrack\apresentacao\dto\AlunoResponse.java
 C:\Users\rodri\OneDrive\Documents\Cesar_CC_2026.1\Requisitos\AcadTrack\apresentacao-backend\src\main\java\br\com\acadtrack\apresentacao\dto\CriarAlunoRequest.java
@@ -21,3 +22,4 @@ C:\Users\rodri\OneDrive\Documents\Cesar_CC_2026.1\Requisitos\AcadTrack\apresenta
 C:\Users\rodri\OneDrive\Documents\Cesar_CC_2026.1\Requisitos\AcadTrack\apresentacao-backend\src\main\java\br\com\acadtrack\apresentacao\dto\TurmaResponse.java
 C:\Users\rodri\OneDrive\Documents\Cesar_CC_2026.1\Requisitos\AcadTrack\apresentacao-backend\src\main\java\br\com\acadtrack\apresentacao\dto\VincularAlunoTurmaRequest.java
 C:\Users\rodri\OneDrive\Documents\Cesar_CC_2026.1\Requisitos\AcadTrack\apresentacao-backend\src\main\java\br\com\acadtrack\apresentacao\dto\VincularDisciplinaRequest.java
+C:\Users\rodri\OneDrive\Documents\Cesar_CC_2026.1\Requisitos\AcadTrack\apresentacao-backend\src\main\java\br\com\acadtrack\apresentacao\dto\VincularDisciplinaSimuladoRequest.java
