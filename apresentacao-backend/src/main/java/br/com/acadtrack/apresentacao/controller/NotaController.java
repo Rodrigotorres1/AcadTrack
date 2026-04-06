@@ -38,7 +38,7 @@ public NotaController(LancarNotaUseCase lancarNotaUseCase,
         Nota nota = lancarNotaUseCase.executar(
                 request.getAlunoId(),
                 request.getSimuladoId(),
-                request.getDisciplina(),
+                request.getDisciplinaId(),
                 request.getValor()
         );
 

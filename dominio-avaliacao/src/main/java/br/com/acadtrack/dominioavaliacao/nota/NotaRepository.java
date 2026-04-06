@@ -15,4 +15,6 @@ public interface NotaRepository {
 
     List<Nota> buscarTodas();
 
+    List<Nota> buscarPorAlunoESimulado(Long alunoId, Long simuladoId);
+
 }

@@ -18,12 +18,18 @@ public class TurmaRepositoryJpa implements TurmaRepository {
     }
 
     @Override
-    public void salvar(Turma turma) {
+    public Turma salvar(Turma turma) {
         TurmaJpaEntity entity = new TurmaJpaEntity(
                 turma.getId(),
                 turma.getNome()
         );
-        repository.save(entity);
+
+        TurmaJpaEntity salva = repository.save(entity);
+
+        return new Turma(
+                salva.getId(),
+                salva.getNome()
+        );
     }
 
     @Override

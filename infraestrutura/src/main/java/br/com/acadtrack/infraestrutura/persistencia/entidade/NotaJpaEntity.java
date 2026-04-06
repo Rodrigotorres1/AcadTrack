@@ -16,17 +16,17 @@ public class NotaJpaEntity {
 
     private Long alunoId;
     private Long simuladoId;
-    private String disciplina;
+    private Long disciplinaId;
     private double valor;
 
     public NotaJpaEntity() {
     }
 
-    public NotaJpaEntity(Long id, Long alunoId, Long simuladoId, String disciplina, double valor) {
+    public NotaJpaEntity(Long id, Long alunoId, Long simuladoId, Long disciplinaId, double valor) {
         this.id = id;
         this.alunoId = alunoId;
         this.simuladoId = simuladoId;
-        this.disciplina = disciplina;
+        this.disciplinaId = disciplinaId;
         this.valor = valor;
     }
 
@@ -42,8 +42,8 @@ public class NotaJpaEntity {
         return simuladoId;
     }
 
-    public String getDisciplina() {
-        return disciplina;
+    public Long getDisciplinaId() {
+        return disciplinaId;
     }
 
     public double getValor() {
@@ -62,8 +62,8 @@ public class NotaJpaEntity {
         this.simuladoId = simuladoId;
     }
 
-    public void setDisciplina(String disciplina) {
-        this.disciplina = disciplina;
+    public void setDisciplinaId(Long disciplinaId) {
+        this.disciplinaId = disciplinaId;
     }
 
     public void setValor(double valor) {

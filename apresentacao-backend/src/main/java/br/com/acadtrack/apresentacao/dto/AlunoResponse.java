@@ -7,18 +7,21 @@ public class AlunoResponse {
     private Long id;
     private String nome;
     private String email;
+    private Long turmaId;
 
-    public AlunoResponse(Long id, String nome, String email) {
+    public AlunoResponse(Long id, String nome, String email, Long turmaId) {
         this.id = id;
         this.nome = nome;
         this.email = email;
+        this.turmaId = turmaId;
     }
 
     public static AlunoResponse fromDomain(Aluno aluno) {
         return new AlunoResponse(
                 aluno.getId(),
                 aluno.getNome(),
-                aluno.getEmail()
+                aluno.getEmail(),
+                aluno.getTurmaId()
         );
     }
 
@@ -32,5 +35,9 @@ public class AlunoResponse {
 
     public String getEmail() {
         return email;
+    }
+
+    public Long getTurmaId() {
+        return turmaId;
     }
 }

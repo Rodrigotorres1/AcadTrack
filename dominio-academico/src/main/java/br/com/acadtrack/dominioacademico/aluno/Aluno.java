@@ -7,7 +7,7 @@ public class Aluno {
     private String email;
     private Long turmaId;
 
-    public Aluno(Long id, String nome, String email) {
+    public Aluno(Long id, String nome, String email, Long turmaId) {
         if (nome == null || nome.isBlank()) {
             throw new IllegalArgumentException("Nome do aluno não pode ser vazio");
         }
@@ -19,6 +19,7 @@ public class Aluno {
         this.id = id;
         this.nome = nome;
         this.email = email;
+        this.turmaId = turmaId;
     }
 
     public Long getId() {

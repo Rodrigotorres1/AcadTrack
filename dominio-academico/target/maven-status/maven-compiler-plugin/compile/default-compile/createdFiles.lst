@@ -1,4 +1,6 @@
 br\com\acadtrack\dominioacademico\turma\TurmaRepository.class
 br\com\acadtrack\dominioacademico\aluno\AlunoRepository.class
+br\com\acadtrack\dominioacademico\disciplina\Disciplina.class
 br\com\acadtrack\dominioacademico\turma\Turma.class
 br\com\acadtrack\dominioacademico\aluno\Aluno.class
+br\com\acadtrack\dominioacademico\disciplina\DisciplinaRepository.class

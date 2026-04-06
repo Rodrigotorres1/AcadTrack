@@ -13,8 +13,8 @@ public class CriarTurmaUseCase {
         this.turmaRepository = turmaRepository;
     }
 
-    public void executar(Long id, String nome) {
-        Turma turma = new Turma(id, nome);
-        turmaRepository.salvar(turma);
+    public Turma executar(String nome) {
+        Turma turma = new Turma(null, nome);
+        return turmaRepository.salvar(turma);
     }
 }

@@ -7,6 +7,8 @@ import java.util.List;
 
 public interface NotaSpringDataRepository extends JpaRepository<NotaJpaEntity, Long> {
 
+    List<NotaJpaEntity> findByAlunoIdAndSimuladoId(Long alunoId, Long simuladoId);
+
     List<NotaJpaEntity> findByAlunoId(Long alunoId);
 
     List<NotaJpaEntity> findBySimuladoId(Long simuladoId);

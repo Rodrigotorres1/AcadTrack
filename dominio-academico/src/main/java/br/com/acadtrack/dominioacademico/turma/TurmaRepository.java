@@ -4,7 +4,7 @@ import java.util.Optional;
 
 public interface TurmaRepository {
 
-    void salvar(Turma turma);
+    Turma salvar(Turma turma);
 
     Optional<Turma> buscarPorId(Long id);
 }

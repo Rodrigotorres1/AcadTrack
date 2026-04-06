@@ -6,8 +6,6 @@ import br.com.acadtrack.dominioacademico.turma.Turma;
 import br.com.acadtrack.dominioacademico.turma.TurmaRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
-
 @Service
 public class VincularAlunoTurmaUseCase {
 
@@ -19,22 +17,15 @@ public class VincularAlunoTurmaUseCase {
         this.turmaRepository = turmaRepository;
     }
 
-    public void executar(Long alunoId, Long turmaId) {
-        Optional<Aluno> alunoOptional = alunoRepository.buscarPorId(alunoId);
-        Optional<Turma> turmaOptional = turmaRepository.buscarPorId(turmaId);
+    public Aluno executar(Long alunoId, Long turmaId) {
+        Aluno aluno = alunoRepository.buscarPorId(alunoId)
+                .orElseThrow(() -> new IllegalArgumentException("Aluno não encontrado"));
 
-        if (alunoOptional.isEmpty()) {
-            throw new IllegalArgumentException("Aluno não encontrado");
-        }
-
-        if (turmaOptional.isEmpty()) {
-            throw new IllegalArgumentException("Turma não encontrada");
-        }
-
-        Aluno aluno = alunoOptional.get();
-        Turma turma = turmaOptional.get();
+        Turma turma = turmaRepository.buscarPorId(turmaId)
+                .orElseThrow(() -> new IllegalArgumentException("Turma não encontrada"));
 
         aluno.vincularTurma(turma.getId());
-        alunoRepository.salvar(aluno);
+
+        return alunoRepository.salvar(aluno);
     }
 }

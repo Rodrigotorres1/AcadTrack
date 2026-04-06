@@ -2,38 +2,21 @@ package br.com.acadtrack.dominioavaliacao.nota;
 
 public class Nota {
 
-    private Long id;
     private Long alunoId;
     private Long simuladoId;
-    private String disciplina;
+    private Long disciplinaId;
     private double valor;
 
-    public Nota(Long id, Long alunoId, Long simuladoId, String disciplina, double valor) {
-        if (alunoId == null) {
-            throw new IllegalArgumentException("Aluno é obrigatório");
+    public Nota(Long alunoId, Long simuladoId, Long disciplinaId, double valor) {
+
+        if (valor < 0 || valor > 10) {
+            throw new IllegalArgumentException("Nota deve estar entre 0 e 10");
         }
 
-        if (simuladoId == null) {
-            throw new IllegalArgumentException("Simulado é obrigatório");
-        }
-
-        if (disciplina == null || disciplina.isBlank()) {
-            throw new IllegalArgumentException("Disciplina é obrigatória");
-        }
-
-        if (valor < 0) {
-            throw new IllegalArgumentException("Valor da nota não pode ser negativo");
-        }
-
-        this.id = id;
         this.alunoId = alunoId;
         this.simuladoId = simuladoId;
-        this.disciplina = disciplina;
+        this.disciplinaId = disciplinaId;
         this.valor = valor;
-    }
-
-    public Long getId() {
-        return id;
     }
 
     public Long getAlunoId() {
@@ -44,8 +27,8 @@ public class Nota {
         return simuladoId;
     }
 
-    public String getDisciplina() {
-        return disciplina;
+    public Long getDisciplinaId() {
+        return disciplinaId;
     }
 
     public double getValor() {

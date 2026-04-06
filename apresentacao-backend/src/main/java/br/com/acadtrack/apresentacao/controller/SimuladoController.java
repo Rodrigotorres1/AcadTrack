@@ -14,6 +14,7 @@ public class SimuladoController {
 
     private final CriarSimuladoUseCase criarSimuladoUseCase;
 
+
     public SimuladoController(CriarSimuladoUseCase criarSimuladoUseCase) {
         this.criarSimuladoUseCase = criarSimuladoUseCase;
     }

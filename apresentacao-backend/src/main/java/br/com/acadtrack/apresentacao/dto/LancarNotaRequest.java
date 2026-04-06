@@ -4,11 +4,8 @@ public class LancarNotaRequest {
 
     private Long alunoId;
     private Long simuladoId;
-    private String disciplina;
+    private Long disciplinaId;
     private double valor;
-
-    public LancarNotaRequest() {
-    }
 
     public Long getAlunoId() {
         return alunoId;
@@ -18,8 +15,8 @@ public class LancarNotaRequest {
         return simuladoId;
     }
 
-    public String getDisciplina() {
-        return disciplina;
+    public Long getDisciplinaId() { 
+        return disciplinaId;
     }
 
     public double getValor() {

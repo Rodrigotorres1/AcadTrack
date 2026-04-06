@@ -16,14 +16,16 @@ public class AlunoJpaEntity {
 
     private String nome;
     private String email;
+    private Long turmaId;
 
     public AlunoJpaEntity() {
     }
 
-    public AlunoJpaEntity(Long id, String nome, String email) {
+    public AlunoJpaEntity(Long id, String nome, String email, Long turmaId) {
         this.id = id;
         this.nome = nome;
         this.email = email;
+        this.turmaId = turmaId;
     }
 
     public Long getId() {
@@ -38,6 +40,10 @@ public class AlunoJpaEntity {
         return email;
     }
 
+    public Long getTurmaId() {
+        return turmaId;
+    }
+
     public void setId(Long id) {
         this.id = id;
     }
@@ -48,5 +54,9 @@ public class AlunoJpaEntity {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public void setTurmaId(Long turmaId) {
+        this.turmaId = turmaId;
     }
 }

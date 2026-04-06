@@ -8,7 +8,6 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Repository
 public class NotaRepositoryJpa implements NotaRepository {
@@ -22,34 +21,34 @@ public class NotaRepositoryJpa implements NotaRepository {
     @Override
     public Nota salvar(Nota nota) {
         NotaJpaEntity entity = new NotaJpaEntity(
-                nota.getId(),
+                null,
                 nota.getAlunoId(),
                 nota.getSimuladoId(),
-                nota.getDisciplina(),
+                nota.getDisciplinaId(),
                 nota.getValor()
         );
 
-        NotaJpaEntity salvo = repository.save(entity);
+        NotaJpaEntity salva = repository.save(entity);
 
         return new Nota(
-                salvo.getId(),
-                salvo.getAlunoId(),
-                salvo.getSimuladoId(),
-                salvo.getDisciplina(),
-                salvo.getValor()
+                salva.getAlunoId(),
+                salva.getSimuladoId(),
+                salva.getDisciplinaId(),
+                salva.getValor()
         );
     }
 
     @Override
-    public Optional<Nota> buscarPorId(Long id) {
-        return repository.findById(id)
+    public List<Nota> buscarPorAlunoESimulado(Long alunoId, Long simuladoId) {
+        return repository.findByAlunoIdAndSimuladoId(alunoId, simuladoId)
+                .stream()
                 .map(entity -> new Nota(
-                        entity.getId(),
                         entity.getAlunoId(),
                         entity.getSimuladoId(),
-                        entity.getDisciplina(),
+                        entity.getDisciplinaId(),
                         entity.getValor()
-                ));
+                ))
+                .toList();
     }
 
     @Override
@@ -57,13 +56,12 @@ public class NotaRepositoryJpa implements NotaRepository {
         return repository.findByAlunoId(alunoId)
                 .stream()
                 .map(entity -> new Nota(
-                        entity.getId(),
                         entity.getAlunoId(),
                         entity.getSimuladoId(),
-                        entity.getDisciplina(),
+                        entity.getDisciplinaId(),
                         entity.getValor()
                 ))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
@@ -71,26 +69,21 @@ public class NotaRepositoryJpa implements NotaRepository {
         return repository.findBySimuladoId(simuladoId)
                 .stream()
                 .map(entity -> new Nota(
-                        entity.getId(),
                         entity.getAlunoId(),
                         entity.getSimuladoId(),
-                        entity.getDisciplina(),
+                        entity.getDisciplinaId(),
                         entity.getValor()
                 ))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
-        public List<Nota> buscarTodas() {
-                return repository.findAll()
-                .stream()
-                .map(entity -> new Nota(
-                        entity.getId(),
-                        entity.getAlunoId(),
-                        entity.getSimuladoId(),
-                        entity.getDisciplina(),
-                        entity.getValor()
-                ))
-                .collect(Collectors.toList());
-}
+    public Optional<Nota> buscarPorId(Long id) {
+        throw new UnsupportedOperationException("Unimplemented method 'buscarPorId'");
+    }
+
+    @Override
+    public List<Nota> buscarTodas() {
+        throw new UnsupportedOperationException("Unimplemented method 'buscarTodas'");
+    }
 }
