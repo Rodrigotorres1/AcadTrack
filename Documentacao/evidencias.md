@@ -8,7 +8,7 @@ POST /notas
 
 A requisição foi processada com sucesso (status 201), demonstrando a persistência de dados no sistema.
 
-![Lançamento de nota](evidencias/lancar-nota.png)
+![Lançamento de nota](evidencias/lancar-nota.jpeg)
 
 ---
 
@@ -20,7 +20,7 @@ GET /notas/aluno/{id}/simulado/{id}/media
 
 O sistema retornou corretamente o valor da média (8.8), comprovando a aplicação das regras de negócio.
 
-![Cálculo de média](evidencias/calcular-media.pn)
+![Cálculo de média](evidencias/calcular-media.jpeg)
 
 ---
 
@@ -34,4 +34,4 @@ O projeto foi executado com sucesso utilizando Maven, incluindo todos os módulo
 - apresentação
 - bdd
 
-![Build do projeto](evidencias/build-projeto.png)
+![Build do projeto](evidencias/build-projeto.jpeg)
