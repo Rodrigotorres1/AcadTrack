@@ -1,21 +1,26 @@
 # AcadTrack
 
-Projeto acadêmico voltado para o gerenciamento de simulados e acompanhamento de desempenho de alunos.
+## Sobre o projeto
+Sistema acadêmico para gerenciamento de simulados, notas e desempenho de alunos.
 
-## Objetivo da 1ª entrega
-Este repositório contém os artefatos exigidos para a 1ª entrega:
-- descrição do domínio com linguagem onipresente
-- mapa de histórias do usuário
-- protótipos
-- modelo de subdomínios com Context Mapper
-- cenários BDD
-- automação dos cenários com Cucumber
-- documentação dos níveis do DDD
-- arquitetura limpa
+## Documentação da 1ª entrega
 
-## Organização
-- `Documentacao/`: artefatos textuais da entrega
-- `prototipos/`: telas em baixa ou alta fidelidade
-- `acadtrack.cml`: modelo de subdomínios e contextos
-- `bdd/acadtrackbdd/`: cenários BDD e automação com Cucumber
-- `pom.xml`: configuração Maven do módulo de testes BDD
+- Descrição do domínio → Documentacao/01-descricao-do-dominio.md
+- Mapa de histórias → Documentacao/02-mapa-de-historias.pdf
+- Protótipos → Documentacao/03-prototipos.md
+- DDD níveis → Documentacao/04-ddd_niveis.md
+- Arquitetura limpa → Documentacao/05-arquitetura-limpa.md
+- BDD → Documentacao/06-bdd.md
+
+## ⚙️ Tecnologias
+- Java
+- Spring Boot
+- JPA
+- H2
+- Cucumber
+
+## Como executar
+
+```bash
+mvn clean install
+mvn spring-boot:run
