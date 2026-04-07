@@ -18,6 +18,11 @@ public class TestContext {
     private Double mediaCalculada;
     private boolean operacaoExecutada;
 
+    private String justificativaAtual;
+    private String statusAtual;
+    private String alunoAtual;
+    private Long notaIdAtual;
+
     public Map<String, String> getVinculosAlunoTurma() {
         return vinculosAlunoTurma;
     }
@@ -66,9 +71,45 @@ public class TestContext {
         this.operacaoExecutada = operacaoExecutada;
     }
 
+    public String getJustificativaAtual() {
+        return justificativaAtual;
+    }
+
+    public void setJustificativaAtual(String justificativaAtual) {
+        this.justificativaAtual = justificativaAtual;
+    }
+
+    public String getStatusAtual() {
+        return statusAtual;
+    }
+
+    public void setStatusAtual(String statusAtual) {
+        this.statusAtual = statusAtual;
+    }
+
+    public String getAlunoAtual() {
+        return alunoAtual;
+    }
+
+    public void setAlunoAtual(String alunoAtual) {
+        this.alunoAtual = alunoAtual;
+    }
+
+    public Long getNotaIdAtual() {
+        return notaIdAtual;
+    }
+
+    public void setNotaIdAtual(Long notaIdAtual) {
+        this.notaIdAtual = notaIdAtual;
+    }
+
     public void resetMensagens() {
         this.mensagem = null;
         this.mediaCalculada = null;
         this.operacaoExecutada = false;
+        this.justificativaAtual = null;
+        this.statusAtual = null;
+        this.alunoAtual = null;
+        this.notaIdAtual = null;
     }
 }

@@ -4,6 +4,8 @@ br\com\acadtrack\bdd\steps\VincularResponsavelSteps.class
 br\com\acadtrack\bdd\support\TestContext.class
 br\com\acadtrack\bdd\steps\DefinirPesoDisciplinaSteps.class
 br\com\acadtrack\bdd\CucumberTest.class
+br\com\acadtrack\bdd\TestSpringConfiguration.class
+br\com\acadtrack\bdd\CucumberSpringConfiguration.class
 br\com\acadtrack\bdd\steps\CalcularMediaPonderadaSteps.class
 br\com\acadtrack\bdd\steps\SolicitarRetificacaoNotaSteps.class
 br\com\acadtrack\bdd\steps\GerarRankingSteps.class

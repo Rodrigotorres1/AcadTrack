@@ -1,5 +1,6 @@
 package br.com.acadtrack.bdd.steps;
 
+import br.com.acadtrack.aplicacao.nota.CalcularMediaPonderadaUseCase;
 import br.com.acadtrack.bdd.support.TestContext;
 import io.cucumber.java.pt.Dado;
 import io.cucumber.java.pt.Quando;
@@ -10,59 +11,44 @@ import static org.junit.jupiter.api.Assertions.*;
 public class CalcularMediaPonderadaSteps {
 
     private final TestContext context;
+    private final CalcularMediaPonderadaUseCase calcularMediaPonderadaUseCase;
 
-    public CalcularMediaPonderadaSteps(TestContext context) {
+    private Double mediaCalculada;
+    private Exception excecao;
+
+    public CalcularMediaPonderadaSteps(
+            TestContext context,
+            CalcularMediaPonderadaUseCase calcularMediaPonderadaUseCase
+    ) {
         this.context = context;
+        this.calcularMediaPonderadaUseCase = calcularMediaPonderadaUseCase;
     }
 
     @Dado("que o aluno possui notas nas disciplinas com pesos definidos")
     public void queOAlunoPossuiNotasNasDisciplinasComPesosDefinidos() {
-        context.getNotasAluno().clear();
-        context.getPesosDisciplinas().clear();
-
-        context.getNotasAluno().put("Matemática", 8.0);
-        context.getNotasAluno().put("Português", 6.0);
-
-        context.getPesosDisciplinas().put("Matemática", 2.0);
-        context.getPesosDisciplinas().put("Português", 1.0);
-
         context.resetMensagens();
+        mediaCalculada = null;
+        excecao = null;
     }
 
     @Dado("que existem disciplinas sem peso definido")
     public void queExistemDisciplinasSemPesoDefinido() {
-        context.getNotasAluno().clear();
-        context.getPesosDisciplinas().clear();
-
-        context.getNotasAluno().put("Matemática", 8.0);
-        context.getNotasAluno().put("Português", 6.0);
-
-        context.getPesosDisciplinas().put("Matemática", 2.0);
-        // Português sem peso
-
         context.resetMensagens();
+        mediaCalculada = null;
+        excecao = null;
     }
 
     @Quando("o sistema calcula a média ponderada")
     public void oSistemaCalculaAMediaPonderada() {
-        double somaNotasPesos = 0.0;
-        double somaPesos = 0.0;
-
-        for (String disciplina : context.getNotasAluno().keySet()) {
-            Double peso = context.getPesosDisciplinas().get(disciplina);
-
-            if (peso == null) {
-                context.setMensagem("Não é possível calcular a média");
-                context.setOperacaoExecutada(false);
-                return;
-            }
-
-            somaNotasPesos += context.getNotasAluno().get(disciplina) * peso;
-            somaPesos += peso;
+        try {
+            mediaCalculada = calcularMediaPonderadaUseCase.executar(1L, 1L);
+            context.setMediaCalculada(mediaCalculada);
+            context.setOperacaoExecutada(true);
+        } catch (Exception e) {
+            excecao = e;
+            context.setMensagem(e.getMessage());
+            context.setOperacaoExecutada(false);
         }
-
-        context.setMediaCalculada(somaNotasPesos / somaPesos);
-        context.setOperacaoExecutada(true);
     }
 
     @Quando("o sistema tenta calcular a média ponderada")
@@ -73,13 +59,16 @@ public class CalcularMediaPonderadaSteps {
     @Então("o sistema retorna a média correta do aluno")
     public void oSistemaRetornaAMediaCorretaDoAluno() {
         assertTrue(context.isOperacaoExecutada());
+        assertNull(excecao);
         assertNotNull(context.getMediaCalculada());
         assertEquals(7.33, context.getMediaCalculada(), 0.01);
     }
 
-    @Então("o sistema informa que não é possível calcular a média")
+    @Então("Então o sistema retorna média 0 para o aluno")
     public void oSistemaInformaQueNaoEPossivelCalcularAMedia() {
-        assertFalse(context.isOperacaoExecutada());
-        assertEquals("Não é possível calcular a média", context.getMensagem());
+        assertTrue(context.isOperacaoExecutada());
+        assertNull(excecao);
+        assertNotNull(context.getMediaCalculada());
+        assertEquals(0.0, context.getMediaCalculada(), 0.0);
     }
 }

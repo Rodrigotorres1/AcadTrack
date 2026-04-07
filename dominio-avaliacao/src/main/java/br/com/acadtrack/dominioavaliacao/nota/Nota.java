@@ -2,13 +2,21 @@ package br.com.acadtrack.dominioavaliacao.nota;
 
 public class Nota {
 
-    private Long alunoId;
-    private Long simuladoId;
-    private Long disciplinaId;
-    private double valor;
+    private final Long alunoId;
+    private final Long simuladoId;
+    private final Long disciplinaId;
+    private final double valor;
 
     public Nota(Long alunoId, Long simuladoId, Long disciplinaId, double valor) {
-
+        if (alunoId == null) {
+            throw new IllegalArgumentException("Aluno é obrigatório");
+        }
+        if (simuladoId == null) {
+            throw new IllegalArgumentException("Simulado é obrigatório");
+        }
+        if (disciplinaId == null) {
+            throw new IllegalArgumentException("Disciplina é obrigatória");
+        }
         if (valor < 0 || valor > 10) {
             throw new IllegalArgumentException("Nota deve estar entre 0 e 10");
         }

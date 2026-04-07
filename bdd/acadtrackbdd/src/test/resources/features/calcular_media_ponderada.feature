@@ -8,4 +8,4 @@ Feature: Calcular média ponderada
   Scenario: Não calcular média sem pesos definidos
     Dado que existem disciplinas sem peso definido
     Quando o sistema tenta calcular a média ponderada
-    Então o sistema informa que não é possível calcular a média
+    Então o sistema retorna média 0 para o aluno

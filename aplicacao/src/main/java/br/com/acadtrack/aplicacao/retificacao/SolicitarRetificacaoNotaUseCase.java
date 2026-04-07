@@ -20,8 +20,12 @@ public class SolicitarRetificacaoNotaUseCase {
     }
 
     public SolicitacaoRetificacao executar(Long notaId, String justificativa) {
+        if (notaId == null) {
+            throw new IllegalArgumentException("Nota é obrigatória");
+        }
+
         notaRepository.buscarPorId(notaId)
-                .orElseThrow(() -> new RuntimeException("Nota não encontrada"));
+                .orElseThrow(() -> new IllegalArgumentException("Nota não encontrada"));
 
         SolicitacaoRetificacao solicitacao = new SolicitacaoRetificacao(
                 null,
