@@ -40,6 +40,7 @@ Os principais atores do sistema são o coordenador, o professor e o aluno. O coo
 - Nota: resultado obtido pelo aluno
 - Ranking: classificação dos alunos com base no desempenho
 - Média ponderada: cálculo da média considerando pesos das disciplinas
+- Solicitação de retificação: pedido de revisão de uma nota realizado pelo aluno
 
 ---
 
