@@ -12,7 +12,7 @@ Sistema acadêmico para gerenciamento de simulados, notas e desempenho de alunos
 - Arquitetura limpa → Documentacao/05-arquitetura-limpa.md
 - BDD → Documentacao/06-bdd.md
 
-## ⚙️ Tecnologias
+## Tecnologias
 - Java
 - Spring Boot
 - JPA
