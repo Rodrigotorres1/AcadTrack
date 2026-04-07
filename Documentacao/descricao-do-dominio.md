@@ -8,7 +8,7 @@ O AcadTrack é um sistema web voltado para o gerenciamento de simulados acadêmi
 
 ## Domínio Principal (Core Domain)
 
-O domínio principal do sistema é a Gestão Acadêmica, responsável pelas principais regras de negócio. Nesse domínio, estão incluídas as funcionalidades relacionadas à criação e gerenciamento de simulados, à definição de disciplinas e seus respectivos pesos, ao cálculo de médias e à geração de ranking de alunos. Esse domínio representa o núcleo do sistema, concentrando a lógica mais importante da aplicação.
+O domínio principal do sistema é a Gestão Acadêmica, responsável pelas principais regras de negócio. Nesse domínio, estão incluídas as funcionalidades relacionadas à criação e gerenciamento de simulados, à definição de disciplinas e seus respectivos pesos, ao cálculo de médias ponderadas e à geração de ranking de alunos. Esse domínio representa o núcleo do sistema, concentrando a lógica mais relevante e de maior valor para o negócio.
 
 ---
 
@@ -32,27 +32,30 @@ Os principais atores do sistema são o coordenador, o professor e o aluno. O coo
 
 # Linguagem onipresente
 
-- Aluno: participante que realiza o simulado
-- Professor: responsável por lançar e acompanhar notas
-- Coordenador: responsável pela gestão acadêmica
-- Simulado: avaliação organizada no sistema
-- Disciplina: componente avaliado
-- Nota: resultado obtido pelo aluno
-- Ranking: classificação dos alunos com base no desempenho
-- Média ponderada: cálculo da média considerando pesos das disciplinas
+Durante o desenvolvimento do sistema, foi adotada uma linguagem onipresente para garantir consistência entre o domínio, o código e os testes.
+
+- Aluno: participante que realiza o simulado  
+- Professor: responsável por lançar e acompanhar notas  
+- Coordenador: responsável pela gestão acadêmica  
+- Simulado: avaliação organizada no sistema  
+- Disciplina: componente avaliado  
+- Nota: resultado obtido pelo aluno  
+- Ranking: classificação dos alunos com base no desempenho  
+- Média ponderada: cálculo da média considerando pesos das disciplinas  
+- Solicitação de retificação: pedido de revisão de uma nota realizado pelo aluno  
 
 ---
 
 # Regras de negócio principais
 
-- Um simulado deve possuir pelo menos uma disciplina associada para ser criado
-- Cada disciplina associada a um simulado pode possuir um peso específico, que deve ser considerado no cálculo da média
-- A média ponderada do aluno deve ser calculada com base nas notas obtidas em cada disciplina e nos respectivos pesos definidos
-- O sistema deve permitir o lançamento de notas apenas para alunos vinculados à turma do simulado
-- Um simulado finalizado não pode ser editado nem ter disciplinas ou pesos alterados
-- O ranking deve ser gerado automaticamente com base na média ponderada dos alunos, ordenando do maior para o menor desempenho
-- Em caso de empate no ranking, o sistema deve aplicar um critério de desempate (ex: maior nota na disciplina de maior peso)
-- A solicitação de retificação de nota deve ser registrada e não altera automaticamente a nota, dependendo de validação do professor
-- Apenas professores ou coordenadores podem alterar notas ou validar retificações
-- Um aluno só pode estar vinculado a uma turma por vez no contexto de um mesmo período acadêmico
+- Um simulado deve possuir pelo menos uma disciplina associada para ser criado  
+- Cada disciplina associada a um simulado pode possuir um peso específico, que deve ser considerado no cálculo da média  
+- A média ponderada do aluno deve ser calculada com base nas notas obtidas em cada disciplina e nos respectivos pesos definidos  
+- O sistema deve permitir o lançamento de notas apenas para alunos vinculados à turma do simulado  
+- Um simulado finalizado não pode ser editado nem ter disciplinas ou pesos alterados  
+- O ranking deve ser gerado automaticamente com base na média ponderada dos alunos, ordenando do maior para o menor desempenho  
+- Em caso de empate no ranking, o sistema deve aplicar um critério de desempate (ex: maior nota na disciplina de maior peso)  
+- A solicitação de retificação de nota deve ser registrada com status inicial **PENDENTE**, não alterando automaticamente a nota  
+- Apenas professores ou coordenadores podem alterar notas ou validar solicitações de retificação  
+- Um aluno só pode estar vinculado a uma turma por vez no contexto de um mesmo período acadêmico  
 - O sistema deve garantir a integridade dos dados, impedindo inconsistências como notas sem aluno, disciplina ou simulado associado

@@ -1,49 +1,75 @@
 # Arquitetura Limpa
 
-## Organização
-- Documentacao  
-  Contém a descrição do domínio, linguagem onipresente, regras de negócio, mapa de histórias e demais artefatos da entrega.
+O sistema AcadTrack foi estruturado seguindo os princípios da Arquitetura Limpa, organizando o código em camadas bem definidas e com responsabilidades específicas. Essa abordagem garante separação de responsabilidades, baixo acoplamento e maior facilidade de manutenção.
 
-- acadtrack.cml  
-  Arquivo de modelagem de contexto, representando os subdomínios e suas relações.
-
-- bdd  
-  Contém os cenários de teste em Gherkin e a automação com Cucumber.
-
-- dominio-principal  
-  Contém as entidades, regras de negócio e serviços centrais do sistema.
-
-- aplicacao  
-  Contém os casos de uso e a coordenação das operações do sistema.
-
-- infraestrutura  
-  Contém a persistência em banco relacional, integração com JPA e demais recursos externos.
-
-- apresentacao  
-  Contém a interface de entrada e saída do sistema, como controllers e interface web.
-
-## Camadas da arquitetura
+## Camadas
 
 ### Domínio
-Contém as entidades, regras de negócio e serviços de domínio. Essa camada é o núcleo do sistema e não deve depender de frameworks ou tecnologias externas.
+A camada de domínio concentra as regras de negócio e os conceitos centrais do sistema, sendo independente de frameworks e tecnologias externas.
+
+Módulos:
+- dominio-academico
+- dominio-avaliacao
+- dominio-usuarios
+- dominio-compartilhado
+
+Nessa camada estão presentes entidades como Aluno, Nota, Simulado, Disciplina e Solicitação de Retificação, além das interfaces de repositório que definem contratos de acesso aos dados.
+
+---
 
 ### Aplicação
-Responsável por orquestrar os casos de uso e coordenar o fluxo entre domínio, infraestrutura e apresentação.
+A camada de aplicação é responsável por orquestrar o fluxo do sistema por meio dos casos de uso, utilizando as regras definidas no domínio.
+
+Exemplos de casos de uso:
+- Lançar nota
+- Calcular média ponderada
+- Gerar ranking
+- Solicitar retificação de nota
+
+Essa camada coordena as operações do sistema sem depender diretamente de detalhes de infraestrutura.
+
+---
 
 ### Infraestrutura
-Responsável pela persistência de dados, acesso ao banco relacional e integração com frameworks e bibliotecas externas.
+A camada de infraestrutura implementa os detalhes técnicos necessários para o funcionamento do sistema, especialmente a persistência de dados.
+
+Principais responsabilidades:
+- Implementação de repositórios com Spring Data JPA
+- Mapeamento de entidades para o banco de dados
+- Integração com tecnologias externas
+
+Essa camada depende das interfaces definidas no domínio.
+
+---
 
 ### Apresentação
-Responsável pela comunicação com o usuário, incluindo interface web, controllers e entrada/saída de dados.
+A camada de apresentação é responsável pela comunicação com o mundo externo por meio da API REST.
 
-## Princípios aplicados
-- Separação de responsabilidades
-- Independência de frameworks
-- Foco nas regras de negócio
-- Inversão de dependência
+Componentes:
+- Controllers
+- Endpoints HTTP
+- DTOs de entrada e saída
+
+Essa camada recebe requisições, valida dados e aciona os casos de uso da aplicação.
+
+---
+
+### Testes BDD
+O módulo `bdd/acadtrackbdd` contém os testes automatizados utilizando Cucumber.
+
+Nele estão:
+- Arquivos `.feature` com cenários
+- Steps que executam casos de uso reais
+- Configuração de integração com Spring
+
+Essa camada valida o comportamento do sistema a partir da perspectiva do usuário.
+
+---
 
 ## Benefícios
-- Facilidade de manutenção
-- Maior organização do código
-- Melhor testabilidade
-- Flexibilidade para evolução do sistema
+
+- Separação clara de responsabilidades
+- Baixo acoplamento entre camadas
+- Alta coesão dentro dos módulos
+- Facilidade de manutenção e evolução do sistema
+- Testabilidade aprimorada com suporte a BDD
