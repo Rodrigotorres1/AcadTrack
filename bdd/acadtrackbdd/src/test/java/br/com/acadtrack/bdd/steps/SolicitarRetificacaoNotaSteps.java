@@ -9,6 +9,7 @@ import br.com.acadtrack.bdd.support.TestContext;
 import br.com.acadtrack.dominioacademico.aluno.Aluno;
 import br.com.acadtrack.dominioacademico.disciplina.Disciplina;
 import br.com.acadtrack.dominioavaliacao.nota.Nota;
+import br.com.acadtrack.dominioavaliacao.retificacao.SolicitacaoRetificacao;
 import br.com.acadtrack.dominioavaliacao.simulado.Simulado;
 import io.cucumber.java.pt.Dado;
 import io.cucumber.java.pt.Entao;
@@ -31,7 +32,7 @@ public class SolicitarRetificacaoNotaSteps {
     private Disciplina disciplina;
     private Simulado simulado;
     private Nota nota;
-    private Object retificacao;
+    private SolicitacaoRetificacao retificacao;
     private Exception excecao;
 
     public SolicitarRetificacaoNotaSteps(

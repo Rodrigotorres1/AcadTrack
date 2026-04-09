@@ -8,4 +8,4 @@ Feature: Lançar nota individual
   Scenario: Não permitir nota inválida
     Dado que o aluno "João Silva" realizou o simulado
     Quando o professor lança a nota 15 para o aluno "João Silva"
-    Então o sistema informa que a nota é inválida
+    Então o sistema informa que a nota deve estar ntre 0 e 10

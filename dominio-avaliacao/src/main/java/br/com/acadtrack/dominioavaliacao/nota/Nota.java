@@ -19,7 +19,7 @@ public class Nota {
             throw new IllegalArgumentException("Disciplina é obrigatória");
         }
         if (valor < 0 || valor > 10) {
-            throw new IllegalArgumentException("Nota deve estavr entre 0 e 10");
+            throw new IllegalArgumentException("Nota deve estar entre 0 e 10");
         }
 
         this.id = id;

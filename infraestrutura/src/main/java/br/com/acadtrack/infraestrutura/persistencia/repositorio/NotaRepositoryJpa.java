@@ -44,10 +44,11 @@ public class NotaRepositoryJpa implements NotaRepository {
         return repository.findByAlunoIdAndSimuladoId(alunoId, simuladoId)
                 .stream()
                 .map(entity -> new Nota(
+                        entity.getId(),
                         entity.getAlunoId(),
                         entity.getSimuladoId(),
                         entity.getDisciplinaId(),
-                        simuladoId, entity.getValor()
+                        entity.getValor()
                 ))
                 .toList();
     }
@@ -57,10 +58,11 @@ public class NotaRepositoryJpa implements NotaRepository {
         return repository.findByAlunoId(alunoId)
                 .stream()
                 .map(entity -> new Nota(
+                        entity.getId(),
                         entity.getAlunoId(),
                         entity.getSimuladoId(),
                         entity.getDisciplinaId(),
-                        alunoId, entity.getValor()
+                        entity.getValor()
                 ))
                 .toList();
     }
@@ -70,10 +72,11 @@ public class NotaRepositoryJpa implements NotaRepository {
         return repository.findBySimuladoId(simuladoId)
                 .stream()
                 .map(entity -> new Nota(
+                        entity.getId(),
                         entity.getAlunoId(),
                         entity.getSimuladoId(),
                         entity.getDisciplinaId(),
-                        simuladoId, entity.getValor()
+                        entity.getValor()
                 ))
                 .toList();
     }
@@ -82,10 +85,11 @@ public class NotaRepositoryJpa implements NotaRepository {
     public Optional<Nota> buscarPorId(Long id) {
         return repository.findById(id)
                 .map(entity -> new Nota(
+                        entity.getId(),
                         entity.getAlunoId(),
                         entity.getSimuladoId(),
                         entity.getDisciplinaId(),
-                        id, entity.getValor()
+                        entity.getValor()
                 ));
     }
 
