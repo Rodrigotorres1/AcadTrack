@@ -94,7 +94,7 @@ public class SolicitarRetificacaoNotaSteps {
     public void oSistemaRegistraASolicitacaoDeRetificacaoComStatus(String statusEsperado) {
         assertTrue(context.isOperacaoExecutada());
         assertNull(excecao);
-        assertNotNull(retificacao);
+        assertEquals(statusEsperado, retificacao.getStatus());
     }
 
     @Entao("o sistema informa que a justificativa é obrigatória")

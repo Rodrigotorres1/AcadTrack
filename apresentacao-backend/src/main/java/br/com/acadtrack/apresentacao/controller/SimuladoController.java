@@ -20,11 +20,13 @@ public class SimuladoController {
     }
 
     @PostMapping
-    public ResponseEntity<SimuladoResponse> criar(@RequestBody CriarSimuladoRequest request) {
-        Simulado simulado = criarSimuladoUseCase.executar(request.getDescricao(), null);
+    public ResponseEntity<SimuladoResponse> criar(@RequestBody CriarSimuladoRequest dto) {
+        Simulado simulado = criarSimuladoUseCase.executar(
+                dto.getDescricao(),
+                dto.getDisciplinasIds()
+        );
 
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(SimuladoResponse.fromDomain(simulado));
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(new SimuladoResponse(simulado.getId(), simulado.getDescricao()));
     }
 }

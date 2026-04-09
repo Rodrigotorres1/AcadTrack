@@ -80,13 +80,11 @@ public class CalcularMediaPonderadaSteps {
         disciplina1 = criarDisciplinaUseCase.executar("História");
         disciplina2 = criarDisciplinaUseCase.executar("Geografia");
 
-        // cria simulado apenas com uma disciplina/peso
         simulado = criarSimuladoUseCase.executar(
                 "Simulado incompleto",
                 List.of(disciplina1.getId())
         );
 
-        // lança notas em duas disciplinas, mas só uma está devidamente vinculada ao simulado
         lancarNotaUseCase.executar(aluno.getId(), simulado.getId(), disciplina1.getId(), 8.0);
         lancarNotaUseCase.executar(aluno.getId(), simulado.getId(), disciplina2.getId(), 6.0);
     }
