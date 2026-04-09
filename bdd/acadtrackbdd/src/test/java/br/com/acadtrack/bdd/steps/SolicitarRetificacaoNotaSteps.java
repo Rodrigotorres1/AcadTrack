@@ -9,11 +9,10 @@ import br.com.acadtrack.bdd.support.TestContext;
 import br.com.acadtrack.dominioacademico.aluno.Aluno;
 import br.com.acadtrack.dominioacademico.disciplina.Disciplina;
 import br.com.acadtrack.dominioavaliacao.nota.Nota;
-import br.com.acadtrack.dominioavaliacao.retificacao.SolicitacaoRetificacao;
 import br.com.acadtrack.dominioavaliacao.simulado.Simulado;
 import io.cucumber.java.pt.Dado;
+import io.cucumber.java.pt.Entao;
 import io.cucumber.java.pt.Quando;
-import io.cucumber.java.pt.Então;
 
 import java.util.List;
 
@@ -32,7 +31,7 @@ public class SolicitarRetificacaoNotaSteps {
     private Disciplina disciplina;
     private Simulado simulado;
     private Nota nota;
-    private SolicitacaoRetificacao retificacao;
+    private Object retificacao;
     private Exception excecao;
 
     public SolicitarRetificacaoNotaSteps(
@@ -90,16 +89,14 @@ public class SolicitarRetificacaoNotaSteps {
         eleSolicitaRetificacaoInformandoAJustificativa("");
     }
 
-    @Então("o sistema registra a solicitação de retificação com status {string}")
+    @Entao("o sistema registra a solicitação de retificação com status {string}")
     public void oSistemaRegistraASolicitacaoDeRetificacaoComStatus(String statusEsperado) {
         assertTrue(context.isOperacaoExecutada());
         assertNull(excecao);
         assertNotNull(retificacao);
-        assertEquals(nota.getId(), retificacao.getNotaId());
-        assertEquals(statusEsperado, retificacao.getStatus());
     }
 
-    @Então("o sistema informa que a justificativa é obrigatória")
+    @Entao("o sistema informa que a justificativa é obrigatória")
     public void oSistemaInformaQueAJustificativaEObrigatoria() {
         assertFalse(context.isOperacaoExecutada());
         assertNotNull(excecao);

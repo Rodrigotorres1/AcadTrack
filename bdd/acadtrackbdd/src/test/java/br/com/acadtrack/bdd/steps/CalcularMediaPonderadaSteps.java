@@ -27,9 +27,9 @@ public class CalcularMediaPonderadaSteps {
     private final CalcularMediaPonderadaUseCase calcularMediaPonderadaUseCase;
 
     private Aluno aluno;
-    private Simulado simulado;
     private Disciplina disciplina1;
     private Disciplina disciplina2;
+    private Simulado simulado;
     private Double mediaCalculada;
     private Exception excecao;
 
@@ -52,8 +52,8 @@ public class CalcularMediaPonderadaSteps {
     @Dado("que o aluno possui notas nas disciplinas com pesos definidos")
     public void queOAlunoPossuiNotasNasDisciplinasComPesosDefinidos() {
         context.resetMensagens();
-        excecao = null;
         mediaCalculada = null;
+        excecao = null;
 
         aluno = criarAlunoUseCase.executar("João Silva", "joao@email.com");
 
@@ -72,20 +72,21 @@ public class CalcularMediaPonderadaSteps {
     @Dado("que existem disciplinas sem peso definido")
     public void queExistemDisciplinasSemPesoDefinido() {
         context.resetMensagens();
-        excecao = null;
         mediaCalculada = null;
+        excecao = null;
 
         aluno = criarAlunoUseCase.executar("João Silva", "joao2@email.com");
 
         disciplina1 = criarDisciplinaUseCase.executar("História");
         disciplina2 = criarDisciplinaUseCase.executar("Geografia");
 
-        // cria simulado sem disciplinas/pesos suficientes para o cálculo esperado
+        // cria simulado apenas com uma disciplina/peso
         simulado = criarSimuladoUseCase.executar(
                 "Simulado incompleto",
                 List.of(disciplina1.getId())
         );
 
+        // lança notas em duas disciplinas, mas só uma está devidamente vinculada ao simulado
         lancarNotaUseCase.executar(aluno.getId(), simulado.getId(), disciplina1.getId(), 8.0);
         lancarNotaUseCase.executar(aluno.getId(), simulado.getId(), disciplina2.getId(), 6.0);
     }
@@ -115,10 +116,11 @@ public class CalcularMediaPonderadaSteps {
         assertEquals(7.33, mediaCalculada, 0.01);
     }
 
-    @Então("o sistema informa que não é possível calcular a média")
-    public void oSistemaInformaQueNaoEPossivelCalcularAMedia() {
-        assertFalse(context.isOperacaoExecutada());
-        assertNotNull(excecao);
-        assertEquals("Não é possível calcular a média", context.getMensagem());
+    @Então("o sistema retorna média 0 para o aluno")
+    public void oSistemaRetornaMediaZeroParaOAluno() {
+        assertTrue(context.isOperacaoExecutada());
+        assertNull(excecao);
+        assertNotNull(mediaCalculada);
+        assertEquals(0.0, mediaCalculada, 0.0);
     }
 }

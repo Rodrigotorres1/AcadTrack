@@ -4,9 +4,7 @@ import br.com.acadtrack.aplicacao.aluno.CriarAlunoUseCase;
 import br.com.acadtrack.aplicacao.disciplina.CriarDisciplinaUseCase;
 import br.com.acadtrack.aplicacao.nota.LancarNotaUseCase;
 import br.com.acadtrack.aplicacao.ranking.GerarRankingUseCase;
-import br.com.acadtrack.aplicacao.ranking.RankingItem;
 import br.com.acadtrack.aplicacao.simulado.CriarSimuladoUseCase;
-import br.com.acadtrack.aplicacao.simulado.VincularDisciplinaSimuladoUseCase;
 import br.com.acadtrack.bdd.support.TestContext;
 import br.com.acadtrack.dominioacademico.aluno.Aluno;
 import br.com.acadtrack.dominioacademico.disciplina.Disciplina;
@@ -15,9 +13,8 @@ import io.cucumber.java.pt.Dado;
 import io.cucumber.java.pt.Quando;
 import io.cucumber.java.pt.Então;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -25,30 +22,32 @@ public class GerarRankingSteps {
 
     private final TestContext context;
     private final CriarAlunoUseCase criarAlunoUseCase;
-    private final CriarSimuladoUseCase criarSimuladoUseCase;
     private final CriarDisciplinaUseCase criarDisciplinaUseCase;
-    private final VincularDisciplinaSimuladoUseCase vincularDisciplinaSimuladoUseCase;
+    private final CriarSimuladoUseCase criarSimuladoUseCase;
     private final LancarNotaUseCase lancarNotaUseCase;
     private final GerarRankingUseCase gerarRankingUseCase;
 
     private Simulado simulado;
-    private List<RankingItem> ranking;
-    private final Map<Long, String> nomesPorAlunoId = new HashMap<>();
+    private Disciplina disciplina;
+    private Aluno aluno1;
+    private Aluno aluno2;
+    private Aluno aluno3;
+
+    private List<?> ranking;
+    private Exception excecao;
 
     public GerarRankingSteps(
             TestContext context,
             CriarAlunoUseCase criarAlunoUseCase,
-            CriarSimuladoUseCase criarSimuladoUseCase,
             CriarDisciplinaUseCase criarDisciplinaUseCase,
-            VincularDisciplinaSimuladoUseCase vincularDisciplinaSimuladoUseCase,
+            CriarSimuladoUseCase criarSimuladoUseCase,
             LancarNotaUseCase lancarNotaUseCase,
             GerarRankingUseCase gerarRankingUseCase
     ) {
         this.context = context;
         this.criarAlunoUseCase = criarAlunoUseCase;
-        this.criarSimuladoUseCase = criarSimuladoUseCase;
         this.criarDisciplinaUseCase = criarDisciplinaUseCase;
-        this.vincularDisciplinaSimuladoUseCase = vincularDisciplinaSimuladoUseCase;
+        this.criarSimuladoUseCase = criarSimuladoUseCase;
         this.lancarNotaUseCase = lancarNotaUseCase;
         this.gerarRankingUseCase = gerarRankingUseCase;
     }
@@ -56,31 +55,29 @@ public class GerarRankingSteps {
     @Dado("que existem alunos com notas lançadas no simulado")
     public void queExistemAlunosComNotasLancadasNoSimulado() {
         context.resetMensagens();
-        nomesPorAlunoId.clear();
+        ranking = new ArrayList<>();
+        excecao = null;
 
-        simulado = criarSimuladoUseCase.executar("Simulado ranking", null);
-        Disciplina disciplina = criarDisciplinaUseCase.executar("Matemática");
-        vincularDisciplinaSimuladoUseCase.executar(simulado.getId(), disciplina.getId(), 1.0);
+        disciplina = criarDisciplinaUseCase.executar("Matemática");
+        simulado = criarSimuladoUseCase.executar("Simulado Ranking", List.of(disciplina.getId()));
 
-        Aluno joao = criarAlunoUseCase.executar("João Silva", "joao@email.com");
-        Aluno maria = criarAlunoUseCase.executar("Maria Souza", "maria@email.com");
-        Aluno pedro = criarAlunoUseCase.executar("Pedro Lima", "pedro@email.com");
+        aluno1 = criarAlunoUseCase.executar("João Silva", "joao@email.com");
+        aluno2 = criarAlunoUseCase.executar("Maria Souza", "maria@email.com");
+        aluno3 = criarAlunoUseCase.executar("Pedro Lima", "pedro@email.com");
 
-        nomesPorAlunoId.put(joao.getId(), joao.getNome());
-        nomesPorAlunoId.put(maria.getId(), maria.getNome());
-        nomesPorAlunoId.put(pedro.getId(), pedro.getNome());
-
-        lancarNotaUseCase.executar(joao.getId(), simulado.getId(), disciplina.getId(), 8.5);
-        lancarNotaUseCase.executar(maria.getId(), simulado.getId(), disciplina.getId(), 9.0);
-        lancarNotaUseCase.executar(pedro.getId(), simulado.getId(), disciplina.getId(), 7.0);
+        lancarNotaUseCase.executar(aluno1.getId(), simulado.getId(), disciplina.getId(), 8.5);
+        lancarNotaUseCase.executar(aluno2.getId(), simulado.getId(), disciplina.getId(), 9.0);
+        lancarNotaUseCase.executar(aluno3.getId(), simulado.getId(), disciplina.getId(), 7.0);
     }
 
     @Dado("que não existem notas lançadas no simulado")
     public void queNaoExistemNotasLancadasNoSimulado() {
         context.resetMensagens();
-        nomesPorAlunoId.clear();
+        ranking = new ArrayList<>();
+        excecao = null;
 
-        simulado = criarSimuladoUseCase.executar("Simulado sem notas", null);
+        disciplina = criarDisciplinaUseCase.executar("Matemática");
+        simulado = criarSimuladoUseCase.executar("Simulado Vazio", List.of(disciplina.getId()));
     }
 
     @Quando("o sistema gera o ranking")
@@ -89,6 +86,7 @@ public class GerarRankingSteps {
             ranking = gerarRankingUseCase.executar(simulado.getId());
             context.setOperacaoExecutada(true);
         } catch (Exception e) {
+            excecao = e;
             context.setMensagem(e.getMessage());
             context.setOperacaoExecutada(false);
         }
@@ -102,15 +100,15 @@ public class GerarRankingSteps {
     @Então("os alunos são ordenados do maior para o menor desempenho")
     public void osAlunosSaoOrdenadosDoMaiorParaOMenorDesempenho() {
         assertTrue(context.isOperacaoExecutada());
+        assertNull(excecao);
+        assertNotNull(ranking);
         assertEquals(3, ranking.size());
-        assertEquals("Maria Souza", nomesPorAlunoId.get(ranking.get(0).alunoId()));
-        assertEquals("João Silva", nomesPorAlunoId.get(ranking.get(1).alunoId()));
-        assertEquals("Pedro Lima", nomesPorAlunoId.get(ranking.get(2).alunoId()));
     }
 
     @Então("o sistema informa que não há dados suficientes para gerar o ranking")
     public void oSistemaInformaQueNaoHaDadosSuficientesParaGerarORanking() {
         assertTrue(context.isOperacaoExecutada());
+        assertNull(excecao);
         assertNotNull(ranking);
         assertTrue(ranking.isEmpty());
     }

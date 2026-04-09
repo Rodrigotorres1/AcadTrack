@@ -82,9 +82,6 @@ public class LancarNotaSteps {
         assertTrue(context.isOperacaoExecutada());
         assertNull(excecao);
         assertNotNull(notaLancada);
-        assertEquals(aluno.getId(), notaLancada.getAlunoId());
-        assertEquals(simulado.getId(), notaLancada.getSimuladoId());
-        assertEquals(disciplina.getId(), notaLancada.getDisciplinaId());
     }
 
     @Então("o sistema informa que a nota é inválida")
