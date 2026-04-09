@@ -9,7 +9,9 @@ O sistema permite calcular médias ponderadas com base em pesos por disciplina, 
 
 ## Equipe
 - João Marcelo Montenegro
-- (adicione os outros integrantes aqui)
+- Rodrigo Torres
+- Erick Belo
+- Victor Vilela
 
 ---
 
