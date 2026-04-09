@@ -5,17 +5,14 @@ Domain AcadTrack {
   Subdomain Usuarios
 }
 
-BoundedContext GestaoAcademicaContext implements GestaoAcademica {
 
-  ValueObject AlunoId {
-    Long valor
-  }
+BoundedContext GestaoAcademicaContext implements GestaoAcademica {
 
   Aggregate Turma {
     Entity Turma
     aggregateRoot
 
-    String id
+    Long id
     String nome
     boolean ativa
   }
@@ -24,7 +21,7 @@ BoundedContext GestaoAcademicaContext implements GestaoAcademica {
     Entity Aluno
     aggregateRoot
 
-    String id
+    Long id
     String nome
     String matricula
     boolean ativo
@@ -35,7 +32,7 @@ BoundedContext GestaoAcademicaContext implements GestaoAcademica {
     Entity Simulado
     aggregateRoot
 
-    String id
+    Long id
     String nome
     boolean finalizado
     -Turma turma
@@ -59,20 +56,21 @@ BoundedContext GestaoAcademicaContext implements GestaoAcademica {
   }
 
   Repository AlunoRepository {
-    Aluno findById(String id)
+    Aluno findById(Long id)
     List<Aluno> findAll()
   }
 
   Repository TurmaRepository {
-    Turma findById(String id)
+    Turma findById(Long id)
     List<Turma> findAll()
   }
 
   Repository SimuladoRepository {
-    Simulado findById(String id)
+    Simulado findById(Long id)
     List<Simulado> findAll()
   }
 }
+
 
 BoundedContext AvaliacaoDesempenhoContext implements AvaliacaoDesempenho {
 
@@ -80,21 +78,21 @@ BoundedContext AvaliacaoDesempenhoContext implements AvaliacaoDesempenho {
     Entity Nota
     aggregateRoot
 
-    String id
-    double valor
+    Long id
     AlunoId alunoId
-    String simuladoId
-    String disciplina
+    SimuladoId simuladoId
+    Long disciplinaId
+    double valor
   }
 
   Aggregate RetificacaoNota {
     Entity RetificacaoNota
     aggregateRoot
 
-    String id
+    Long id
     String justificativa
     String status
-    String notaId
+    Long notaId
   }
 
   ValueObject MediaPonderada {
@@ -103,21 +101,22 @@ BoundedContext AvaliacaoDesempenhoContext implements AvaliacaoDesempenho {
 
   Service AvaliacaoService {
     void lancarNotaIndividual(Nota nota)
-    double calcularMediaPonderada(AlunoId alunoId, String simuladoId)
-    void gerarRanking(String simuladoId)
+    double calcularMediaPonderada(AlunoId alunoId, SimuladoId simuladoId)
+    void gerarRanking(SimuladoId simuladoId)
     void solicitarRetificacaoDeNota(RetificacaoNota retificacao)
   }
 
   Repository NotaRepository {
-    Nota findById(String id)
+    Nota findById(Long id)
     List<Nota> findAll()
   }
 
   Repository RetificacaoNotaRepository {
-    RetificacaoNota findById(String id)
+    RetificacaoNota findById(Long id)
     List<RetificacaoNota> findAll()
   }
 }
+
 
 BoundedContext UsuariosContext implements Usuarios {
 
@@ -125,7 +124,7 @@ BoundedContext UsuariosContext implements Usuarios {
     Entity Professor
     aggregateRoot
 
-    String id
+    Long id
     String nome
     String email
   }
@@ -134,7 +133,7 @@ BoundedContext UsuariosContext implements Usuarios {
     Entity Responsavel
     aggregateRoot
 
-    String id
+    Long id
     String nome
     String email
   }
@@ -149,23 +148,51 @@ BoundedContext UsuariosContext implements Usuarios {
   }
 
   Repository ProfessorRepository {
-    Professor findById(String id)
+    Professor findById(Long id)
     List<Professor> findAll()
   }
 
   Repository ResponsavelRepository {
-    Responsavel findById(String id)
+    Responsavel findById(Long id)
     List<Responsavel> findAll()
   }
 }
+
+
+BoundedContext DominioCompartilhado {
+
+  ValueObject AlunoId {
+    Long valor
+  }
+
+  ValueObject SimuladoId {
+    Long valor
+  }
+}
+
 
 ContextMap AcadTrackContextMap {
 
   contains GestaoAcademicaContext
   contains AvaliacaoDesempenhoContext
   contains UsuariosContext
+  contains DominioCompartilhado
 
-  GestaoAcademicaContext -> AvaliacaoDesempenhoContext [UPSTREAM_DOWNSTREAM]
-  GestaoAcademicaContext -> UsuariosContext [UPSTREAM_DOWNSTREAM]
-  AvaliacaoDesempenhoContext -> UsuariosContext [UPSTREAM_DOWNSTREAM]
+  GestaoAcademicaContext -> AvaliacaoDesempenhoContext
+  [UPSTREAM_DOWNSTREAM]
+
+  GestaoAcademicaContext -> UsuariosContext
+  [UPSTREAM_DOWNSTREAM]
+
+  AvaliacaoDesempenhoContext -> UsuariosContext
+  [UPSTREAM_DOWNSTREAM]
+
+  DominioCompartilhado -> GestaoAcademicaContext
+  [UPSTREAM_DOWNSTREAM]
+
+  DominioCompartilhado -> AvaliacaoDesempenhoContext
+  [UPSTREAM_DOWNSTREAM]
+
+  DominioCompartilhado -> UsuariosContext
+  [UPSTREAM_DOWNSTREAM]
 }

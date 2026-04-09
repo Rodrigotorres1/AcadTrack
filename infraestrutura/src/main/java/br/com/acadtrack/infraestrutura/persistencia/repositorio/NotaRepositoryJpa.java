@@ -31,10 +31,11 @@ public class NotaRepositoryJpa implements NotaRepository {
         NotaJpaEntity salva = repository.save(entity);
 
         return new Nota(
+                salva.getId(), 
                 salva.getAlunoId(),
                 salva.getSimuladoId(),
                 salva.getDisciplinaId(),
-                null, salva.getValor()
+                salva.getValor()
         );
     }
 

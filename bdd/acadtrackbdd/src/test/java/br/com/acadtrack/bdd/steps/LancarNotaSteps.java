@@ -84,10 +84,10 @@ public class LancarNotaSteps {
         assertNotNull(notaLancada);
     }
 
-    @Então("o sistema informa que a nota é inválida")
+    @Então("o sistema informa a nota deve estar entre 0 e 10")
     public void oSistemaInformaQueANotaEInvalida() {
         assertFalse(context.isOperacaoExecutada());
         assertNotNull(excecao);
-        assertEquals("A nota é inválida", context.getMensagem());
+        assertEquals("A nota deve estar entre 0 e 10", context.getMensagem());
     }
 }

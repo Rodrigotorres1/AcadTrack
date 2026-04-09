@@ -105,8 +105,8 @@ public class GerarRankingSteps {
         assertEquals(3, ranking.size());
     }
 
-    @Então("o sistema informa que não há dados suficientes para gerar o ranking")
-    public void oSistemaInformaQueNaoHaDadosSuficientesParaGerarORanking() {
+    @Então("o sistema retorna um ranking vazio")
+    public void oSistemaRetornaUmRankingVazio() {
         assertTrue(context.isOperacaoExecutada());
         assertNull(excecao);
         assertNotNull(ranking);

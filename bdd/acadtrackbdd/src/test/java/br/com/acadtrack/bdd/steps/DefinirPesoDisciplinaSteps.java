@@ -13,6 +13,8 @@ import io.cucumber.java.pt.Então;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.util.List;
+
 public class DefinirPesoDisciplinaSteps {
 
     private final TestContext context;
@@ -43,7 +45,11 @@ public class DefinirPesoDisciplinaSteps {
         excecao = null;
         simuladoDisciplina = null;
 
-        simulado = criarSimuladoUseCase.executar("Simulado de teste", null);
+        Disciplina disciplinaBase = criarDisciplinaUseCase.executar("Disciplina Base");
+        simulado = criarSimuladoUseCase.executar(
+ "Simulado de teste",
+            List.of(disciplinaBase.getId())
+);
         disciplina = criarDisciplinaUseCase.executar(nomeDisciplina);
     }
 
