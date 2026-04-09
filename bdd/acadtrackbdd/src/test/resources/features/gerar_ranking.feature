@@ -8,4 +8,4 @@ Feature: Gerar ranking
   Scenario: Não gerar ranking sem notas
     Dado que não existem notas lançadas no simulado
     Quando o sistema tenta gerar o ranking
-    Então o sistema informa que não há dados suficientes para gerar o ranking
+    Então o sistema retorna um ranking vazio

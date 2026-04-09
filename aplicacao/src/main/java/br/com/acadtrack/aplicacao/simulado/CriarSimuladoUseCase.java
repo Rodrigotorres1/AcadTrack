@@ -4,6 +4,8 @@ import br.com.acadtrack.dominioavaliacao.simulado.Simulado;
 import br.com.acadtrack.dominioavaliacao.simulado.SimuladoRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class CriarSimuladoUseCase {
 
@@ -13,7 +15,11 @@ public class CriarSimuladoUseCase {
         this.simuladoRepository = simuladoRepository;
     }
 
-    public Simulado executar(String descricao) {
+    public Simulado executar(String descricao, List<Long> disciplinasIds) {
+        if (disciplinasIds == null || disciplinasIds.isEmpty()) {
+            throw new IllegalArgumentException("O simulado deve possuir pelo menos uma disciplina");
+        }
+
         Simulado simulado = new Simulado(null, descricao);
         return simuladoRepository.salvar(simulado);
     }

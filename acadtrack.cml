@@ -7,6 +7,10 @@ Domain AcadTrack {
 
 BoundedContext GestaoAcademicaContext implements GestaoAcademica {
 
+  ValueObject AlunoId {
+    Long valor
+  }
+
   Aggregate Turma {
     Entity Turma
     aggregateRoot
@@ -78,7 +82,7 @@ BoundedContext AvaliacaoDesempenhoContext implements AvaliacaoDesempenho {
 
     String id
     double valor
-    String alunoId
+    AlunoId alunoId
     String simuladoId
     String disciplina
   }
@@ -99,7 +103,7 @@ BoundedContext AvaliacaoDesempenhoContext implements AvaliacaoDesempenho {
 
   Service AvaliacaoService {
     void lancarNotaIndividual(Nota nota)
-    double calcularMediaPonderada(String alunoId, String simuladoId)
+    double calcularMediaPonderada(AlunoId alunoId, String simuladoId)
     void gerarRanking(String simuladoId)
     void solicitarRetificacaoDeNota(RetificacaoNota retificacao)
   }
@@ -140,8 +144,8 @@ BoundedContext UsuariosContext implements Usuarios {
   }
 
   Service UsuariosService {
-    void vincularResponsavel(String alunoId, Responsavel responsavel)
-    void desvincularResponsavel(String alunoId, Responsavel responsavel)
+    void vincularResponsavel(AlunoId alunoId, Responsavel responsavel)
+    void desvincularResponsavel(AlunoId alunoId, Responsavel responsavel)
   }
 
   Repository ProfessorRepository {
@@ -153,4 +157,15 @@ BoundedContext UsuariosContext implements Usuarios {
     Responsavel findById(String id)
     List<Responsavel> findAll()
   }
+}
+
+ContextMap AcadTrackContextMap {
+
+  contains GestaoAcademicaContext
+  contains AvaliacaoDesempenhoContext
+  contains UsuariosContext
+
+  GestaoAcademicaContext -> AvaliacaoDesempenhoContext [UPSTREAM_DOWNSTREAM]
+  GestaoAcademicaContext -> UsuariosContext [UPSTREAM_DOWNSTREAM]
+  AvaliacaoDesempenhoContext -> UsuariosContext [UPSTREAM_DOWNSTREAM]
 }

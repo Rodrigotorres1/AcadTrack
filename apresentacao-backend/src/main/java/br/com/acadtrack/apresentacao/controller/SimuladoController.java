@@ -21,7 +21,7 @@ public class SimuladoController {
 
     @PostMapping
     public ResponseEntity<SimuladoResponse> criar(@RequestBody CriarSimuladoRequest request) {
-        Simulado simulado = criarSimuladoUseCase.executar(request.getDescricao());
+        Simulado simulado = criarSimuladoUseCase.executar(request.getDescricao(), null);
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)

@@ -24,8 +24,11 @@ public class VincularAlunoTurmaUseCase {
         Turma turma = turmaRepository.buscarPorId(turmaId)
                 .orElseThrow(() -> new IllegalArgumentException("Turma não encontrada"));
 
-        aluno.vincularTurma(turma.getId());
+        if (aluno.getTurmaId() != null) {
+            throw new IllegalStateException("O aluno já está vinculado a uma turma");
+        }
 
+        aluno.vincularTurma(turma.getId());
         return alunoRepository.salvar(aluno);
     }
 }

@@ -17,6 +17,10 @@ public class DesvincularResponsavelUseCase {
         Aluno aluno = alunoRepository.buscarPorId(alunoId)
                 .orElseThrow(() -> new RuntimeException("Aluno não encontrado"));
 
+        if (aluno.getResponsavelId() == null) {
+            throw new IllegalStateException("Não há responsável vinculado ao aluno");
+        }
+
         aluno.desvincularResponsavel();
         return alunoRepository.salvar(aluno);
     }
