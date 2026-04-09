@@ -16,6 +16,13 @@ public class Aluno {
         this.responsavelId = responsavelId;
     }
 
+    public void vincularTurma(Long turmaId) {
+        if (this.turmaId != null) {
+            throw new IllegalStateException("O aluno já está vinculado a uma turma");
+        }
+        this.turmaId = turmaId;
+    }
+
     public Long getId() {
         return id;
     }
@@ -34,10 +41,6 @@ public class Aluno {
 
     public Long getResponsavelId() {
         return responsavelId;
-    }
-
-    public void vincularTurma(Long turmaId) {
-        this.turmaId = turmaId;
     }
 
     public void vincularResponsavel(Long responsavelId) {

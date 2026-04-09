@@ -1,48 +1,82 @@
 package br.com.acadtrack.bdd.steps;
 
+import br.com.acadtrack.aplicacao.aluno.CriarAlunoUseCase;
+import br.com.acadtrack.aplicacao.disciplina.CriarDisciplinaUseCase;
+import br.com.acadtrack.aplicacao.nota.LancarNotaUseCase;
 import br.com.acadtrack.aplicacao.retificacao.SolicitarRetificacaoNotaUseCase;
+import br.com.acadtrack.aplicacao.simulado.CriarSimuladoUseCase;
 import br.com.acadtrack.bdd.support.TestContext;
+import br.com.acadtrack.dominioacademico.aluno.Aluno;
+import br.com.acadtrack.dominioacademico.disciplina.Disciplina;
+import br.com.acadtrack.dominioavaliacao.nota.Nota;
 import br.com.acadtrack.dominioavaliacao.retificacao.SolicitacaoRetificacao;
+import br.com.acadtrack.dominioavaliacao.simulado.Simulado;
 import io.cucumber.java.pt.Dado;
 import io.cucumber.java.pt.Quando;
 import io.cucumber.java.pt.Então;
+
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class SolicitarRetificacaoNotaSteps {
 
     private final TestContext context;
-    private final SolicitarRetificacaoNotaUseCase useCase;
+    private final CriarAlunoUseCase criarAlunoUseCase;
+    private final CriarDisciplinaUseCase criarDisciplinaUseCase;
+    private final CriarSimuladoUseCase criarSimuladoUseCase;
+    private final LancarNotaUseCase lancarNotaUseCase;
+    private final SolicitarRetificacaoNotaUseCase solicitarRetificacaoNotaUseCase;
 
-    private SolicitacaoRetificacao solicitacaoGerada;
+    private Aluno aluno;
+    private Disciplina disciplina;
+    private Simulado simulado;
+    private Nota nota;
+    private SolicitacaoRetificacao retificacao;
     private Exception excecao;
 
     public SolicitarRetificacaoNotaSteps(
             TestContext context,
-            SolicitarRetificacaoNotaUseCase useCase
+            CriarAlunoUseCase criarAlunoUseCase,
+            CriarDisciplinaUseCase criarDisciplinaUseCase,
+            CriarSimuladoUseCase criarSimuladoUseCase,
+            LancarNotaUseCase lancarNotaUseCase,
+            SolicitarRetificacaoNotaUseCase solicitarRetificacaoNotaUseCase
     ) {
         this.context = context;
-        this.useCase = useCase;
+        this.criarAlunoUseCase = criarAlunoUseCase;
+        this.criarDisciplinaUseCase = criarDisciplinaUseCase;
+        this.criarSimuladoUseCase = criarSimuladoUseCase;
+        this.lancarNotaUseCase = lancarNotaUseCase;
+        this.solicitarRetificacaoNotaUseCase = solicitarRetificacaoNotaUseCase;
     }
 
     @Dado("que o aluno {string} possui uma nota lançada")
-    public void queOAlunoPossuiUmaNotaLancada(String aluno) {
+    public void queOAlunoPossuiUmaNotaLancada(String nomeAluno) {
         context.resetMensagens();
-        context.setAlunoAtual(aluno);
-        context.setNotaIdAtual(1L);
-        context.getNotasAluno().put(aluno, 7.0);
-
-        solicitacaoGerada = null;
         excecao = null;
+        retificacao = null;
+
+        aluno = criarAlunoUseCase.executar(nomeAluno, nomeAluno + "@email.com");
+        disciplina = criarDisciplinaUseCase.executar("Matemática");
+
+        simulado = criarSimuladoUseCase.executar(
+                "Simulado de retificação",
+                List.of(disciplina.getId())
+        );
+
+        nota = lancarNotaUseCase.executar(
+                aluno.getId(),
+                simulado.getId(),
+                disciplina.getId(),
+                7.0
+        );
     }
 
     @Quando("ele solicita retificação informando a justificativa {string}")
     public void eleSolicitaRetificacaoInformandoAJustificativa(String justificativa) {
-        context.setJustificativaAtual(justificativa);
-
         try {
-            solicitacaoGerada = useCase.executar(context.getNotaIdAtual(), justificativa);
-            context.setStatusAtual(solicitacaoGerada.getStatus());
+            retificacao = solicitarRetificacaoNotaUseCase.executar(nota.getId(), justificativa);
             context.setOperacaoExecutada(true);
         } catch (Exception e) {
             excecao = e;
@@ -53,34 +87,16 @@ public class SolicitarRetificacaoNotaSteps {
 
     @Quando("ele solicita retificação sem justificativa")
     public void eleSolicitaRetificacaoSemJustificativa() {
-        context.setJustificativaAtual("");
-
-        try {
-            solicitacaoGerada = useCase.executar(context.getNotaIdAtual(), "");
-            context.setStatusAtual(solicitacaoGerada.getStatus());
-            context.setOperacaoExecutada(true);
-        } catch (Exception e) {
-            excecao = e;
-            context.setMensagem(e.getMessage());
-            context.setOperacaoExecutada(false);
-        }
+        eleSolicitaRetificacaoInformandoAJustificativa("");
     }
 
     @Então("o sistema registra a solicitação de retificação com status {string}")
     public void oSistemaRegistraASolicitacaoDeRetificacaoComStatus(String statusEsperado) {
         assertTrue(context.isOperacaoExecutada());
         assertNull(excecao);
-        assertNotNull(solicitacaoGerada);
-
-        assertNotNull(context.getAlunoAtual());
-        assertTrue(context.getNotasAluno().containsKey(context.getAlunoAtual()));
-        assertNotNull(context.getNotaIdAtual());
-        assertNotNull(context.getJustificativaAtual());
-        assertFalse(context.getJustificativaAtual().isBlank());
-
-        assertEquals(context.getNotaIdAtual(), solicitacaoGerada.getNotaId());
-        assertEquals(statusEsperado, solicitacaoGerada.getStatus());
-        assertEquals(statusEsperado, context.getStatusAtual());
+        assertNotNull(retificacao);
+        assertEquals(nota.getId(), retificacao.getNotaId());
+        assertEquals(statusEsperado, retificacao.getStatus());
     }
 
     @Então("o sistema informa que a justificativa é obrigatória")

@@ -85,8 +85,13 @@ public class GerarRankingSteps {
 
     @Quando("o sistema gera o ranking")
     public void oSistemaGeraORanking() {
-        ranking = gerarRankingUseCase.executar(simulado.getId());
-        context.setOperacaoExecutada(true);
+        try {
+            ranking = gerarRankingUseCase.executar(simulado.getId());
+            context.setOperacaoExecutada(true);
+        } catch (Exception e) {
+            context.setMensagem(e.getMessage());
+            context.setOperacaoExecutada(false);
+        }
     }
 
     @Quando("o sistema tenta gerar o ranking")

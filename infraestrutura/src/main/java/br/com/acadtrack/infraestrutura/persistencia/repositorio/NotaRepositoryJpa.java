@@ -34,7 +34,7 @@ public class NotaRepositoryJpa implements NotaRepository {
                 salva.getAlunoId(),
                 salva.getSimuladoId(),
                 salva.getDisciplinaId(),
-                salva.getValor()
+                null, salva.getValor()
         );
     }
 
@@ -46,7 +46,7 @@ public class NotaRepositoryJpa implements NotaRepository {
                         entity.getAlunoId(),
                         entity.getSimuladoId(),
                         entity.getDisciplinaId(),
-                        entity.getValor()
+                        simuladoId, entity.getValor()
                 ))
                 .toList();
     }
@@ -59,7 +59,7 @@ public class NotaRepositoryJpa implements NotaRepository {
                         entity.getAlunoId(),
                         entity.getSimuladoId(),
                         entity.getDisciplinaId(),
-                        entity.getValor()
+                        alunoId, entity.getValor()
                 ))
                 .toList();
     }
@@ -72,7 +72,7 @@ public class NotaRepositoryJpa implements NotaRepository {
                         entity.getAlunoId(),
                         entity.getSimuladoId(),
                         entity.getDisciplinaId(),
-                        entity.getValor()
+                        simuladoId, entity.getValor()
                 ))
                 .toList();
     }
@@ -84,7 +84,7 @@ public class NotaRepositoryJpa implements NotaRepository {
                         entity.getAlunoId(),
                         entity.getSimuladoId(),
                         entity.getDisciplinaId(),
-                        entity.getValor()
+                        id, entity.getValor()
                 ));
     }
 

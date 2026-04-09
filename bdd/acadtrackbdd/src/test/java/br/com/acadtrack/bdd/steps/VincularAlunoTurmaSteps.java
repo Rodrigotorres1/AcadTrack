@@ -6,9 +6,7 @@ import br.com.acadtrack.aplicacao.turma.VincularAlunoTurmaUseCase;
 import br.com.acadtrack.bdd.support.TestContext;
 import br.com.acadtrack.dominioacademico.aluno.Aluno;
 import br.com.acadtrack.dominioacademico.turma.Turma;
-import io.cucumber.java.pt.Dado;
-import io.cucumber.java.pt.Quando;
-import io.cucumber.java.pt.Então;
+import io.cucumber.java.pt.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -17,72 +15,56 @@ public class VincularAlunoTurmaSteps {
     private final TestContext context;
     private final CriarAlunoUseCase criarAlunoUseCase;
     private final CriarTurmaUseCase criarTurmaUseCase;
-    private final VincularAlunoTurmaUseCase vincularAlunoTurmaUseCase;
+    private final VincularAlunoTurmaUseCase useCase;
 
     private Aluno aluno;
     private Turma turma;
-    private Exception excecao;
 
     public VincularAlunoTurmaSteps(
             TestContext context,
             CriarAlunoUseCase criarAlunoUseCase,
             CriarTurmaUseCase criarTurmaUseCase,
-            VincularAlunoTurmaUseCase vincularAlunoTurmaUseCase
+            VincularAlunoTurmaUseCase useCase
     ) {
         this.context = context;
         this.criarAlunoUseCase = criarAlunoUseCase;
         this.criarTurmaUseCase = criarTurmaUseCase;
-        this.vincularAlunoTurmaUseCase = vincularAlunoTurmaUseCase;
+        this.useCase = useCase;
     }
 
     @Dado("que o aluno {string} não está vinculado a nenhuma turma")
-    public void queOAlunoNaoEstaVinculadoANenhumaTurma(String nomeAluno) {
-        context.resetMensagens();
-        excecao = null;
-
-        aluno = criarAlunoUseCase.executar(nomeAluno, nomeAluno + "@email.com");
+    public void dadoAlunoSemTurma(String nome) {
+        aluno = criarAlunoUseCase.executar(nome, nome + "@email.com");
         turma = criarTurmaUseCase.executar("Turma A");
     }
 
     @Dado("que o aluno {string} já está vinculado à turma {string}")
-    public void queOAlunoJaEstaVinculadoATurma(String nomeAluno, String nomeTurma) {
-        context.resetMensagens();
-        excecao = null;
-
-        aluno = criarAlunoUseCase.executar(nomeAluno, nomeAluno + "@email.com");
+    public void dadoAlunoJaVinculado(String nome, String nomeTurma) {
+        aluno = criarAlunoUseCase.executar(nome, nome + "@email.com");
         turma = criarTurmaUseCase.executar(nomeTurma);
 
-        // primeira vinculação válida
-        vincularAlunoTurmaUseCase.executar(aluno.getId(), turma.getId());
+        useCase.executar(aluno.getId(), turma.getId());
     }
 
     @Quando("o coordenador vincula o aluno {string} à turma {string}")
-    public void oCoordenadorVinculaOAlunoATurma(String nomeAluno, String nomeTurma) {
+    public void quandoVincula(String nome, String turmaNome) {
         try {
-            vincularAlunoTurmaUseCase.executar(aluno.getId(), turma.getId());
+            useCase.executar(aluno.getId(), turma.getId());
             context.setOperacaoExecutada(true);
         } catch (Exception e) {
-            excecao = e;
             context.setMensagem(e.getMessage());
             context.setOperacaoExecutada(false);
         }
     }
 
-    @Quando("o coordenador tenta vincular o aluno {string} à turma {string}")
-    public void oCoordenadorTentaVincularOAlunoATurma(String nomeAluno, String nomeTurma) {
-        oCoordenadorVinculaOAlunoATurma(nomeAluno, nomeTurma);
-    }
-
     @Então("o sistema registra o vínculo do aluno {string} à turma {string}")
-    public void oSistemaRegistraOVinculoDoAlunoATurma(String nomeAluno, String nomeTurma) {
+    public void entaoSucesso(String nome, String turmaNome) {
         assertTrue(context.isOperacaoExecutada());
-        assertNull(excecao);
     }
 
     @Então("o sistema informa que o aluno já está vinculado a uma turma")
-    public void oSistemaInformaQueOAlunoJaEstaVinculadoAUmaTurma() {
+    public void entaoErro() {
         assertFalse(context.isOperacaoExecutada());
-        assertNotNull(excecao);
         assertEquals("O aluno já está vinculado a uma turma", context.getMensagem());
     }
 }
