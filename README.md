@@ -11,8 +11,6 @@ O sistema permite calcular médias ponderadas com base em pesos por disciplina, 
 - João Marcelo Montenegro
 - Rodrigo Torres
 - Erick Belo
-- Victor Vilela
-
 ---
 
 ## Documentação da 1ª entrega
