@@ -15,13 +15,15 @@ public class DisciplinaJpaEntity {
     private Long id;
 
     private String nome;
+    private String status;
 
     public DisciplinaJpaEntity() {
     }
 
-    public DisciplinaJpaEntity(Long id, String nome) {
+    public DisciplinaJpaEntity(Long id, String nome, String status) {
         this.id = id;
         this.nome = nome;
+        this.status = status;
     }
 
     public Long getId() {
@@ -32,11 +34,19 @@ public class DisciplinaJpaEntity {
         return nome;
     }
 
+    public String getStatus() {
+        return status;
+    }
+
     public void setId(Long id) {
         this.id = id;
     }
 
     public void setNome(String nome) {
         this.nome = nome;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }

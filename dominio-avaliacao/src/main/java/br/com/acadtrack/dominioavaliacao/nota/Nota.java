@@ -19,7 +19,7 @@ public class Nota {
             throw new IllegalArgumentException("Disciplina é obrigatória");
         }
         if (valor < 0 || valor > 10) {
-            throw new IllegalArgumentException("Nota deve estar entre 0 e 10");
+            throw new IllegalArgumentException("A nota deve estar entre 0 e 10");
         }
 
         this.id = id;
@@ -47,5 +47,12 @@ public class Nota {
 
     public double getValor() {
         return valor;
+    }
+
+    public void atualizarValor(double novoValor) {
+        if (novoValor < 0 || novoValor > 10) {
+            throw new IllegalArgumentException("A nota deve estar entre 0 e 10");
+        }
+        this.valor = novoValor;
     }
 }

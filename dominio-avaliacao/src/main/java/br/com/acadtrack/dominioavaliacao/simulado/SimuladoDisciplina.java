@@ -8,6 +8,13 @@ public class SimuladoDisciplina {
     private double peso;
 
     public SimuladoDisciplina(Long id, Long simuladoId, Long disciplinaId, double peso) {
+        if (simuladoId == null) {
+            throw new IllegalArgumentException("Simulado é obrigatório");
+        }
+
+        if (disciplinaId == null) {
+            throw new IllegalArgumentException("Disciplina é obrigatória");
+        }
 
         if (peso <= 0) {
             throw new IllegalArgumentException("Peso deve ser maior que zero");

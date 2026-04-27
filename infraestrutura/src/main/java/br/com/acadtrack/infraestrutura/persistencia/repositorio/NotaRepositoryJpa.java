@@ -7,6 +7,7 @@ import br.com.acadtrack.infraestrutura.persistencia.springdata.NotaSpringDataRep
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Repository
@@ -21,7 +22,7 @@ public class NotaRepositoryJpa implements NotaRepository {
     @Override
     public Nota salvar(Nota nota) {
         NotaJpaEntity entity = new NotaJpaEntity(
-                null,
+                nota.getId(),
                 nota.getAlunoId(),
                 nota.getSimuladoId(),
                 nota.getDisciplinaId(),
@@ -83,7 +84,8 @@ public class NotaRepositoryJpa implements NotaRepository {
 
     @Override
     public Optional<Nota> buscarPorId(Long id) {
-        return repository.findById(id)
+        Long idObrigatorio = Objects.requireNonNull(id, "id é obrigatório");
+        return repository.findById(idObrigatorio)
                 .map(entity -> new Nota(
                         entity.getId(),
                         entity.getAlunoId(),
@@ -95,6 +97,27 @@ public class NotaRepositoryJpa implements NotaRepository {
 
     @Override
     public List<Nota> buscarTodas() {
-        throw new UnsupportedOperationException("Unimplemented method 'buscarTodas'");
+        return repository.findAll()
+                .stream()
+                .map(entity -> new Nota(
+                        entity.getId(),
+                        entity.getAlunoId(),
+                        entity.getSimuladoId(),
+                        entity.getDisciplinaId(),
+                        entity.getValor()
+                ))
+                .toList();
+    }
+
+    @Override
+    public boolean existePorAlunoSimuladoDisciplina(Long alunoId, Long simuladoId, Long disciplinaId) {
+        Long alunoIdObrigatorio = Objects.requireNonNull(alunoId, "alunoId é obrigatório");
+        Long simuladoIdObrigatorio = Objects.requireNonNull(simuladoId, "simuladoId é obrigatório");
+        Long disciplinaIdObrigatorio = Objects.requireNonNull(disciplinaId, "disciplinaId é obrigatório");
+        return repository.existsByAlunoIdAndSimuladoIdAndDisciplinaId(
+                alunoIdObrigatorio,
+                simuladoIdObrigatorio,
+                disciplinaIdObrigatorio
+        );
     }
 }

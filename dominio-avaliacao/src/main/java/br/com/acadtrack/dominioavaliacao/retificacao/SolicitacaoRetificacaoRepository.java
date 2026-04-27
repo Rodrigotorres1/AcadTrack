@@ -11,4 +11,8 @@ public interface SolicitacaoRetificacaoRepository {
     Optional<SolicitacaoRetificacao> buscarPorId(Long id);
 
     List<SolicitacaoRetificacao> buscarTodas();
+
+    boolean existeEmAbertoPorNotaId(Long notaId);
+
+    List<SolicitacaoRetificacao> buscarPorNotaId(Long notaId);
 }

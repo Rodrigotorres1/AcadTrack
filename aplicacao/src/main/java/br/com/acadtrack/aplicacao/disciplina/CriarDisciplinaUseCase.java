@@ -14,6 +14,12 @@ public class CriarDisciplinaUseCase {
     }
 
     public Disciplina executar(String nome) {
+        String nomeNormalizado = Disciplina.normalizarNome(nome);
+        disciplinaRepository.buscarPorNomeNormalizado(nomeNormalizado)
+                .ifPresent(disciplina -> {
+                    throw new IllegalArgumentException("Já existe disciplina cadastrada com este nome");
+                });
+
         Disciplina disciplina = new Disciplina(null, nome);
         return disciplinaRepository.salvar(disciplina);
     }

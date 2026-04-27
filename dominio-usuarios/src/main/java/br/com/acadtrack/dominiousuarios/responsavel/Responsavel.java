@@ -7,6 +7,9 @@ public class Responsavel {
     private String email;
 
     public Responsavel(Long id, String nome, String email) {
+        if (nome == null || nome.isBlank()) {
+            throw new IllegalArgumentException("Nome do responsável é obrigatório");
+        }
         this.id = id;
         this.nome = nome;
         this.email = email;

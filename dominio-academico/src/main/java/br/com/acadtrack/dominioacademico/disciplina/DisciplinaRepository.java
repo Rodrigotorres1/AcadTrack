@@ -7,13 +7,13 @@ public interface DisciplinaRepository {
 
     Disciplina salvar(Disciplina disciplina);
 
-    Optional<Disciplina> buscarPorId(List<Long> disciplinasIds);
-
     Optional<Disciplina> buscarPorId(Long id);
 
-    List<Disciplina> buscarporIds(List<Long> ids);
+    Optional<Disciplina> buscarPorNomeNormalizado(String nomeNormalizado);
 
     List<Disciplina> buscarPorIds(List<Long> ids);
 
     List<Disciplina> buscarTodos();
+
+    boolean possuiVinculoAcademico(Long disciplinaId);
 }

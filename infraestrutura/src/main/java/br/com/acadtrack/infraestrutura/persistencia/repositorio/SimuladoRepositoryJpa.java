@@ -6,6 +6,7 @@ import br.com.acadtrack.infraestrutura.persistencia.entidade.SimuladoJpaEntity;
 import br.com.acadtrack.infraestrutura.persistencia.springdata.SimuladoSpringDataRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Objects;
 import java.util.Optional;
 
 @Repository
@@ -34,7 +35,18 @@ public class SimuladoRepositoryJpa implements SimuladoRepository {
 
     @Override
     public Optional<Simulado> buscarPorId(Long id) {
-        return repository.findById(id)
+        Long idObrigatorio = Objects.requireNonNull(id, "id é obrigatório");
+        return repository.findById(idObrigatorio)
+                .map(entity -> new Simulado(
+                        entity.getId(),
+                        entity.getDescricao()
+                ));
+    }
+
+    @Override
+    public Optional<Simulado> buscarPorDescricaoNormalizada(String descricao) {
+        String descricaoNormalizada = Objects.requireNonNull(descricao, "descrição é obrigatória").trim();
+        return repository.findFirstByDescricaoIgnoreCase(descricaoNormalizada)
                 .map(entity -> new Simulado(
                         entity.getId(),
                         entity.getDescricao()

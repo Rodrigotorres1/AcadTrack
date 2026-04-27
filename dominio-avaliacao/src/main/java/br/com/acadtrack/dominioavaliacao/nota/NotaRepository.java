@@ -17,4 +17,6 @@ public interface NotaRepository {
 
     List<Nota> buscarPorAlunoESimulado(Long alunoId, Long simuladoId);
 
+    boolean existePorAlunoSimuladoDisciplina(Long alunoId, Long simuladoId, Long disciplinaId);
+
 }

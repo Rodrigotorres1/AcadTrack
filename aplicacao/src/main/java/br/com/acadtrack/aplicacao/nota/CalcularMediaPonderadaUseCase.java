@@ -13,13 +13,16 @@ public class CalcularMediaPonderadaUseCase {
 
     private final NotaRepository notaRepository;
     private final SimuladoDisciplinaRepository simuladoDisciplinaRepository;
+    private final AvaliacaoAcademicaService avaliacaoAcademicaService;
 
     public CalcularMediaPonderadaUseCase(
             NotaRepository notaRepository,
-            SimuladoDisciplinaRepository simuladoDisciplinaRepository
+            SimuladoDisciplinaRepository simuladoDisciplinaRepository,
+            AvaliacaoAcademicaService avaliacaoAcademicaService
     ) {
         this.notaRepository = notaRepository;
         this.simuladoDisciplinaRepository = simuladoDisciplinaRepository;
+        this.avaliacaoAcademicaService = avaliacaoAcademicaService;
     }
 
     public double executar(Long alunoId, Long simuladoId) {
@@ -42,6 +45,6 @@ public class CalcularMediaPonderadaUseCase {
             return 0;
         }
 
-        return somaPonderada / somaPesos;
+        return avaliacaoAcademicaService.arredondarMedia(somaPonderada / somaPesos);
     }
 }

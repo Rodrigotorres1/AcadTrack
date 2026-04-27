@@ -3,6 +3,7 @@ package br.com.acadtrack.aplicacao.retificacao;
 import br.com.acadtrack.dominioavaliacao.nota.NotaRepository;
 import br.com.acadtrack.dominioavaliacao.retificacao.SolicitacaoRetificacao;
 import br.com.acadtrack.dominioavaliacao.retificacao.SolicitacaoRetificacaoRepository;
+import br.com.acadtrack.dominiocompartilhado.excecao.EntidadeNaoEncontradaException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -25,13 +26,22 @@ public class SolicitarRetificacaoNotaUseCase {
         }
 
         notaRepository.buscarPorId(notaId)
-                .orElseThrow(() -> new IllegalArgumentException("Nota não encontrada"));
+                .orElseThrow(() -> new EntidadeNaoEncontradaException("Nota não encontrada"));
+
+        if (justificativa == null || justificativa.isBlank()) {
+            throw new IllegalArgumentException("Justificativa é obrigatória");
+        }
+
+        if (solicitacaoRetificacaoRepository.existeEmAbertoPorNotaId(notaId)) {
+            throw new IllegalStateException("Já existe solicitação de retificação em aberto para esta nota");
+        }
 
         SolicitacaoRetificacao solicitacao = new SolicitacaoRetificacao(
                 null,
                 notaId,
                 justificativa,
-                "PENDENTE"
+                null,
+                SolicitacaoRetificacao.STATUS_PENDENTE
         );
 
         return solicitacaoRetificacaoRepository.salvar(solicitacao);

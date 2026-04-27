@@ -16,15 +16,23 @@ public class SolicitacaoRetificacaoJpaEntity {
 
     private Long notaId;
     private String justificativa;
+    private String justificativaDecisao;
     private String status;
 
     public SolicitacaoRetificacaoJpaEntity() {
     }
 
-    public SolicitacaoRetificacaoJpaEntity(Long id, Long notaId, String justificativa, String status) {
+    public SolicitacaoRetificacaoJpaEntity(
+            Long id,
+            Long notaId,
+            String justificativa,
+            String justificativaDecisao,
+            String status
+    ) {
         this.id = id;
         this.notaId = notaId;
         this.justificativa = justificativa;
+        this.justificativaDecisao = justificativaDecisao;
         this.status = status;
     }
 
@@ -44,6 +52,10 @@ public class SolicitacaoRetificacaoJpaEntity {
         return status;
     }
 
+    public String getJustificativaDecisao() {
+        return justificativaDecisao;
+    }
+
     public void setId(Long id) {
         this.id = id;
     }
@@ -54,6 +66,10 @@ public class SolicitacaoRetificacaoJpaEntity {
 
     public void setJustificativa(String justificativa) {
         this.justificativa = justificativa;
+    }
+
+    public void setJustificativaDecisao(String justificativaDecisao) {
+        this.justificativaDecisao = justificativaDecisao;
     }
 
     public void setStatus(String status) {

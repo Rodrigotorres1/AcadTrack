@@ -7,6 +7,7 @@ import br.com.acadtrack.infraestrutura.persistencia.springdata.SolicitacaoRetifi
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Repository
@@ -24,6 +25,7 @@ public class SolicitacaoRetificacaoRepositoryJpa implements SolicitacaoRetificac
                 solicitacao.getId(),
                 solicitacao.getNotaId(),
                 solicitacao.getJustificativa(),
+                solicitacao.getJustificativaDecisao(),
                 solicitacao.getStatus()
         );
 
@@ -33,17 +35,20 @@ public class SolicitacaoRetificacaoRepositoryJpa implements SolicitacaoRetificac
                 salva.getId(),
                 salva.getNotaId(),
                 salva.getJustificativa(),
+                salva.getJustificativaDecisao(),
                 salva.getStatus()
         );
     }
 
     @Override
     public Optional<SolicitacaoRetificacao> buscarPorId(Long id) {
-        return repository.findById(id)
+        Long idObrigatorio = Objects.requireNonNull(id, "id é obrigatório");
+        return repository.findById(idObrigatorio)
                 .map(entity -> new SolicitacaoRetificacao(
                         entity.getId(),
                         entity.getNotaId(),
                         entity.getJustificativa(),
+                        entity.getJustificativaDecisao(),
                         entity.getStatus()
                 ));
     }
@@ -56,6 +61,34 @@ public class SolicitacaoRetificacaoRepositoryJpa implements SolicitacaoRetificac
                         entity.getId(),
                         entity.getNotaId(),
                         entity.getJustificativa(),
+                        entity.getJustificativaDecisao(),
+                        entity.getStatus()
+                ))
+                .toList();
+    }
+
+    @Override
+    public boolean existeEmAbertoPorNotaId(Long notaId) {
+        Long notaIdObrigatorio = Objects.requireNonNull(notaId, "notaId é obrigatório");
+        return repository.existsByNotaIdAndStatusIn(
+                notaIdObrigatorio,
+                List.of(
+                        SolicitacaoRetificacao.STATUS_PENDENTE,
+                        SolicitacaoRetificacao.STATUS_EM_ANALISE
+                )
+        );
+    }
+
+    @Override
+    public List<SolicitacaoRetificacao> buscarPorNotaId(Long notaId) {
+        Long notaIdObrigatorio = Objects.requireNonNull(notaId, "notaId é obrigatório");
+        return repository.findByNotaId(notaIdObrigatorio)
+                .stream()
+                .map(entity -> new SolicitacaoRetificacao(
+                        entity.getId(),
+                        entity.getNotaId(),
+                        entity.getJustificativa(),
+                        entity.getJustificativaDecisao(),
                         entity.getStatus()
                 ))
                 .toList();
