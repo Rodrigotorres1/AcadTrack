@@ -11,6 +11,7 @@ import io.cucumber.java.pt.Então;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -23,6 +24,7 @@ public class CriarSimuladoSteps {
     private final List<Long> disciplinasIds = new ArrayList<>();
     private Simulado simulado;
     private Exception excecao;
+    private String descricaoSimulado;
 
     public CriarSimuladoSteps(
             TestContext context,
@@ -40,6 +42,7 @@ public class CriarSimuladoSteps {
         disciplinasIds.clear();
         simulado = null;
         excecao = null;
+        descricaoSimulado = "Simulado Principal " + UUID.randomUUID();
     }
 
     @Quando("ele informa as disciplinas {string} e {string}")
@@ -51,7 +54,7 @@ public class CriarSimuladoSteps {
             disciplinasIds.add(disciplina1.getId());
             disciplinasIds.add(disciplina2.getId());
 
-            simulado = criarSimuladoUseCase.executar("Simulado Principal", disciplinasIds);
+            simulado = criarSimuladoUseCase.executar(descricaoSimulado, disciplinasIds);
 
             context.setOperacaoExecutada(true);
         } catch (Exception e) {
@@ -64,7 +67,72 @@ public class CriarSimuladoSteps {
     @Quando("ele não informa nenhuma disciplina")
     public void eleNaoInformaNenhumaDisciplina() {
         try {
-            simulado = criarSimuladoUseCase.executar("Simulado Principal", List.of());
+            simulado = criarSimuladoUseCase.executar(descricaoSimulado, List.of());
+            context.setOperacaoExecutada(true);
+        } catch (Exception e) {
+            excecao = e;
+            context.setMensagem(e.getMessage());
+            context.setOperacaoExecutada(false);
+        }
+    }
+
+    @Quando("ele informa apenas a disciplina {string}")
+    public void eleInformaApenasADisciplina(String disciplinaNome) {
+        try {
+            Disciplina disciplina = criarDisciplinaUseCase.executar(disciplinaNome);
+            simulado = criarSimuladoUseCase.executar(descricaoSimulado, List.of(disciplina.getId()));
+            context.setOperacaoExecutada(true);
+        } catch (Exception e) {
+            excecao = e;
+            context.setMensagem(e.getMessage());
+            context.setOperacaoExecutada(false);
+        }
+    }
+
+    @Quando("ele informa a mesma disciplina {string} duas vezes")
+    public void eleInformaAMesmaDisciplinaDuasVezes(String disciplinaNome) {
+        try {
+            Disciplina disciplina = criarDisciplinaUseCase.executar(disciplinaNome);
+            simulado = criarSimuladoUseCase.executar(
+                    descricaoSimulado,
+                    List.of(disciplina.getId(), disciplina.getId())
+            );
+            context.setOperacaoExecutada(true);
+        } catch (Exception e) {
+            excecao = e;
+            context.setMensagem(e.getMessage());
+            context.setOperacaoExecutada(false);
+        }
+    }
+
+    @Quando("ele informa uma disciplina inexistente na composição")
+    public void eleInformaUmaDisciplinaInexistenteNaComposicao() {
+        try {
+            Disciplina disciplina = criarDisciplinaUseCase.executar("Biologia");
+            simulado = criarSimuladoUseCase.executar(descricaoSimulado, List.of(disciplina.getId(), 999999L));
+            context.setOperacaoExecutada(true);
+        } catch (Exception e) {
+            excecao = e;
+            context.setMensagem(e.getMessage());
+            context.setOperacaoExecutada(false);
+        }
+    }
+
+    @Dado("que já existe um simulado com descrição {string}")
+    public void queJaExisteUmSimuladoComDescricao(String descricao) {
+        queOCoordenadorDesejaCriarUmSimulado();
+        Disciplina disciplina1 = criarDisciplinaUseCase.executar("Física");
+        Disciplina disciplina2 = criarDisciplinaUseCase.executar("Química");
+        criarSimuladoUseCase.executar(descricao, List.of(disciplina1.getId(), disciplina2.getId()));
+        descricaoSimulado = descricao;
+    }
+
+    @Quando("ele tenta criar outro simulado com descrição {string}")
+    public void eleTentaCriarOutroSimuladoComDescricao(String descricao) {
+        try {
+            Disciplina disciplina1 = criarDisciplinaUseCase.executar("Geografia");
+            Disciplina disciplina2 = criarDisciplinaUseCase.executar("História");
+            simulado = criarSimuladoUseCase.executar(descricao, List.of(disciplina1.getId(), disciplina2.getId()));
             context.setOperacaoExecutada(true);
         } catch (Exception e) {
             excecao = e;
@@ -85,5 +153,33 @@ public class CriarSimuladoSteps {
         assertFalse(context.isOperacaoExecutada());
         assertNotNull(excecao);
         assertEquals("O simulado deve possuir pelo menos uma disciplina", context.getMensagem());
+    }
+
+    @Então("o sistema informa que o simulado deve possuir pelo menos duas disciplinas distintas")
+    public void oSistemaInformaQueOSimuladoDevePossuirPeloMenosDuasDisciplinasDistintas() {
+        assertFalse(context.isOperacaoExecutada());
+        assertNotNull(excecao);
+        assertEquals("O simulado deve possuir pelo menos duas disciplinas distintas", context.getMensagem());
+    }
+
+    @Então("o sistema informa que não é permitido vincular disciplina repetida no mesmo simulado")
+    public void oSistemaInformaQueNaoEPermitidoVincularDisciplinaRepetidaNoMesmoSimulado() {
+        assertFalse(context.isOperacaoExecutada());
+        assertNotNull(excecao);
+        assertEquals("Não é permitido vincular disciplina repetida no mesmo simulado", context.getMensagem());
+    }
+
+    @Então("o sistema informa que uma ou mais disciplinas não existem")
+    public void oSistemaInformaQueUmaOuMaisDisciplinasNaoExistem() {
+        assertFalse(context.isOperacaoExecutada());
+        assertNotNull(excecao);
+        assertEquals("Uma ou mais disciplinas não existem", context.getMensagem());
+    }
+
+    @Então("o sistema informa que já existe simulado cadastrado com esta descrição")
+    public void oSistemaInformaQueJaExisteSimuladoCadastradoComEstaDescricao() {
+        assertFalse(context.isOperacaoExecutada());
+        assertNotNull(excecao);
+        assertEquals("Já existe simulado cadastrado com esta descrição", context.getMensagem());
     }
 }

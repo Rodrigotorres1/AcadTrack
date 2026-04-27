@@ -6,6 +6,8 @@ import br.com.acadtrack.aplicacao.nota.LancarNotaUseCase;
 import br.com.acadtrack.aplicacao.simulado.CriarSimuladoUseCase;
 import br.com.acadtrack.bdd.support.TestContext;
 import br.com.acadtrack.dominioacademico.aluno.Aluno;
+import br.com.acadtrack.dominioacademico.aluno.AlunoRepository;
+import br.com.acadtrack.dominioacademico.aluno.SituacaoAcademica;
 import br.com.acadtrack.dominioacademico.disciplina.Disciplina;
 import br.com.acadtrack.dominioavaliacao.nota.Nota;
 import br.com.acadtrack.dominioavaliacao.simulado.Simulado;
@@ -24,10 +26,13 @@ public class LancarNotaSteps {
     private final CriarDisciplinaUseCase criarDisciplinaUseCase;
     private final CriarSimuladoUseCase criarSimuladoUseCase;
     private final LancarNotaUseCase lancarNotaUseCase;
+    private final AlunoRepository alunoRepository;
 
     private Aluno aluno;
     private Disciplina disciplina;
+    private Disciplina segundaDisciplina;
     private Simulado simulado;
+    private Simulado segundoSimulado;
     private Nota notaLancada;
     private Exception excecao;
 
@@ -36,13 +41,15 @@ public class LancarNotaSteps {
             CriarAlunoUseCase criarAlunoUseCase,
             CriarDisciplinaUseCase criarDisciplinaUseCase,
             CriarSimuladoUseCase criarSimuladoUseCase,
-            LancarNotaUseCase lancarNotaUseCase
+            LancarNotaUseCase lancarNotaUseCase,
+            AlunoRepository alunoRepository
     ) {
         this.context = context;
         this.criarAlunoUseCase = criarAlunoUseCase;
         this.criarDisciplinaUseCase = criarDisciplinaUseCase;
         this.criarSimuladoUseCase = criarSimuladoUseCase;
         this.lancarNotaUseCase = lancarNotaUseCase;
+        this.alunoRepository = alunoRepository;
     }
 
     @Dado("que o aluno {string} realizou o simulado")
@@ -60,6 +67,23 @@ public class LancarNotaSteps {
         );
     }
 
+    @Dado("que o aluno {string} possui nota {double} já lançada")
+    public void queOAlunoPossuiNotaJaLancada(String nomeAluno, Double valorNota) {
+        queOAlunoRealizouOSimulado(nomeAluno);
+        notaLancada = lancarNotaUseCase.executar(
+                aluno.getId(),
+                simulado.getId(),
+                disciplina.getId(),
+                valorNota
+        );
+
+        segundaDisciplina = criarDisciplinaUseCase.executar("Português " + nomeAluno);
+        segundoSimulado = criarSimuladoUseCase.executar(
+                "Simulado complementar " + nomeAluno,
+                List.of(segundaDisciplina.getId())
+        );
+    }
+
     @Quando("o professor lança a nota {double} para o aluno {string}")
     public void oProfessorLancaANotaParaOAluno(Double valorNota, String nomeAluno) {
         try {
@@ -67,6 +91,47 @@ public class LancarNotaSteps {
                     aluno.getId(),
                     simulado.getId(),
                     disciplina.getId(),
+                    valorNota
+            );
+            context.setOperacaoExecutada(true);
+        } catch (Exception e) {
+            excecao = e;
+            context.setMensagem(e.getMessage());
+            context.setOperacaoExecutada(false);
+        }
+    }
+
+    @Quando("o professor já lançou a nota {double} para o aluno {string}")
+    public void oProfessorJaLancouANotaParaOAluno(Double valorNota, String nomeAluno) {
+        oProfessorLancaANotaParaOAluno(valorNota, nomeAluno);
+        assertTrue(context.isOperacaoExecutada());
+        assertNotNull(notaLancada);
+    }
+
+    @Quando("o professor tenta lançar a nota {double} novamente para o mesmo aluno e disciplina")
+    public void oProfessorTentaLancarANotaNovamenteParaOMesmoAlunoEDisciplina(Double valorNota) {
+        try {
+            lancarNotaUseCase.executar(
+                    aluno.getId(),
+                    simulado.getId(),
+                    disciplina.getId(),
+                    valorNota
+            );
+            context.setOperacaoExecutada(true);
+        } catch (Exception e) {
+            excecao = e;
+            context.setMensagem(e.getMessage());
+            context.setOperacaoExecutada(false);
+        }
+    }
+
+    @Quando("o professor lança uma nova nota {double} para o aluno {string} em outra disciplina")
+    public void oProfessorLancaUmaNovaNotaParaOAlunoEmOutraDisciplina(Double valorNota, String nomeAluno) {
+        try {
+            notaLancada = lancarNotaUseCase.executar(
+                    aluno.getId(),
+                    segundoSimulado.getId(),
+                    segundaDisciplina.getId(),
                     valorNota
             );
             context.setOperacaoExecutada(true);
@@ -89,5 +154,32 @@ public class LancarNotaSteps {
         assertFalse(context.isOperacaoExecutada());
         assertNotNull(excecao);
         assertEquals("A nota deve estar entre 0 e 10", context.getMensagem());
+    }
+
+    @Então("o sistema informa que já existe nota lançada para este aluno, simulado e disciplina")
+    public void oSistemaInformaDuplicidadeDeNota() {
+        assertFalse(context.isOperacaoExecutada());
+        assertNotNull(excecao);
+        assertEquals("Já existe nota lançada para este aluno, simulado e disciplina", context.getMensagem());
+    }
+
+    @Então("o sistema atualiza a média do aluno para {double}")
+    public void oSistemaAtualizaAMediaDoAlunoPara(Double mediaEsperada) {
+        Aluno alunoAtualizado = alunoRepository.buscarPorId(aluno.getId())
+                .orElseThrow(() -> new AssertionError("Aluno não encontrado após lançamento de nota"));
+
+        assertTrue(context.isOperacaoExecutada());
+        assertNull(excecao);
+        assertEquals(mediaEsperada, alunoAtualizado.getMediaAtual(), 0.001);
+    }
+
+    @Então("o sistema atualiza a situação acadêmica do aluno para {string}")
+    public void oSistemaAtualizaASituacaoAcademicaDoAlunoPara(String situacaoEsperada) {
+        Aluno alunoAtualizado = alunoRepository.buscarPorId(aluno.getId())
+                .orElseThrow(() -> new AssertionError("Aluno não encontrado após lançamento de nota"));
+
+        assertTrue(context.isOperacaoExecutada());
+        assertNull(excecao);
+        assertEquals(SituacaoAcademica.valueOf(situacaoEsperada), alunoAtualizado.getSituacaoAcademica());
     }
 }
