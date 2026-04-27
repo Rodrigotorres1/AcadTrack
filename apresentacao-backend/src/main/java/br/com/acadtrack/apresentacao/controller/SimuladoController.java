@@ -4,6 +4,7 @@ import br.com.acadtrack.aplicacao.simulado.CriarSimuladoUseCase;
 import br.com.acadtrack.apresentacao.dto.CriarSimuladoRequest;
 import br.com.acadtrack.apresentacao.dto.SimuladoResponse;
 import br.com.acadtrack.dominioavaliacao.simulado.Simulado;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,7 +21,7 @@ public class SimuladoController {
     }
 
     @PostMapping
-    public ResponseEntity<SimuladoResponse> criar(@RequestBody CriarSimuladoRequest dto) {
+    public ResponseEntity<SimuladoResponse> criar(@RequestBody @Valid CriarSimuladoRequest dto) {
         Simulado simulado = criarSimuladoUseCase.executar(
                 dto.getDescricao(),
                 dto.getDisciplinasIds()

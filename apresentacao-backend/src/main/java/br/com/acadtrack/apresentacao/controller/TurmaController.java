@@ -4,6 +4,7 @@ import br.com.acadtrack.aplicacao.turma.CriarTurmaUseCase;
 import br.com.acadtrack.apresentacao.dto.CriarTurmaRequest;
 import br.com.acadtrack.apresentacao.dto.TurmaResponse;
 import br.com.acadtrack.dominioacademico.turma.Turma;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,7 +20,7 @@ public class TurmaController {
     }
 
     @PostMapping
-    public ResponseEntity<TurmaResponse> criar(@RequestBody CriarTurmaRequest request) {
+    public ResponseEntity<TurmaResponse> criar(@RequestBody @Valid CriarTurmaRequest request) {
         Turma turma = criarTurmaUseCase.executar(request.getNome());
 
         return ResponseEntity

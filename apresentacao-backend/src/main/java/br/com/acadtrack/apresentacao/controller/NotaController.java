@@ -7,6 +7,7 @@ import br.com.acadtrack.aplicacao.nota.RankingAlunosUseCase;
 import br.com.acadtrack.apresentacao.dto.LancarNotaRequest;
 import br.com.acadtrack.apresentacao.dto.NotaResponse;
 import br.com.acadtrack.dominioavaliacao.nota.Nota;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -34,7 +35,7 @@ public class NotaController {
     }
 
     @PostMapping
-    public ResponseEntity<NotaResponse> criar(@RequestBody LancarNotaRequest request) {
+    public ResponseEntity<NotaResponse> criar(@RequestBody @Valid LancarNotaRequest request) {
         Nota nota = lancarNotaUseCase.executar(
                 request.getAlunoId(),
                 request.getSimuladoId(),
@@ -71,6 +72,10 @@ public class NotaController {
 
     @GetMapping("/ranking/top")
     public ResponseEntity<Map<String, Object>> top() {
-        return ResponseEntity.ok(rankingAlunosUseCase.executar().get(0));
+        List<Map<String, Object>> ranking = rankingAlunosUseCase.executar();
+        if (ranking.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(ranking.get(0));
     }
 }

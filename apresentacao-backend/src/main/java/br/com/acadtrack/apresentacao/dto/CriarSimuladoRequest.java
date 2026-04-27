@@ -1,10 +1,16 @@
 package br.com.acadtrack.apresentacao.dto;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+
 import java.util.List;
 
 public class CriarSimuladoRequest {
 
-private String descricao;
+    @NotBlank(message = "Descrição do simulado é obrigatória")
+    private String descricao;
+
+    @NotEmpty(message = "Informe ao menos uma disciplina para o simulado")
     private List<Long> disciplinasIds;
 
     public String getDescricao() {

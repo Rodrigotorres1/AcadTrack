@@ -7,12 +7,20 @@ public class SolicitacaoRetificacaoResponse {
     private Long id;
     private Long notaId;
     private String justificativa;
+    private String justificativaDecisao;
     private String status;
 
-    public SolicitacaoRetificacaoResponse(Long id, Long notaId, String justificativa, String status) {
+    public SolicitacaoRetificacaoResponse(
+            Long id,
+            Long notaId,
+            String justificativa,
+            String justificativaDecisao,
+            String status
+    ) {
         this.id = id;
         this.notaId = notaId;
         this.justificativa = justificativa;
+        this.justificativaDecisao = justificativaDecisao;
         this.status = status;
     }
 
@@ -21,6 +29,7 @@ public class SolicitacaoRetificacaoResponse {
                 solicitacao.getId(),
                 solicitacao.getNotaId(),
                 solicitacao.getJustificativa(),
+                solicitacao.getJustificativaDecisao(),
                 solicitacao.getStatus()
         );
     }
@@ -39,5 +48,9 @@ public class SolicitacaoRetificacaoResponse {
 
     public String getStatus() {
         return status;
+    }
+
+    public String getJustificativaDecisao() {
+        return justificativaDecisao;
     }
 }

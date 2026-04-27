@@ -4,12 +4,14 @@ import br.com.acadtrack.dominioavaliacao.nota.Nota;
 
 public class NotaResponse {
 
+    private Long id;
     private Long alunoId;
     private Long simuladoId;
     private Long disciplinaId;
     private double valor;
 
-    public NotaResponse(Long alunoId, Long simuladoId, Long disciplinaId, double valor) {
+    public NotaResponse(Long id, Long alunoId, Long simuladoId, Long disciplinaId, double valor) {
+        this.id = id;
         this.alunoId = alunoId;
         this.simuladoId = simuladoId;
         this.disciplinaId = disciplinaId;
@@ -18,11 +20,16 @@ public class NotaResponse {
 
     public static NotaResponse fromDomain(Nota nota) {
         return new NotaResponse(
+                nota.getId(),
                 nota.getAlunoId(),
                 nota.getSimuladoId(),
                 nota.getDisciplinaId(),
                 nota.getValor()
         );
+    }
+
+    public Long getId() {
+        return id;
     }
 
     public Long getAlunoId() {

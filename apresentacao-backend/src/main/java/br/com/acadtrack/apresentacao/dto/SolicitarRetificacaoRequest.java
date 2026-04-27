@@ -1,16 +1,17 @@
 package br.com.acadtrack.apresentacao.dto;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
 public class SolicitarRetificacaoRequest {
 
-    private Long id;
+    @NotNull(message = "Nota é obrigatória")
     private Long notaId;
+
+    @NotBlank(message = "Justificativa é obrigatória")
     private String justificativa;
 
     public SolicitarRetificacaoRequest() {
-    }
-
-    public Long getId() {
-        return id;
     }
 
     public Long getNotaId() {
@@ -19,5 +20,13 @@ public class SolicitarRetificacaoRequest {
 
     public String getJustificativa() {
         return justificativa;
+    }
+
+    public void setNotaId(Long notaId) {
+        this.notaId = notaId;
+    }
+
+    public void setJustificativa(String justificativa) {
+        this.justificativa = justificativa;
     }
 }
