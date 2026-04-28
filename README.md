@@ -27,6 +27,7 @@ Ele apoia decisões acadêmicas com base em fluxos reais de avaliação, acesso 
 - [Como rodar o projeto](#-como-rodar-o-projeto)
 - [Testes](#-testes-bdd-com-cucumber)
 - [API e Swagger](#-api-e-swagger)
+- [Apresentação e entregáveis](#-apresentação-e-entregáveis)
 - [Documentação acadêmica](#-documentação-acadêmica)
 
 ## 📌 Escopo da Entrega 1
@@ -285,6 +286,15 @@ Com o backend em execução, a documentação interativa da API pode ser acessad
 - `http://localhost:9001/swagger-ui/index.html`
 
 Observação: é necessário iniciar o backend antes de abrir o Swagger.
+
+---
+
+## 🎬 Apresentação e entregáveis
+
+- Relatório da entrega: [adicionar link](https://example.com)
+- Slides da apresentação: [adicionar link](https://example.com)
+- Story map: [adicionar link](https://example.com)
+- Prototipo: [adicionar link](https://github.com/Rodrigotorres1/AcadTrack)
 
 ---
 
