@@ -2,11 +2,18 @@
 
 **Status:** ✅ Entrega 1 concluída
 
-| |
-|:--:|
-| ![Java 17](https://img.shields.io/badge/Java-17-007396?logo=openjdk&logoColor=white) ![Spring Boot 3.x](https://img.shields.io/badge/Spring%20Boot-3.x-6DB33F?logo=springboot&logoColor=white) ![Maven 3.8+](https://img.shields.io/badge/Maven-3.8%2B-C71A36?logo=apachemaven&logoColor=white) ![Cucumber BDD](https://img.shields.io/badge/Cucumber-BDD-23D96C?logo=cucumber&logoColor=white) ![JPA Hibernate](https://img.shields.io/badge/JPA%2FHibernate-59666C?logo=hibernate&logoColor=white) |
-| Sistema backend de gestão acadêmica com foco em simulados, avaliação de desempenho e fluxo de retificação de notas |
-| 🚀 [Começar](#como-rodar-o-projeto) • 📚 [Documentação](#documentação-acadêmica) • 🏗️ [Arquitetura](#arquitetura) • 🧪 [Testes](#testes-bdd-com-cucumber) |
+<p align="center">
+
+<img src="https://img.shields.io/badge/Java-17-007396?logo=openjdk&logoColor=white" />
+<img src="https://img.shields.io/badge/Spring%20Boot-3.x-6DB33F?logo=springboot&logoColor=white" />
+<img src="https://img.shields.io/badge/Maven-3.8%2B-C71A36?logo=apachemaven&logoColor=white" />
+<img src="https://img.shields.io/badge/Cucumber-BDD-23D96C?logo=cucumber&logoColor=white" />
+<img src="https://img.shields.io/badge/JPA%2FHibernate-59666C?logo=hibernate&logoColor=white" />
+
+<br><br>
+Sistema backend de gestão acadêmica com foco em simulados, avaliação de desempenho e fluxo de retificação de notas 
+<br><br>
+🎡 [Rodar](#como-rodar-o-projeto) • 📄 [Documentação](#documentação-acadêmica) • ⛮ [Arquitetura](#arquitetura) 
 
 Sistema backend para gestão acadêmica com foco em simulados, lançamento de notas, análise de desempenho e fluxo de retificação, desenvolvido com regras de negócio não triviais e validações orientadas ao domínio.
 
