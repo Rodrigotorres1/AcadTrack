@@ -10,11 +10,6 @@
 <img src="https://img.shields.io/badge/Cucumber-BDD-23D96C?logo=cucumber&logoColor=white" />
 <img src="https://img.shields.io/badge/JPA%2FHibernate-59666C?logo=hibernate&logoColor=white" />
 
-<br><br>
-Sistema backend de gestão acadêmica com foco em simulados, avaliação de desempenho e fluxo de retificação de notas 
-<br><br>
-🎡 [Rodar](#como-rodar-o-projeto) • 📄 [Documentação](#documentação-acadêmica) • ⛮ [Arquitetura](#arquitetura) 
-
 Sistema backend para gestão acadêmica com foco em simulados, lançamento de notas, análise de desempenho e fluxo de retificação, desenvolvido com regras de negócio não triviais e validações orientadas ao domínio.
 
 O sistema é utilizado para acompanhar o desempenho acadêmico de alunos a partir de simulados, permitindo análise de resultados, identificação de risco e correção de inconsistências por meio de retificação de notas.
