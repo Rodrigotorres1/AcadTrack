@@ -4,8 +4,8 @@ import br.com.acadtrack.aplicacao.nota.BuscarNotasPorAlunoUseCase;
 import br.com.acadtrack.aplicacao.nota.CalcularMediaPonderadaUseCase;
 import br.com.acadtrack.aplicacao.nota.LancarNotaUseCase;
 import br.com.acadtrack.aplicacao.nota.RankingAlunosUseCase;
-import br.com.acadtrack.apresentacao.dto.LancarNotaRequest;
-import br.com.acadtrack.apresentacao.dto.NotaResponse;
+import br.com.acadtrack.apresentacao.dto.request.LancarNotaRequest;
+import br.com.acadtrack.apresentacao.dto.response.NotaResponse;
 import br.com.acadtrack.dominioavaliacao.nota.Nota;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -65,11 +65,13 @@ public class NotaController {
         return ResponseEntity.ok(media);
     }
 
+    @Deprecated(since = "1.0", forRemoval = false)
     @GetMapping("/ranking")
     public ResponseEntity<List<Map<String, Object>>> ranking() {
         return ResponseEntity.ok(rankingAlunosUseCase.executar());
     }
 
+    @Deprecated(since = "1.0", forRemoval = false)
     @GetMapping("/ranking/top")
     public ResponseEntity<Map<String, Object>> top() {
         List<Map<String, Object>> ranking = rankingAlunosUseCase.executar();

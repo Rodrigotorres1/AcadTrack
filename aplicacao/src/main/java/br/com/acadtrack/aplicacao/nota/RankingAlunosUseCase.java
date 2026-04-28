@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 @Service
+@Deprecated(since = "1.0", forRemoval = false)
 public class RankingAlunosUseCase {
 
     private final NotaRepository notaRepository;

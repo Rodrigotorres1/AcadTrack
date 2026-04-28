@@ -1,13 +1,13 @@
 package br.com.acadtrack.apresentacao.controller;
 
-import br.com.acadtrack.aplicacao.retificacao.AprovarRetificacaoNotaUseCase;
+import br.com.acadtrack.aplicacao.retificacao.AprovarRetificacaoUseCase;
 import br.com.acadtrack.aplicacao.retificacao.IniciarAnaliseRetificacaoUseCase;
-import br.com.acadtrack.aplicacao.retificacao.ReprovarRetificacaoNotaUseCase;
-import br.com.acadtrack.aplicacao.retificacao.SolicitarRetificacaoNotaUseCase;
-import br.com.acadtrack.apresentacao.dto.AprovarRetificacaoRequest;
-import br.com.acadtrack.apresentacao.dto.ReprovarRetificacaoRequest;
-import br.com.acadtrack.apresentacao.dto.SolicitacaoRetificacaoResponse;
-import br.com.acadtrack.apresentacao.dto.SolicitarRetificacaoRequest;
+import br.com.acadtrack.aplicacao.retificacao.ReprovarRetificacaoUseCase;
+import br.com.acadtrack.aplicacao.retificacao.SolicitarRetificacaoUseCase;
+import br.com.acadtrack.apresentacao.dto.request.AprovarRetificacaoRequest;
+import br.com.acadtrack.apresentacao.dto.request.ReprovarRetificacaoRequest;
+import br.com.acadtrack.apresentacao.dto.request.SolicitarRetificacaoRequest;
+import br.com.acadtrack.apresentacao.dto.response.SolicitacaoRetificacaoResponse;
 import br.com.acadtrack.dominioavaliacao.retificacao.SolicitacaoRetificacao;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -18,26 +18,26 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/retificacoes")
 public class RetificacaoController {
 
-    private final SolicitarRetificacaoNotaUseCase solicitarRetificacaoNotaUseCase;
+    private final SolicitarRetificacaoUseCase solicitarRetificacaoUseCase;
     private final IniciarAnaliseRetificacaoUseCase iniciarAnaliseRetificacaoUseCase;
-    private final AprovarRetificacaoNotaUseCase aprovarRetificacaoNotaUseCase;
-    private final ReprovarRetificacaoNotaUseCase reprovarRetificacaoNotaUseCase;
+    private final AprovarRetificacaoUseCase aprovarRetificacaoUseCase;
+    private final ReprovarRetificacaoUseCase reprovarRetificacaoUseCase;
 
     public RetificacaoController(
-            SolicitarRetificacaoNotaUseCase solicitarRetificacaoNotaUseCase,
+            SolicitarRetificacaoUseCase solicitarRetificacaoUseCase,
             IniciarAnaliseRetificacaoUseCase iniciarAnaliseRetificacaoUseCase,
-            AprovarRetificacaoNotaUseCase aprovarRetificacaoNotaUseCase,
-            ReprovarRetificacaoNotaUseCase reprovarRetificacaoNotaUseCase
+            AprovarRetificacaoUseCase aprovarRetificacaoUseCase,
+            ReprovarRetificacaoUseCase reprovarRetificacaoUseCase
     ) {
-        this.solicitarRetificacaoNotaUseCase = solicitarRetificacaoNotaUseCase;
+        this.solicitarRetificacaoUseCase = solicitarRetificacaoUseCase;
         this.iniciarAnaliseRetificacaoUseCase = iniciarAnaliseRetificacaoUseCase;
-        this.aprovarRetificacaoNotaUseCase = aprovarRetificacaoNotaUseCase;
-        this.reprovarRetificacaoNotaUseCase = reprovarRetificacaoNotaUseCase;
+        this.aprovarRetificacaoUseCase = aprovarRetificacaoUseCase;
+        this.reprovarRetificacaoUseCase = reprovarRetificacaoUseCase;
     }
 
     @PostMapping
     public ResponseEntity<SolicitacaoRetificacaoResponse> solicitar(@RequestBody @Valid SolicitarRetificacaoRequest request) {
-        SolicitacaoRetificacao solicitacao = solicitarRetificacaoNotaUseCase.executar(
+        SolicitacaoRetificacao solicitacao = solicitarRetificacaoUseCase.executar(
                 request.getNotaId(),
                 request.getJustificativa()
         );
@@ -57,7 +57,7 @@ public class RetificacaoController {
             @PathVariable Long solicitacaoId,
             @RequestBody @Valid AprovarRetificacaoRequest request
     ) {
-        SolicitacaoRetificacao solicitacao = aprovarRetificacaoNotaUseCase.executar(
+        SolicitacaoRetificacao solicitacao = aprovarRetificacaoUseCase.executar(
                 solicitacaoId,
                 request.getNovoValorNota(),
                 request.getJustificativaDecisao()
@@ -70,7 +70,7 @@ public class RetificacaoController {
             @PathVariable Long solicitacaoId,
             @RequestBody @Valid ReprovarRetificacaoRequest request
     ) {
-        SolicitacaoRetificacao solicitacao = reprovarRetificacaoNotaUseCase.executar(
+        SolicitacaoRetificacao solicitacao = reprovarRetificacaoUseCase.executar(
                 solicitacaoId,
                 request.getJustificativaDecisao()
         );

@@ -1,8 +1,8 @@
 package br.com.acadtrack.apresentacao.controller;
 
 import br.com.acadtrack.aplicacao.simulado.VincularDisciplinaSimuladoUseCase;
-import br.com.acadtrack.apresentacao.dto.SimuladoDisciplinaResponse;
-import br.com.acadtrack.apresentacao.dto.VincularDisciplinaSimuladoRequest;
+import br.com.acadtrack.apresentacao.dto.request.VincularDisciplinaSimuladoRequest;
+import br.com.acadtrack.apresentacao.dto.response.SimuladoDisciplinaResponse;
 import br.com.acadtrack.dominioavaliacao.simulado.SimuladoDisciplina;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;

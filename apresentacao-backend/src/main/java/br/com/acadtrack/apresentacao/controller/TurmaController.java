@@ -1,8 +1,8 @@
 package br.com.acadtrack.apresentacao.controller;
 
 import br.com.acadtrack.aplicacao.turma.CriarTurmaUseCase;
-import br.com.acadtrack.apresentacao.dto.CriarTurmaRequest;
-import br.com.acadtrack.apresentacao.dto.TurmaResponse;
+import br.com.acadtrack.apresentacao.dto.request.CriarTurmaRequest;
+import br.com.acadtrack.apresentacao.dto.response.TurmaResponse;
 import br.com.acadtrack.dominioacademico.turma.Turma;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;

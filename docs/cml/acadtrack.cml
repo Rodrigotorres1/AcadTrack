@@ -1,0 +1,189 @@
+Domain AcadTrack {
+
+  Subdomain GestaoAcademica
+  Subdomain AvaliacaoDesempenho
+  Subdomain Usuarios
+}
+
+
+BoundedContext GestaoAcademicaContext implements GestaoAcademica {
+
+  Aggregate Turma {
+    Entity Turma
+    aggregateRoot
+
+    Long id
+    String nome
+    boolean ativa
+  }
+
+  Aggregate Aluno {
+    Entity Aluno
+    aggregateRoot
+
+    Long id
+    String nome
+    String matricula
+    boolean ativo
+    -Turma turma
+  }
+
+  Aggregate Simulado {
+    Entity Simulado
+    aggregateRoot
+
+    Long id
+    String descricao
+    boolean finalizado
+    -Turma turma
+    List<DisciplinaSimulado> disciplinas
+  }
+
+  Aggregate Disciplina {
+    Entity Disciplina
+    aggregateRoot
+
+    Long id
+    String nome
+    boolean ativa
+  }
+
+  Entity DisciplinaSimulado {
+    Long disciplinaId
+    double peso
+  }
+
+  Service GestaoAcademicaService {
+    void criarDisciplina(Disciplina disciplina)
+    void inativarDisciplina(Long disciplinaId)
+    void ativarDisciplina(Long disciplinaId)
+    void vincularAlunoATurma(Aluno aluno, Turma turma)
+    void criarSimuladoComDisciplinas(Simulado simulado)
+    void definirPesoEDisciplinaNoSimulado(Simulado simulado)
+    void finalizarSimulado(Simulado simulado)
+  }
+
+  Repository AlunoRepository {
+    Aluno findById(Long id)
+    List<Aluno> findAll()
+  }
+
+  Repository TurmaRepository {
+    Turma findById(Long id)
+    List<Turma> findAll()
+  }
+
+  Repository SimuladoRepository {
+    Simulado findById(Long id)
+    List<Simulado> findAll()
+  }
+
+  Repository DisciplinaRepository {
+    Disciplina findById(Long id)
+    List<Disciplina> findAll()
+  }
+}
+
+
+BoundedContext AvaliacaoDesempenhoContext implements AvaliacaoDesempenho {
+
+  Aggregate Nota {
+    Entity Nota
+    aggregateRoot
+
+    Long id
+    Long alunoId
+    Long simuladoId
+    Long disciplinaId
+    double valor
+  }
+
+  Aggregate SolicitacaoRetificacao {
+    Entity SolicitacaoRetificacao
+    aggregateRoot
+
+    Long id
+    String justificativa
+    String statusRetificacao
+    Long notaId
+  }
+
+  ValueObject MediaPonderada {
+    double valor
+  }
+
+  Service AvaliacaoService {
+    void lancarNotaIndividual(Nota nota)
+    double calcularMediaPonderada(Long alunoId, Long simuladoId)
+    void gerarRanking(Long simuladoId)
+    void solicitarRetificacaoDeNota(SolicitacaoRetificacao solicitacao)
+  }
+
+  Repository NotaRepository {
+    Nota findById(Long id)
+    List<Nota> findAll()
+  }
+
+  Repository SolicitacaoRetificacaoRepository {
+    SolicitacaoRetificacao findById(Long id)
+    List<SolicitacaoRetificacao> findAll()
+  }
+}
+
+
+BoundedContext UsuariosContext implements Usuarios {
+
+  Aggregate Professor {
+    Entity Professor
+    aggregateRoot
+
+    Long id
+    String nome
+    String email
+  }
+
+  Aggregate Responsavel {
+    Entity Responsavel
+    aggregateRoot
+
+    Long id
+    String nome
+    String email
+  }
+
+  ValueObject Email {
+    String endereco
+  }
+
+  Service UsuariosService {
+    void vincularResponsavel(Long alunoId, Responsavel responsavel)
+    void desvincularResponsavel(Long alunoId, Responsavel responsavel)
+  }
+
+  Repository ProfessorRepository {
+    Professor findById(Long id)
+    List<Professor> findAll()
+  }
+
+  Repository ResponsavelRepository {
+    Responsavel findById(Long id)
+    List<Responsavel> findAll()
+  }
+}
+
+
+ContextMap AcadTrackContextMap {
+
+  contains GestaoAcademicaContext
+  contains AvaliacaoDesempenhoContext
+  contains UsuariosContext
+
+  GestaoAcademicaContext -> AvaliacaoDesempenhoContext
+  [CUSTOMER_SUPPLIER]
+
+  GestaoAcademicaContext -> UsuariosContext
+  [CONFORMIST]
+
+  AvaliacaoDesempenhoContext -> UsuariosContext
+  [CONFORMIST]
+}

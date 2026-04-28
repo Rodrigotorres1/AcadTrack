@@ -1,0 +1,50 @@
+package br.com.acadtrack.apresentacao.dto.response;
+
+import br.com.acadtrack.dominioavaliacao.nota.Nota;
+
+public class NotaResponse {
+
+    private Long id;
+    private Long alunoId;
+    private Long simuladoId;
+    private Long disciplinaId;
+    private double valor;
+
+    public NotaResponse(Long id, Long alunoId, Long simuladoId, Long disciplinaId, double valor) {
+        this.id = id;
+        this.alunoId = alunoId;
+        this.simuladoId = simuladoId;
+        this.disciplinaId = disciplinaId;
+        this.valor = valor;
+    }
+
+    public static NotaResponse fromDomain(Nota nota) {
+        return new NotaResponse(
+                nota.getId(),
+                nota.getAlunoId(),
+                nota.getSimuladoId(),
+                nota.getDisciplinaId(),
+                nota.getValor()
+        );
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public Long getAlunoId() {
+        return alunoId;
+    }
+
+    public Long getSimuladoId() {
+        return simuladoId;
+    }
+
+    public Long getDisciplinaId() {
+        return disciplinaId;
+    }
+
+    public double getValor() {
+        return valor;
+    }
+}

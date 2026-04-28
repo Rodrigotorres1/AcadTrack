@@ -1,8 +1,8 @@
 package br.com.acadtrack.apresentacao.controller;
 
 import br.com.acadtrack.aplicacao.simulado.CriarSimuladoUseCase;
-import br.com.acadtrack.apresentacao.dto.CriarSimuladoRequest;
-import br.com.acadtrack.apresentacao.dto.SimuladoResponse;
+import br.com.acadtrack.apresentacao.dto.request.CriarSimuladoRequest;
+import br.com.acadtrack.apresentacao.dto.response.SimuladoResponse;
 import br.com.acadtrack.dominioavaliacao.simulado.Simulado;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;

@@ -3,10 +3,10 @@ package br.com.acadtrack.bdd.steps;
 import br.com.acadtrack.aplicacao.aluno.CriarAlunoUseCase;
 import br.com.acadtrack.aplicacao.disciplina.CriarDisciplinaUseCase;
 import br.com.acadtrack.aplicacao.nota.LancarNotaUseCase;
-import br.com.acadtrack.aplicacao.retificacao.AprovarRetificacaoNotaUseCase;
+import br.com.acadtrack.aplicacao.retificacao.AprovarRetificacaoUseCase;
 import br.com.acadtrack.aplicacao.retificacao.IniciarAnaliseRetificacaoUseCase;
-import br.com.acadtrack.aplicacao.retificacao.ReprovarRetificacaoNotaUseCase;
-import br.com.acadtrack.aplicacao.retificacao.SolicitarRetificacaoNotaUseCase;
+import br.com.acadtrack.aplicacao.retificacao.ReprovarRetificacaoUseCase;
+import br.com.acadtrack.aplicacao.retificacao.SolicitarRetificacaoUseCase;
 import br.com.acadtrack.aplicacao.simulado.CriarSimuladoUseCase;
 import br.com.acadtrack.bdd.support.TestContext;
 import br.com.acadtrack.dominioacademico.aluno.Aluno;
@@ -31,10 +31,10 @@ public class SolicitarRetificacaoNotaSteps {
     private final CriarDisciplinaUseCase criarDisciplinaUseCase;
     private final CriarSimuladoUseCase criarSimuladoUseCase;
     private final LancarNotaUseCase lancarNotaUseCase;
-    private final SolicitarRetificacaoNotaUseCase solicitarRetificacaoNotaUseCase;
+    private final SolicitarRetificacaoUseCase solicitarRetificacaoUseCase;
     private final IniciarAnaliseRetificacaoUseCase iniciarAnaliseRetificacaoUseCase;
-    private final AprovarRetificacaoNotaUseCase aprovarRetificacaoNotaUseCase;
-    private final ReprovarRetificacaoNotaUseCase reprovarRetificacaoNotaUseCase;
+    private final AprovarRetificacaoUseCase aprovarRetificacaoUseCase;
+    private final ReprovarRetificacaoUseCase reprovarRetificacaoUseCase;
     private final NotaRepository notaRepository;
     private final AlunoRepository alunoRepository;
 
@@ -52,10 +52,10 @@ public class SolicitarRetificacaoNotaSteps {
             CriarDisciplinaUseCase criarDisciplinaUseCase,
             CriarSimuladoUseCase criarSimuladoUseCase,
             LancarNotaUseCase lancarNotaUseCase,
-            SolicitarRetificacaoNotaUseCase solicitarRetificacaoNotaUseCase,
+            SolicitarRetificacaoUseCase solicitarRetificacaoUseCase,
             IniciarAnaliseRetificacaoUseCase iniciarAnaliseRetificacaoUseCase,
-            AprovarRetificacaoNotaUseCase aprovarRetificacaoNotaUseCase,
-            ReprovarRetificacaoNotaUseCase reprovarRetificacaoNotaUseCase,
+            AprovarRetificacaoUseCase aprovarRetificacaoUseCase,
+            ReprovarRetificacaoUseCase reprovarRetificacaoUseCase,
             NotaRepository notaRepository,
             AlunoRepository alunoRepository
     ) {
@@ -64,10 +64,10 @@ public class SolicitarRetificacaoNotaSteps {
         this.criarDisciplinaUseCase = criarDisciplinaUseCase;
         this.criarSimuladoUseCase = criarSimuladoUseCase;
         this.lancarNotaUseCase = lancarNotaUseCase;
-        this.solicitarRetificacaoNotaUseCase = solicitarRetificacaoNotaUseCase;
+        this.solicitarRetificacaoUseCase = solicitarRetificacaoUseCase;
         this.iniciarAnaliseRetificacaoUseCase = iniciarAnaliseRetificacaoUseCase;
-        this.aprovarRetificacaoNotaUseCase = aprovarRetificacaoNotaUseCase;
-        this.reprovarRetificacaoNotaUseCase = reprovarRetificacaoNotaUseCase;
+        this.aprovarRetificacaoUseCase = aprovarRetificacaoUseCase;
+        this.reprovarRetificacaoUseCase = reprovarRetificacaoUseCase;
         this.notaRepository = notaRepository;
         this.alunoRepository = alunoRepository;
     }
@@ -103,7 +103,7 @@ public class SolicitarRetificacaoNotaSteps {
 
     private void solicitarRetificacao(String justificativa) {
         try {
-            retificacao = solicitarRetificacaoNotaUseCase.executar(nota.getId(), justificativa);
+            retificacao = solicitarRetificacaoUseCase.executar(nota.getId(), justificativa);
             context.setOperacaoExecutada(true);
         } catch (Exception e) {
             excecao = e;
@@ -151,7 +151,7 @@ public class SolicitarRetificacaoNotaSteps {
     @Quando("o responsável aprova a retificação alterando a nota para {double} com justificativa {string}")
     public void oResponsavelAprovaARetificacaoAlterandoANotaPara(Double novoValor, String justificativaDecisao) {
         try {
-            retificacao = aprovarRetificacaoNotaUseCase.executar(retificacao.getId(), novoValor, justificativaDecisao);
+            retificacao = aprovarRetificacaoUseCase.executar(retificacao.getId(), novoValor, justificativaDecisao);
             context.setOperacaoExecutada(true);
         } catch (Exception e) {
             excecao = e;
@@ -163,7 +163,7 @@ public class SolicitarRetificacaoNotaSteps {
     @Quando("o responsável reprova a solicitação de retificação com justificativa {string}")
     public void oResponsavelReprovaASolicitacaoDeRetificacao(String justificativaDecisao) {
         try {
-            retificacao = reprovarRetificacaoNotaUseCase.executar(retificacao.getId(), justificativaDecisao);
+            retificacao = reprovarRetificacaoUseCase.executar(retificacao.getId(), justificativaDecisao);
             context.setOperacaoExecutada(true);
         } catch (Exception e) {
             excecao = e;

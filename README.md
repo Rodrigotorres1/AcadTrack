@@ -2,6 +2,8 @@
 
 **Status:** ✅ Entrega 1 concluída
 
+
+
 <p align="center">
 
 <img src="https://img.shields.io/badge/Java-17-007396?logo=openjdk&logoColor=white" />
@@ -9,6 +11,7 @@
 <img src="https://img.shields.io/badge/Maven-3.8%2B-C71A36?logo=apachemaven&logoColor=white" />
 <img src="https://img.shields.io/badge/Cucumber-BDD-23D96C?logo=cucumber&logoColor=white" />
 <img src="https://img.shields.io/badge/JPA%2FHibernate-59666C?logo=hibernate&logoColor=white" />
+
 
 Sistema backend para gestão acadêmica com foco em simulados, lançamento de notas, análise de desempenho e fluxo de retificação, desenvolvido com regras de negócio não triviais e validações orientadas ao domínio.
 
@@ -20,6 +23,7 @@ Ele apoia decisões acadêmicas com base em fluxos reais de avaliação, acesso 
 - [Escopo da Entrega 1](#-escopo-da-entrega-1)
 - [Funcionalidades principais](#-funcionalidades-principais-6-oficiais)
 - [Arquitetura](#-arquitetura)
+- [Personas](#-personas-do-sistema)
 - [Como rodar o projeto](#-como-rodar-o-projeto)
 - [Testes](#-testes-bdd-com-cucumber)
 - [API e Swagger](#-api-e-swagger)
@@ -170,6 +174,20 @@ Essa organização permite evoluir regras sem acoplamento indevido com framework
 
 ---
 
+## 👤 Personas do sistema
+
+- **Coordenador**: gerencia disciplinas, simulados, turmas e vínculos.
+- **Professor**: lança notas e participa do fluxo de avaliação/retificação.
+- **Aluno**: acompanha notas, desempenho e solicita retificação.
+- **Responsável**: consulta dados do aluno vinculado conforme permissões.
+
+Observação importante sobre a entrega atual:
+
+- O **Coordenador** está modelado como **persona de negócio** (documentação e cenários BDD), mas **ainda não está implementado tecnicamente como role/perfil de autenticação** no backend.
+- As ações do coordenador são expostas por controllers acadêmicos (por exemplo, disciplinas, simulados e turmas), sem controle de acesso por perfil nesta versão.
+
+---
+
 ## 📦 Estrutura do projeto
 
 ```text
@@ -183,7 +201,8 @@ AcadTrack/
 ├── apresentacao-backend/
 ├── bdd/
 │   └── acadtrackbdd/
-├── Documentacao/
+├── docs/
+│   └── cml/
 └── pom.xml
 ```
 
@@ -273,7 +292,11 @@ Observação: é necessário iniciar o backend antes de abrir o Swagger.
 
 Os artefatos da Parte 1 (story map, protótipos, CML, descrição de domínio e materiais de apoio) estão organizados na pasta de documentação do projeto:
 
-- `Documentacao/` (equivalente ao pacote de docs da entrega)
+- `docs/` (equivalente ao pacote de docs da entrega)
+- `docs/cml/acadtrack.cml` (modelo CML consolidado)
+- `docs/story_map_personas.md` (story map com personas e releases)
+- `docs/story_map.pdf` (story map visual em PDF)
+- `docs/organizacao_codigo.md` (convencoes de organizacao do codigo)
 
 ---
 

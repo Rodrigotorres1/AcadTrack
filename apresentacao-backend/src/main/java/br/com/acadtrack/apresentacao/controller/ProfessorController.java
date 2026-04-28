@@ -1,8 +1,8 @@
 package br.com.acadtrack.apresentacao.controller;
 
 import br.com.acadtrack.aplicacao.professor.CriarProfessorUseCase;
-import br.com.acadtrack.apresentacao.dto.CriarProfessorRequest;
-import br.com.acadtrack.apresentacao.dto.ProfessorResponse;
+import br.com.acadtrack.apresentacao.dto.request.CriarProfessorRequest;
+import br.com.acadtrack.apresentacao.dto.response.ProfessorResponse;
 import br.com.acadtrack.dominiousuarios.professor.Professor;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
