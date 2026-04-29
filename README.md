@@ -18,7 +18,7 @@ Sistema backend para gestão acadêmica com foco em simulados, lançamento de no
 O sistema é utilizado para acompanhar o desempenho acadêmico de alunos a partir de simulados, permitindo análise de resultados, identificação de risco e correção de inconsistências por meio de retificação de notas.
 Ele apoia decisões acadêmicas com base em fluxos reais de avaliação, acesso responsável e revisão de resultados.
 
-## 🔎 Sumário rápido
+## 🔎 Sumário
 
 - [Escopo da Entrega 1](#-escopo-da-entrega-1)
 - [Funcionalidades principais](#-funcionalidades-principais-6-oficiais)
