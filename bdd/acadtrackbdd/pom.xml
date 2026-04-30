@@ -6,9 +6,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>br.com.acadtrack</groupId>
-        <artifactId>acadtrack</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <groupId>g8</groupId>
+        <artifactId>AcadTrack-pai</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -17,45 +17,45 @@
 
     <dependencies>
         <dependency>
-            <groupId>br.com.acadtrack</groupId>
+            <groupId>g8</groupId>
             <artifactId>apresentacao-backend</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>0.0.1-SNAPSHOT</version>
         </dependency>
 
         <dependency>
-            <groupId>br.com.acadtrack</groupId>
+            <groupId>g8</groupId>
             <artifactId>aplicacao</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>0.0.1-SNAPSHOT</version>
         </dependency>
 
         <dependency>
-            <groupId>br.com.acadtrack</groupId>
+            <groupId>g8</groupId>
             <artifactId>infraestrutura</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>0.0.1-SNAPSHOT</version>
         </dependency>
 
         <dependency>
-            <groupId>br.com.acadtrack</groupId>
+            <groupId>g8</groupId>
             <artifactId>dominio-academico</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>0.0.1-SNAPSHOT</version>
         </dependency>
 
         <dependency>
-            <groupId>br.com.acadtrack</groupId>
+            <groupId>g8</groupId>
             <artifactId>dominio-avaliacao</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>0.0.1-SNAPSHOT</version>
         </dependency>
 
         <dependency>
-            <groupId>br.com.acadtrack</groupId>
+            <groupId>g8</groupId>
             <artifactId>dominio-usuarios</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>0.0.1-SNAPSHOT</version>
         </dependency>
 
         <dependency>
-            <groupId>br.com.acadtrack</groupId>
+            <groupId>g8</groupId>
             <artifactId>dominio-compartilhado</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>0.0.1-SNAPSHOT</version>
         </dependency>
 
         <dependency>

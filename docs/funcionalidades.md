@@ -1,23 +1,26 @@
 # Funcionalidades e Regras de Negocio
 
+> **Medidas no sistema:** ao **lancar** ou **aprovar retificacao**, o cadastro do aluno usa **media global simples** e **situacao academica**. Consultas de **media ponderada**, **ranking** e parte da **analise por simulado** usam pesos da composicao — ver [`descricao_do_dominio.md`](descricao_do_dominio.md) (secao *Medidas de desempenho*) e [`README.md`](../README.md).
+
 ## 1. Lancar nota
 
 **Regra de negocio:**
 O professor pode lancar a nota de um aluno em uma disciplina de um simulado, desde que o valor informado esteja dentro do intervalo permitido pelo sistema.
 
 **Por que nao e CRUD:**
-Nao se trata apenas de salvar um numero no banco. O sistema aplica validacao sobre o valor da nota antes de registrar a informacao.
+Nao se trata apenas de salvar um numero no banco. O sistema aplica validacao sobre o valor da nota antes de registrar a informacao e **recalcula a media global simples e a situacao academica do aluno** apos o lancamento.
 
 **Validacoes:**
 - A nota deve estar entre 0 e 10
 - A nota deve estar associada a um aluno, um simulado e uma disciplina
+- Disciplina **ativa**; nao permitido segundo lancamento para o mesmo (aluno, simulado, disciplina)
 
 ---
 
 ## 2. Calcular media ponderada
 
 **Regra de negocio:**
-A media do aluno e calculada com base nas notas obtidas e nos pesos definidos para cada disciplina do simulado.
+Para um **simulado concreto**, a media do aluno combina as notas obtidas com os **pesos** definidos para cada disciplina **naquele** simulado (nao substitui por si so a media global simples usada na situacao registrada no cadastro).
 
 **Por que nao e CRUD:**
 Essa funcionalidade exige processamento de dados, combinacao entre notas e pesos e aplicacao de formula de calculo, nao sendo apenas cadastro ou leitura de dados.

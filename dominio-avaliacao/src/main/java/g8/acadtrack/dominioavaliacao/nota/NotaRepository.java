@@ -1,0 +1,22 @@
+package g8.acadtrack.dominioavaliacao.nota;
+
+import java.util.List;
+import java.util.Optional;
+
+public interface NotaRepository {
+
+    Nota salvar(Nota nota);
+
+    Optional<Nota> buscarPorId(Long id);
+
+    List<Nota> buscarPorAlunoId(Long alunoId);
+
+    List<Nota> buscarPorSimuladoId(Long simuladoId);
+
+    List<Nota> buscarTodas();
+
+    List<Nota> buscarPorAlunoESimulado(Long alunoId, Long simuladoId);
+
+    boolean existePorAlunoSimuladoDisciplina(Long alunoId, Long simuladoId, Long disciplinaId);
+
+}

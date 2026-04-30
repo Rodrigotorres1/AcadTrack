@@ -8,13 +8,13 @@ O AcadTrack e um sistema web voltado para o gerenciamento de simulados academico
 
 ## Dominio Principal (Core Domain)
 
-O dominio principal do sistema e a Gestao Academica, responsavel pelas principais regras de negocio. Nesse dominio, estao incluidas as funcionalidades relacionadas a criacao e gerenciamento de simulados, a definicao de disciplinas e seus respectivos pesos, ao calculo de medias ponderadas e a geracao de ranking de alunos. Esse dominio representa o nucleo do sistema, concentrando a logica mais relevante e de maior valor para o negocio.
+O dominio principal do sistema e a Gestao Academica, responsavel pelas principais regras de negocio. Incluem-se a criacao e gestao de simulados, disciplinas com **pesos por disciplina no simulado**, **consultas de media ponderada por simulado**, **ranking por simulado** e o acompanhamento do desempenho dentro dessa estrutura. Ja a sintese da **situacao do aluno no cadastro** deriva da **media global simples** de todas as notas (detalhes na secao "Medidas de desempenho"). Esse nucleo agrega valor ao negocio da instituicao.
 
 ---
 
 ## Dominio de Suporte
 
-O dominio de suporte e o dominio de Avaliacao, que atua no processamento das informacoes geradas no sistema. Nesse contexto, ele e responsavel pelo processamento das notas, pelo calculo das medias ponderadas e pela ordenacao e classificacao dos alunos com base no desempenho.
+O dominio de suporte e o dominio de Avaliacao, que atua no processamento das informacoes avaliativas. Inclui o lancamento e retificacao de notas e o uso da **media global simples** para atualizar a situacao registada no aluno, alem das operacoes de **media ponderada** e ordenacao relativas ao desempenho **por simulado**.
 
 ---
 
@@ -26,7 +26,7 @@ O dominio generico do sistema e o dominio de Usuarios, responsavel pelo gerencia
 
 # Atores do sistema
 
-Os principais atores do sistema sao o coordenador, o professor e o aluno. O coordenador e responsavel por cadastrar simulados, definir disciplinas e pesos, gerenciar turmas, visualizar o ranking geral e encerrar simulados. O professor atua no processo avaliativo, sendo responsavel por lancar notas dos alunos, corrigir notas e acompanhar o desempenho das turmas. Ja o aluno interage com o sistema principalmente para visualizar suas notas, acompanhar sua posicao no ranking e analisar seu desempenho ao longo das avaliacoes.
+Os principais atores do sistema sao o coordenador, o professor e o aluno. O coordenador e responsavel por cadastrar simulados, definir disciplinas e pesos, gerenciar turmas e visualizar rankings por simulado. O professor atua no processo avaliativo, lancando notas e acompanhando turmas. O aluno acompanha notas, ranking e desempenho ao longo das avaliacoes (no modelo atual a consulta autosservico pode concentrar-se nas APIs e fluxos expostos aos responsaveis conforme documentacao).
 
 ---
 
@@ -39,23 +39,32 @@ Durante o desenvolvimento do sistema, foi adotada uma linguagem onipresente para
 - Coordenador: responsavel pela gestao academica
 - Simulado: avaliacao organizada no sistema
 - Disciplina: componente avaliado
-- Nota: resultado obtido pelo aluno
-- Ranking: classificacao dos alunos com base no desempenho
-- Media ponderada: calculo da media considerando pesos das disciplinas
-- Solicitacao de retificacao: pedido de revisao de uma nota realizado pelo aluno
+- Nota: resultado obtido pelo aluno num par (simulado, disciplina)
+- Ranking (por simulado): ordenacao dos alunos naquele simulado pela **media ponderada**
+- **Media global simples**: media aritmetica de todas as notas do aluno; atualiza media e **situacao academica** registadas no cadastro do aluno
+- **Media ponderada (por simulado)**: media do aluno restrita a um simulado, usando os **pesos** das disciplinas nesse simulado
+- Solicitacao de retificacao: pedido de revisao de uma nota sujeito ao fluxo de estados
 
 ---
 
-# Regras de negocio principais
+# Medidas de desempenho (duas definicoes complementares)
 
-- Um simulado deve possuir pelo menos uma disciplina associada para ser criado
-- Cada disciplina associada a um simulado pode possuir um peso especifico, que deve ser considerado no calculo da media
-- A media ponderada do aluno deve ser calculada com base nas notas obtidas em cada disciplina e nos respectivos pesos definidos
-- O sistema deve permitir o lancamento de notas apenas para alunos vinculados a turma do simulado
-- Um simulado finalizado nao pode ser editado nem ter disciplinas ou pesos alterados
-- O ranking deve ser gerado automaticamente com base na media ponderada dos alunos, ordenando do maior para o menor desempenho
-- Em caso de empate no ranking, o sistema deve aplicar um criterio de desempate (ex: maior nota na disciplina de maior peso)
-- A solicitacao de retificacao de nota deve ser registrada com status inicial `PENDENTE`, nao alterando automaticamente a nota
-- Apenas professores ou coordenadores podem alterar notas ou validar solicitacoes de retificacao
-- Um aluno so pode estar vinculado a uma turma por vez no contexto de um mesmo periodo academico
-- O sistema deve garantir a integridade dos dados, impedindo inconsistencias como notas sem aluno, disciplina ou simulado associado
+Para evitar ambiguidade na avaliacao academica:
+
+1. **Media global simples** — cada nota do aluno conta igual para uma media aritmetica global; essa media e a base para **APROVADO / RECUPERACAO / REPROVADO** persistidos no agregado **Aluno** apos **lancar nota** ou **aprovar retificacao**.
+2. **Media ponderada por simulado** — para cada simulado, as notas naquelas disciplinas sao combinadas com os pesos da composicao; serve para **consulta explicita de media no simulado**, **ranking** daquele simulado e **historico por simulado** na analise de desempenho consolidada.
+
+Estas duas medidas coexistem de forma **intencional**: a primeira sintetiza trajetoria amplia do **aluno**; a segunda reflete a estrutura pedagogica de cada avaliacao simulada.
+
+---
+
+# Regras de negocio principais (alinhadas a implementacao atual)
+
+- Um **simulado** e criado com **pelo menos duas disciplinas distintas**, todas existentes e **sem repeticao** na mesma composicao; a descricao do simulado e **unica** (comparacao normalizada).
+- Disciplinas podem ter **pesos** na composicao do simulado; esses pesos entram na **media ponderada por simulado** e no **ranking** daquele simulado.
+- **Media ponderada por simulado**: calculada somente no ambito desse simulado (notas do aluno naquelas disciplinas + pesos definidos).
+- **Media global simples** e **situacao academica** no cadastro do **Aluno**: apos **lancamento de nota** ou **aprovacao de retificacao**, recalculam-se a media aritmetica de **todas** as notas do aluno e a situacao (>= 7 aprovado; >= 5 recuperacao; senao reprovado).
+- **Nota**: valor entre 0 e 10; nao e permitido segundo lancamento para o mesmo **(aluno, simulado, disciplina)**; **disciplina inativa** nao recebe lancamento.
+- **Ranking por simulado**: ordenacao pela media ponderada **decrescente**; empates ficam na ordem em que o conjunto e montado (sem criterio adicional de desempate no codigo atual).
+- **Solicitacao de retificacao**: registrada como `PENDENTE`; transicoes ate decisao; na **aprovacao**, a nota e alterada e dispara o mesmo recalculo da media global simples / situacao no aluno.
+- Integridade referencial: notas referenciam aluno, simulado e disciplina existentes (validado nos casos de uso).

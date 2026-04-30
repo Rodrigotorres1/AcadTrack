@@ -12,18 +12,19 @@
         <relativePath/>
     </parent>
 
-    <groupId>br.com.acadtrack</groupId>
-    <artifactId>acadtrack</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <groupId>g8</groupId>
+    <artifactId>AcadTrack-pai</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
         <module>aplicacao</module>
         <module>apresentacao-backend</module>
+        <module>apresentacao-frontend</module>
+        <module>dominio-compartilhado</module>
         <module>dominio-academico</module>
         <module>dominio-avaliacao</module>
         <module>dominio-usuarios</module>
-        <module>dominio-compartilhado</module>
         <module>infraestrutura</module>
         <module>bdd/acadtrackbdd</module>
     </modules>

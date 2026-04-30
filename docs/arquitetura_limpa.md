@@ -2,6 +2,8 @@
 
 O sistema AcadTrack foi estruturado seguindo os principios da Arquitetura Limpa, organizando o codigo em camadas bem definidas e com responsabilidades especificas. Essa abordagem garante separacao de responsabilidades, baixo acoplamento e maior facilidade de manutencao.
 
+**Maven e pacotes Java:** o agregador multi-modulo usa `groupId` `g8`, artifactId do pai **`AcadTrack-pai`**, versão **`0.0.1-SNAPSHOT`** (alinhamento ao modelo da disciplina); os tipos ficam sob o namespace `g8.acadtrack.*`, com raiz física em `src/.../g8/acadtrack/`.
+
 ## Camadas
 
 ### Dominio

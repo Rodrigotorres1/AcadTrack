@@ -50,7 +50,17 @@ Os principais objetos de valor identificados no sistema sao:
 
 - Email
 - Peso da disciplina
-- Media ponderada
+- Media ponderada (por simulado, segundo pesos)
+- Media global simples (agregacao de todas as notas do aluno para situacao registada)
+
+### Medias duas nocoes sob regras distintas
+
+O codigo distingue dois numeros relacionados ao desempenho:
+
+- **Media global simples:** media aritmetica sobre **todas** as notas do aluno. Usada onde o agregado **Aluno** e atualizado (apos lancamento de nota ou aprovacao de retificacao) para guardar media e **situacao academica**, via `AvaliacaoAcademicaService`.
+- **Media ponderada por simulado:** combina valores com os pesos de `SimuladoDisciplina` para aquele simulado. Usada nas consultas de media por simulado, ranking e trechos da analise de desempenho por avaliacao.
+
+A situacao oficial do cadastro **nao** e so a ultima media ponderada de um simulado; parte da media global simples acima.
 
 ### Agregados
 Os agregados foram organizados em torno das entidades principais do dominio, como:
@@ -88,4 +98,7 @@ No nivel operacional, o sistema foi implementado com foco na execucao pratica da
 - Organizacao em modulos de dominio, aplicacao, infraestrutura e apresentacao
 - Automatizacao dos cenarios BDD com Cucumber
 - Validacao das funcionalidades por meio de testes de comportamento e testes dos fluxos principais do sistema
+- **Separacao deliberada**: media global simples (persistida para situacao academica no aluno) versus media ponderada por simulado em ranking/consultas ancoradas nos pesos da composicao
 - Implementacao de controle de acesso por perfil (incluindo coordenador tecnico) permanece como evolucao planejada
+
+Na API REST, dados de entrada passam por validacao (formato de e-mail, campos obrigatorios). Para **cadastro de aluno**, o e-mail e tratado como **unico** (case-insensitive); duplicidade responde com **409 Conflict** quando aplicavel.

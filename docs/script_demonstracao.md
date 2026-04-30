@@ -6,15 +6,27 @@ Este roteiro foi pensado para apresentacao da 1a entrega com foco nas 6 funciona
 
 - Subir backend:
   - `mvn clean install`
-  - `mvn spring-boot:run -pl apresentacao-backend -Dspring-boot.run.arguments=--server.port=9001`
+  - `mvn spring-boot:run -pl apresentacao-backend` (porta **8080** por defeito; outra porta: `-Dspring-boot.run.arguments=--server.port=9001`)
 - Abrir Swagger:
-  - `http://localhost:9001/swagger-ui/index.html`
+  - `http://localhost:8080/swagger-ui/index.html`
 
 Sugestao: execute os passos na ordem abaixo para reduzir retrabalho com IDs.
 
 Importante:
 - Preferencialmente use banco limpo antes da demo.
 - Se houver dados anteriores, os IDs podem variar e os exemplos com IDs devem sempre usar os valores retornados nas respostas anteriores.
+
+### Como interpretar as respostas (HTTP)
+
+| Situação | Código típico | O que verificar |
+|----------|---------------|-----------------|
+| Criação bem-sucedida | **201 Created** | Corpo com o recurso gerado; guarde o `id` para os próximos passos. |
+| Leitura ou operação sem mudança de recurso | **200 OK** | Corpo conforme o endpoint (lista, detalhe, etc.). |
+| Requisição inválida (JSON, campos faltando, regra de negócio) | **400 Bad Request** | Mensagem de erro; confira o body do Swagger e envie só os campos do DTO. |
+| Recurso não existe | **404 Not Found** | Confirme o `id` usado e se a ordem do roteiro foi respeitada. |
+| Conflito (ex.: duplicidade, estado inválido) | **409 Conflict** | Ajuste dados ou ordem do fluxo. |
+
+Dica: no PowerShell, escape aspas em JSON (`\"`) ou use um arquivo `.json` com `curl -d @arquivo.json` para evitar corpo inválido e **400**.
 
 ## 2) Dados base (usar no inicio)
 

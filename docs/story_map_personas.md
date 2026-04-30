@@ -19,7 +19,7 @@ Este story map organiza as funcionalidades por personas e releases.
 | Coordenador | Gerenciar simulados | Criar simulado com composicao valida, bloquear disciplina inexistente/repetida, validar descricao duplicada | Versao de simulado, janela de aplicacao, consistencia global de pesos |
 | Coordenador | Gerenciar vinculacoes academicas | Vincular aluno a turma e organizar fluxo academico basico | Regras por periodo, bloqueios avancados de alocacao, validacao de capacidade por turma |
 | Professor | Lancar e validar notas | Lancar nota (0 a 10), bloquear duplicidade, atualizar media/situacao automaticamente | Lancamento em lote, importacao por planilha, politicas de arredondamento |
-| Professor | Tratar retificacao | Iniciar analise, aprovar/reprovar com justificativa, atualizar nota e desempenho | SLA de analise, anexos/evidencias, auditoria detalhada de decisoes |
+| Professor | Tratar retificacao | Iniciar analise, aprovar/reprovar com justificativa, atualizar nota e desempenho | SLA de analise, documentos/anexos de suporte à decisão, auditoria detalhada |
 | Aluno | Solicitar retificacao | Abrir solicitacao com justificativa obrigatoria, impedir solicitacoes em aberto duplicadas | Acompanhar timeline da solicitacao, notificacoes de status, historico pessoal |
 | Aluno | Acompanhar desempenho | Visualizar resultado consolidado e risco academico (via fluxos existentes) | Recomendacoes personalizadas, metas de recuperacao, graficos de evolucao |
 | Responsavel | Consultar informacoes do aluno | Consultar notas, simulados e desempenho com vinculo/permissoes validos | Permissoes granulares por recurso, alertas proativos, relatorios comparativos |
