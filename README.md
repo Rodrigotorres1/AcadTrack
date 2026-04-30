@@ -52,11 +52,6 @@ Ele apoia decisões acadêmicas com base em fluxos reais de avaliação, acesso 
 
 > Clique na imagem para abrir o screencast completo.
 
-### 🗺️ Prévia do story map (imagem clicável)
-
-[![Abrir story map do AcadTrack](./docs/img/storymap-thumb.png)](https://sistema-acadtrack.avion.io/share/8rNKdtSMQmCNdr3u3)
-
-> Clique na imagem para abrir o story map completo no Avion.
 
 ## 📌 Escopo da Entrega 1
 
@@ -91,22 +86,7 @@ Os principais termos do domínio utilizados de forma consistente no sistema são
 - **Responsável**: usuário com permissão de acesso ao aluno;
 - **Retificação**: processo de revisão de nota.
 - **Média global simples**: média aritmética de todas as notas do aluno; alimenta média e situação registadas no cadastro do aluno.
-- **Média ponderada (por simulado)**: combinação com pesos definidos por disciplina dentro de um simulado; usa-se em ranking, média por simulado na API e métricas de desempenho por avaliação.
 
----
-
-## 📐 Médias e situação acadêmica (regra explícita)
-
-O sistema usa **dois conceitos numéricos distintos**, com papéis definidos — basta repetir estas definições no relatório e na defesa:
-
-| Conceito | Como é obtido | Uso principal |
-|----------|----------------|---------------|
-| **Média global simples** | Média aritmética sobre **todas** as notas do aluno (cada `(simulado, disciplina)` com mesmo peso no somatório) | Atualização do **aluno** ao lançar nota ou **aprovar** retificação: média armazenada + **situação académica** (≥ 7 → aprovado; ≥ 5 em recuperação; senão reprovado) |
-| **Média ponderada por simulado** | Para um par (aluno, simulado), combina valores com os **pesos** da composição (`SimuladoDisciplina`) | **Consulta** de média no simulado, **ranking** daquele simulado e **analise por simulado** na consolidação de desempenho |
-
-Ou seja: a situação académica do aluno não é derivada diretamente da média ponderada de um único simulado; esse indicador existe para avaliações **dentro da estrutura** do simulado (pesos, ranking entre pares).
-
----
 
 ## 🎯 Objetivo do sistema
 
@@ -116,8 +96,6 @@ Implementar um sistema acadêmico com funcionalidades de média/alta complexidad
 - regras de negócio centralizadas no domínio e casos de uso;
 - impacto consistente entre entidades (nota registada → atualização da **média global simples** e da **situação** no aluno; outros fluxos usam média ponderada por simulado — ver secção anterior);
 - validação automatizada por cenários Gherkin/Cucumber.
-
-O sistema não se limita a operações CRUD, sendo baseado em fluxos completos com regras de negócio e decisões que impactam diretamente o estado do sistema.
 
 ---
 
@@ -149,7 +127,7 @@ Cada fluxo contempla:
 - persistência e consulta em banco via repositórios;
 - resultado funcional observável para o usuário.
 
-Em outras palavras, itens como "calcular média", "gerar ranking" ou "criar aluno" não são apresentados de forma isolada, mas como partes de jornadas maiores com começo, meio e fim.
+Em outras palavras, itens como "calcular média" ou "criar aluno" não são apresentados de forma isolada, mas como partes de jornadas maiores com começo, meio e fim.
 
 ### Fluxos funcionais consolidados
 
@@ -158,7 +136,6 @@ Em outras palavras, itens como "calcular média", "gerar ranking" ou "criar alun
 - lançar nota;
 - buscar notas;
 - calcular média;
-- calcular média ponderada;
 - analisar desempenho;
 - gerar ranking.
 
@@ -191,19 +168,6 @@ Em outras palavras, itens como "calcular média", "gerar ranking" ou "criar alun
 - vincular aluno à turma;
 - criar/ativar/inativar disciplina.
 
----
-
-## 🛠️ Tecnologias utilizadas
-
-| Tecnologia | Papel no projeto |
-|---|---|
-| Java 17+ (LTS 17 recomendado no relatório; testado também com JDK 25) | Linguagem principal da aplicação |
-| Spring Boot | Framework para API e configuração da aplicação |
-| JPA (Hibernate) | Mapeamento objeto-relacional e persistência |
-| Maven | Build e gerenciamento de dependências |
-| Cucumber (BDD) | Testes de comportamento com cenários Gherkin |
-
----
 
 ## 🏗️ Arquitetura
 
@@ -261,8 +225,10 @@ AcadTrack/
 
 ### Pré-requisitos
 
-- **Java (JDK)** — mínimo **17** (definido pelo Spring Boot / `pom.xml`). **Referência recomendada para o relatório e para a disciplina:** **JDK 17 LTS**. Verifica com `java -version`; em Windows costuma usar-se também `JAVA_HOME`.
-- **Nota sobre versões:** o código foi **validado com sucesso** (`mvnw clean verify`, subida do backend) num ambiente de desenvolvimento com **JDK 25**. Isso não substitui o requisito académico se o relatório especificar **17**: nesse caso, indica **17** como oficial e, se quiseres, acrescenta *“compatível acima do mínimo; testado também com JDK 25 no grupo”*.
+- **Java (JDK)** — mínimo **17** (definido pelo Spring Boot / `pom.xml`). 
+
+- **Nota sobre versões:** o código foi **validado com sucesso** (`mvnw clean verify`, subida do backend) num ambiente de desenvolvimento com **JDK 25**. 
+
 - **Maven**, de uma destas formas na **raiz do repo** (`pom.xml`):
 
 | Situação | Como invocar |
@@ -308,8 +274,6 @@ Ou **IDE**: abrir `AcadTrackApplication.java` (`apresentacao-backend`) → **Run
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\free-ports-if-needed.ps1
 ```
-
-(libera só **8080** e **9001** se estiverem **em Java**; outros programas só aviso.)
 
 Detalhes: [`scripts/README.md`](scripts/README.md).
 
