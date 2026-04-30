@@ -252,18 +252,15 @@ AcadTrack/
 .\mvnw.cmd spring-boot:run -pl apresentacao-backend
 ```
 
-Equivalente com Maven global instalado em qualquer shell:  
-`mvn clean install`, `mvn spring-boot:run -pl apresentacao-backend`.
-
 ### Script `run-backend.ps1` (porta livre automática)
 
-O ficheiro [`scripts/run-backend.ps1`](scripts/run-backend.ps1) **usa o Maven instalado** (`MAVEN_HOME` ou `tools\apache-maven-3.9.9` sob `%USERPROFILE%`). **Não chama `mvnw`**. Se só tiveres Maven via wrapper neste projeto, mantém-te nos comandos `.\mvnw.cmd` acima ou instala Maven e define `MAVEN_HOME`.
+O ficheiro [`scripts/run-backend.ps1`](scripts/run-backend.ps1) **usa o Maven instalado**
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\run-backend.ps1
 ```
 
-Este script usa a **primeira porta livre** entre **8080–8299** e imprime o URL real do Swagger (`-Port 9002` fixa porta). Se **8080** estiver ocupada, passa à seguinte no intervalo.
+Este script usa a **primeira porta livre** entre **8080–8299** e imprime o URL real do Swagger.
 
 ### IDE ou Maven sem terminal
 
@@ -297,7 +294,6 @@ Detalhes: [`scripts/README.md`](scripts/README.md).
 .\mvnw.cmd -pl bdd/acadtrackbdd test
 ```
 
-Na primeira cópia do repo pode ser útil primeiro `.\mvnw.cmd install -DskipTests` para publicar artefactos `g8:*` no `.m2` local antes de `test` apenas no submódulo BDD.
 
 ### Depois de subir
 
