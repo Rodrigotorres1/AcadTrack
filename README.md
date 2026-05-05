@@ -203,7 +203,7 @@ AcadTrack/
 ├── .mvn/                    (Maven Wrapper)
 ├── aplicacao/
 ├── apresentacao-backend/
-├── apresentacao-frontend/   (placeholder; REST no backend)
+├── apresentacao-frontend/   (camada web: HTML, CSS e JavaScript)
 ├── bdd/
 │   └── acadtrackbdd/
 ├── docs/
@@ -240,6 +240,56 @@ AcadTrack/
 
 ### Comandos rápidos (wrapper no Windows — recomendado)
 
+**Passo a passo para rodar pelo terminal**
+
+1. Abra o PowerShell na raiz do projeto, onde fica o arquivo `pom.xml`.
+
+2. Execute o backend Spring Boot junto com os módulos dependentes:
+
+```powershell
+.\mvnw.cmd -pl apresentacao-backend -am spring-boot:run
+```
+
+3. Acesse a interface web no navegador:
+
+```text
+http://localhost:8080/
+```
+
+4. Acesse o Swagger, se quiser testar a API diretamente:
+
+```text
+http://localhost:8080/swagger-ui/index.html
+```
+
+5. Se a porta `8080` estiver ocupada, rode em outra porta:
+
+```powershell
+.\mvnw.cmd -pl apresentacao-backend -am spring-boot:run "-Dspring-boot.run.arguments=--server.port=8081"
+```
+
+Nesse caso, acesse:
+
+```text
+http://localhost:8081/
+```
+
+**Observação sobre a camada web**
+
+Os arquivos da interface ficam organizados em:
+
+```text
+apresentacao-frontend/
+```
+
+E também são mantidos em:
+
+```text
+apresentacao-backend/src/main/resources/static/
+```
+
+A pasta `static/` é usada pelo Spring Boot para servir a tela automaticamente pelo navegador. O frontend apenas consome endpoints REST; as regras de negócio permanecem no backend.
+
 **Build completo**
 
 ```powershell
@@ -249,7 +299,7 @@ AcadTrack/
 **Subir backend** na porta definida por defeito (**8080** em `application.properties`):
 
 ```powershell
-.\mvnw.cmd spring-boot:run -pl apresentacao-backend
+.\mvnw.cmd -pl apresentacao-backend -am spring-boot:run
 ```
 
 ### Script `run-backend.ps1` (porta livre automática)

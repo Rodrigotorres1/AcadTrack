@@ -1,6 +1,7 @@
 package g8.acadtrack.apresentacao.controller;
 
 import g8.acadtrack.aplicacao.turma.CriarTurmaUseCase;
+import g8.acadtrack.aplicacao.turma.ListarTurmasUseCase;
 import g8.acadtrack.apresentacao.dto.request.CriarTurmaRequest;
 import g8.acadtrack.apresentacao.dto.response.ErroApiResponse;
 import g8.acadtrack.apresentacao.dto.response.TurmaResponse;
@@ -17,15 +18,33 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @Tag(name = "Turmas", description = "Cadastro de turmas.")
 @RestController
 @RequestMapping("/turmas")
 public class TurmaController {
 
     private final CriarTurmaUseCase criarTurmaUseCase;
+    private final ListarTurmasUseCase listarTurmasUseCase;
 
-    public TurmaController(CriarTurmaUseCase criarTurmaUseCase) {
+    public TurmaController(CriarTurmaUseCase criarTurmaUseCase, ListarTurmasUseCase listarTurmasUseCase) {
         this.criarTurmaUseCase = criarTurmaUseCase;
+        this.listarTurmasUseCase = listarTurmasUseCase;
+    }
+
+    @Operation(summary = "Listar turmas cadastradas")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Lista pode ser vazia")
+    })
+    @GetMapping
+    public ResponseEntity<List<TurmaResponse>> listar() {
+        return ResponseEntity.ok(
+                listarTurmasUseCase.executar()
+                        .stream()
+                        .map(TurmaResponse::fromDomain)
+                        .toList()
+        );
     }
 
     @Operation(

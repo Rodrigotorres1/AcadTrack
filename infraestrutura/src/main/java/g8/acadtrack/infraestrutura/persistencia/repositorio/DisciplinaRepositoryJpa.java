@@ -73,6 +73,12 @@ public class DisciplinaRepositoryJpa implements DisciplinaRepository {
     }
 
     @Override
+    public void excluirPorId(Long id) {
+        Objects.requireNonNull(id, "id é obrigatório");
+        repository.deleteById(id);
+    }
+
+    @Override
     public boolean possuiVinculoAcademico(Long disciplinaId) {
         return notaSpringDataRepository.existsByDisciplinaId(disciplinaId)
                 || simuladoDisciplinaSpringDataRepository.existsByDisciplinaId(disciplinaId);

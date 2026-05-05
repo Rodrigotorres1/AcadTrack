@@ -1,6 +1,8 @@
 package g8.acadtrack.apresentacao.controller;
 
 import g8.acadtrack.aplicacao.aluno.CriarAlunoUseCase;
+import g8.acadtrack.aplicacao.aluno.ListarAlunosUseCase;
+import g8.acadtrack.aplicacao.planoestudo.RecomendarPlanoEstudoUseCase;
 import g8.acadtrack.aplicacao.responsavel.DesvincularResponsavelUseCase;
 import g8.acadtrack.aplicacao.responsavel.VincularResponsavelUseCase;
 import g8.acadtrack.aplicacao.turma.VincularAlunoTurmaUseCase;
@@ -9,6 +11,7 @@ import g8.acadtrack.apresentacao.dto.request.VincularAlunoTurmaRequest;
 import g8.acadtrack.apresentacao.dto.request.VincularResponsavelRequest;
 import g8.acadtrack.apresentacao.dto.response.AlunoResponse;
 import g8.acadtrack.apresentacao.dto.response.ErroApiResponse;
+import g8.acadtrack.apresentacao.dto.response.PlanoEstudoResponse;
 import g8.acadtrack.dominioacademico.aluno.Aluno;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -22,6 +25,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -29,26 +33,48 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @Tag(name = "Alunos", description = "Cadastro, vínculos com turma e com responsável.")
 @RestController
 @RequestMapping("/alunos")
 public class AlunoController {
 
     private final CriarAlunoUseCase criarAlunoUseCase;
+    private final ListarAlunosUseCase listarAlunosUseCase;
     private final VincularAlunoTurmaUseCase vincularAlunoTurmaUseCase;
     private final VincularResponsavelUseCase vincularResponsavelUseCase;
     private final DesvincularResponsavelUseCase desvincularResponsavelUseCase;
+    private final RecomendarPlanoEstudoUseCase recomendarPlanoEstudoUseCase;
 
     public AlunoController(
             CriarAlunoUseCase criarAlunoUseCase,
+            ListarAlunosUseCase listarAlunosUseCase,
             VincularAlunoTurmaUseCase vincularAlunoTurmaUseCase,
             VincularResponsavelUseCase vincularResponsavelUseCase,
-            DesvincularResponsavelUseCase desvincularResponsavelUseCase
+            DesvincularResponsavelUseCase desvincularResponsavelUseCase,
+            RecomendarPlanoEstudoUseCase recomendarPlanoEstudoUseCase
     ) {
         this.criarAlunoUseCase = criarAlunoUseCase;
+        this.listarAlunosUseCase = listarAlunosUseCase;
         this.vincularAlunoTurmaUseCase = vincularAlunoTurmaUseCase;
         this.vincularResponsavelUseCase = vincularResponsavelUseCase;
         this.desvincularResponsavelUseCase = desvincularResponsavelUseCase;
+        this.recomendarPlanoEstudoUseCase = recomendarPlanoEstudoUseCase;
+    }
+
+    @Operation(summary = "Listar alunos cadastrados")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Lista pode ser vazia")
+    })
+    @GetMapping
+    public ResponseEntity<List<AlunoResponse>> listar() {
+        return ResponseEntity.ok(
+                listarAlunosUseCase.executar()
+                        .stream()
+                        .map(AlunoResponse::fromDomain)
+                        .toList()
+        );
     }
 
     @Operation(
@@ -171,5 +197,21 @@ public class AlunoController {
             @Parameter(description = "Aluno") @PathVariable Long alunoId) {
         Aluno aluno = desvincularResponsavelUseCase.executar(alunoId);
         return ResponseEntity.ok(AlunoResponse.fromDomain(aluno));
+    }
+
+    @Operation(summary = "Recomendar plano de estudo por desempenho",
+            description = "Gera uma recomendacao com base no nivel de risco academico ja calculado para o aluno.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Plano recomendado",
+                    content = @Content(schema = @Schema(implementation = PlanoEstudoResponse.class))),
+            @ApiResponse(responseCode = "409", description = "Aluno sem notas para recomendacao",
+                    content = @Content(schema = @Schema(implementation = ErroApiResponse.class)))
+    })
+    @GetMapping("/{alunoId}/plano-estudo")
+    public ResponseEntity<PlanoEstudoResponse> recomendarPlanoEstudo(
+            @Parameter(description = "Aluno") @PathVariable Long alunoId) {
+        return ResponseEntity.ok(
+                PlanoEstudoResponse.fromApplication(recomendarPlanoEstudoUseCase.executar(alunoId))
+        );
     }
 }

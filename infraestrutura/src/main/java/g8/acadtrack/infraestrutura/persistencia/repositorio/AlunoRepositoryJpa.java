@@ -7,6 +7,7 @@ import g8.acadtrack.infraestrutura.persistencia.entidade.AlunoJpaEntity;
 import g8.acadtrack.infraestrutura.persistencia.springdata.AlunoSpringDataRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -77,6 +78,26 @@ public class AlunoRepositoryJpa implements AlunoRepository {
                         entity.getMediaAtual(),
                         mapearSituacaoAcademica(entity.getSituacaoAcademica())
                 ));
+    }
+
+    @Override
+    public List<Aluno> buscarTodos() {
+        return repository.findAll()
+                .stream()
+                .map(entity -> new Aluno(
+                        entity.getId(),
+                        entity.getNome(),
+                        entity.getEmail(),
+                        entity.getTurmaId(),
+                        entity.getResponsavelId(),
+                        entity.isVinculoResponsavelAtivo(),
+                        entity.isPermissaoVisualizarNotas(),
+                        entity.isPermissaoVisualizarSimulados(),
+                        entity.isPermissaoVisualizarDesempenho(),
+                        entity.getMediaAtual(),
+                        mapearSituacaoAcademica(entity.getSituacaoAcademica())
+                ))
+                .toList();
     }
 
     private SituacaoAcademica mapearSituacaoAcademica(String situacao) {

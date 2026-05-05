@@ -6,6 +6,7 @@ import g8.acadtrack.infraestrutura.persistencia.entidade.TurmaJpaEntity;
 import g8.acadtrack.infraestrutura.persistencia.springdata.TurmaSpringDataRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -30,6 +31,17 @@ public class TurmaRepositoryJpa implements TurmaRepository {
                 salva.getId(),
                 salva.getNome()
         );
+    }
+
+    @Override
+    public List<Turma> buscarTodos() {
+        return repository.findAll()
+                .stream()
+                .map(entity -> new Turma(
+                        entity.getId(),
+                        entity.getNome()
+                ))
+                .toList();
     }
 
     @Override

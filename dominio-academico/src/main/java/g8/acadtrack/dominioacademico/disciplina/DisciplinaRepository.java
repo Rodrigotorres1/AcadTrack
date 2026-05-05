@@ -15,5 +15,7 @@ public interface DisciplinaRepository {
 
     List<Disciplina> buscarTodos();
 
+    void excluirPorId(Long id);
+
     boolean possuiVinculoAcademico(Long disciplinaId);
 }

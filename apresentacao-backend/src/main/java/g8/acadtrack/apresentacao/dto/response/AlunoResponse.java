@@ -9,6 +9,7 @@ public class AlunoResponse {
     private String email;
     private Long turmaId;
     private Long responsavelId;
+    private String situacao;
     private boolean vinculoResponsavelAtivo;
     private boolean podeVisualizarNotas;
     private boolean podeVisualizarSimulados;
@@ -22,6 +23,7 @@ public class AlunoResponse {
             String email,
             Long turmaId,
             Long responsavelId,
+            String situacao,
             boolean vinculoResponsavelAtivo,
             boolean podeVisualizarNotas,
             boolean podeVisualizarSimulados,
@@ -34,6 +36,7 @@ public class AlunoResponse {
         this.email = email;
         this.turmaId = turmaId;
         this.responsavelId = responsavelId;
+        this.situacao = situacao;
         this.vinculoResponsavelAtivo = vinculoResponsavelAtivo;
         this.podeVisualizarNotas = podeVisualizarNotas;
         this.podeVisualizarSimulados = podeVisualizarSimulados;
@@ -49,6 +52,7 @@ public class AlunoResponse {
                 aluno.getEmail(),
                 aluno.getTurmaId(),
                 aluno.getResponsavelId(),
+                "Ativo",
                 aluno.isVinculoResponsavelAtivo(),
                 aluno.isPermissaoVisualizarNotas(),
                 aluno.isPermissaoVisualizarSimulados(),
@@ -76,6 +80,10 @@ public class AlunoResponse {
 
     public Long getResponsavelId() {
         return responsavelId;
+    }
+
+    public String getSituacao() {
+        return situacao;
     }
 
     public boolean isVinculoResponsavelAtivo() {

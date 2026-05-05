@@ -6,6 +6,7 @@ import g8.acadtrack.infraestrutura.persistencia.entidade.ResponsavelJpaEntity;
 import g8.acadtrack.infraestrutura.persistencia.springdata.ResponsavelSpringDataRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -32,6 +33,18 @@ public class ResponsavelRepositoryJpa implements ResponsavelRepository {
                 salvo.getNome(),
                 salvo.getEmail()
         );
+    }
+
+    @Override
+    public List<Responsavel> buscarTodos() {
+        return repository.findAll()
+                .stream()
+                .map(entity -> new Responsavel(
+                        entity.getId(),
+                        entity.getNome(),
+                        entity.getEmail()
+                ))
+                .toList();
     }
 
     @Override

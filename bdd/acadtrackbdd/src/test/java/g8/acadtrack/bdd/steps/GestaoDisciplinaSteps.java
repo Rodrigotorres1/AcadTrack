@@ -79,7 +79,7 @@ public class GestaoDisciplinaSteps {
     public void oSistemaInformaQueJaExisteDisciplinaComEsseNome() {
         assertFalse(context.isOperacaoExecutada());
         assertNotNull(excecao);
-        assertEquals("Já existe disciplina cadastrada com este nome", context.getMensagem());
+        assertEquals("Já existe uma disciplina com este nome", context.getMensagem());
     }
 
     @Dado("que existe uma disciplina inativa chamada {string}")

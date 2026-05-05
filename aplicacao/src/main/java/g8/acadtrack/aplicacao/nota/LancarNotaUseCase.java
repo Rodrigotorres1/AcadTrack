@@ -7,6 +7,7 @@ import g8.acadtrack.dominioacademico.aluno.Aluno;
 import g8.acadtrack.dominioavaliacao.nota.Nota;
 import g8.acadtrack.dominioavaliacao.nota.NotaRepository;
 import g8.acadtrack.dominioavaliacao.simulado.SimuladoRepository;
+import g8.acadtrack.aplicacao.riscoacademico.PublicadorRiscoAcademico;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,19 +19,25 @@ public class LancarNotaUseCase {
     private final SimuladoRepository simuladoRepository;
     private final DisciplinaRepository disciplinaRepository;
     private final AvaliacaoAcademicaService avaliacaoAcademicaService;
+    private final AnalisarDesempenhoAcademicoUseCase analisarDesempenhoAcademicoUseCase;
+    private final PublicadorRiscoAcademico publicadorRiscoAcademico;
 
     public LancarNotaUseCase(
             NotaRepository notaRepository,
             AlunoRepository alunoRepository,
             SimuladoRepository simuladoRepository,
             DisciplinaRepository disciplinaRepository,
-            AvaliacaoAcademicaService avaliacaoAcademicaService
+            AvaliacaoAcademicaService avaliacaoAcademicaService,
+            AnalisarDesempenhoAcademicoUseCase analisarDesempenhoAcademicoUseCase,
+            PublicadorRiscoAcademico publicadorRiscoAcademico
     ) {
         this.notaRepository = notaRepository;
         this.alunoRepository = alunoRepository;
         this.simuladoRepository = simuladoRepository;
         this.disciplinaRepository = disciplinaRepository;
         this.avaliacaoAcademicaService = avaliacaoAcademicaService;
+        this.analisarDesempenhoAcademicoUseCase = analisarDesempenhoAcademicoUseCase;
+        this.publicadorRiscoAcademico = publicadorRiscoAcademico;
     }
 
     @Transactional
@@ -58,6 +65,9 @@ public class LancarNotaUseCase {
         double mediaAtual = avaliacaoAcademicaService.calcularMedia(notaRepository.buscarPorAlunoId(alunoId));
         aluno.atualizarDesempenhoAcademico(mediaAtual, avaliacaoAcademicaService.calcularSituacao(mediaAtual));
         alunoRepository.salvar(aluno);
+
+        AnaliseDesempenhoAcademicoResultado analise = analisarDesempenhoAcademicoUseCase.executar(alunoId);
+        publicadorRiscoAcademico.publicarSeRiscoNotificavel(analise);
 
         return notaSalva;
     }

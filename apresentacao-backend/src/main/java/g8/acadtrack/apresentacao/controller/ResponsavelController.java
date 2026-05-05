@@ -1,12 +1,15 @@
 package g8.acadtrack.apresentacao.controller;
 
+import g8.acadtrack.aplicacao.notificacao.ListarNotificacoesResponsavelUseCase;
 import g8.acadtrack.aplicacao.responsavel.CriarResponsavelUseCase;
+import g8.acadtrack.aplicacao.responsavel.ListarResponsaveisUseCase;
 import g8.acadtrack.aplicacao.responsavel.ConsultarDesempenhoAlunoPorResponsavelUseCase;
 import g8.acadtrack.aplicacao.responsavel.ConsultarNotasAlunoPorResponsavelUseCase;
 import g8.acadtrack.aplicacao.responsavel.ConsultarSimuladosAlunoPorResponsavelUseCase;
 import g8.acadtrack.apresentacao.dto.request.CriarResponsavelRequest;
 import g8.acadtrack.apresentacao.dto.response.AnaliseDesempenhoResponse;
 import g8.acadtrack.apresentacao.dto.response.ErroApiResponse;
+import g8.acadtrack.apresentacao.dto.response.NotificacaoResponsavelResponse;
 import g8.acadtrack.apresentacao.dto.response.NotaResponse;
 import g8.acadtrack.apresentacao.dto.response.ResponsavelResponse;
 import g8.acadtrack.dominioavaliacao.nota.Nota;
@@ -33,20 +36,41 @@ import java.util.List;
 public class ResponsavelController {
 
     private final CriarResponsavelUseCase criarResponsavelUseCase;
+    private final ListarResponsaveisUseCase listarResponsaveisUseCase;
     private final ConsultarNotasAlunoPorResponsavelUseCase consultarNotasAlunoPorResponsavelUseCase;
     private final ConsultarSimuladosAlunoPorResponsavelUseCase consultarSimuladosAlunoPorResponsavelUseCase;
     private final ConsultarDesempenhoAlunoPorResponsavelUseCase consultarDesempenhoAlunoPorResponsavelUseCase;
+    private final ListarNotificacoesResponsavelUseCase listarNotificacoesResponsavelUseCase;
 
     public ResponsavelController(
             CriarResponsavelUseCase criarResponsavelUseCase,
+            ListarResponsaveisUseCase listarResponsaveisUseCase,
             ConsultarNotasAlunoPorResponsavelUseCase consultarNotasAlunoPorResponsavelUseCase,
             ConsultarSimuladosAlunoPorResponsavelUseCase consultarSimuladosAlunoPorResponsavelUseCase,
-            ConsultarDesempenhoAlunoPorResponsavelUseCase consultarDesempenhoAlunoPorResponsavelUseCase
+            ConsultarDesempenhoAlunoPorResponsavelUseCase consultarDesempenhoAlunoPorResponsavelUseCase,
+            ListarNotificacoesResponsavelUseCase listarNotificacoesResponsavelUseCase
     ) {
         this.criarResponsavelUseCase = criarResponsavelUseCase;
+        this.listarResponsaveisUseCase = listarResponsaveisUseCase;
         this.consultarNotasAlunoPorResponsavelUseCase = consultarNotasAlunoPorResponsavelUseCase;
         this.consultarSimuladosAlunoPorResponsavelUseCase = consultarSimuladosAlunoPorResponsavelUseCase;
         this.consultarDesempenhoAlunoPorResponsavelUseCase = consultarDesempenhoAlunoPorResponsavelUseCase;
+        this.listarNotificacoesResponsavelUseCase = listarNotificacoesResponsavelUseCase;
+    }
+
+    @Operation(summary = "Listar responsáveis cadastrados")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Lista pode ser vazia",
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = ResponsavelResponse.class))))
+    })
+    @GetMapping
+    public ResponseEntity<List<ResponsavelResponse>> listar() {
+        return ResponseEntity.ok(
+                listarResponsaveisUseCase.executar()
+                        .stream()
+                        .map(ResponsavelResponse::fromDomain)
+                        .toList()
+        );
     }
 
     @Operation(summary = "Cadastrar responsável", description = "Nome e email. Use **Examples** ou `docs/demo_fluxo_swagger_passo_a_passo.md`; se o email já existir, altere o sufixo.",
@@ -137,6 +161,25 @@ public class ResponsavelController {
                 AnaliseDesempenhoResponse.fromApplication(
                         consultarDesempenhoAlunoPorResponsavelUseCase.executar(responsavelId, alunoId)
                 )
+        );
+    }
+
+    @Operation(summary = "Listar notificacoes do responsavel")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Lista pode ser vazia",
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = NotificacaoResponsavelResponse.class)))),
+            @ApiResponse(responseCode = "404", description = "Responsavel nao encontrado",
+                    content = @Content(schema = @Schema(implementation = ErroApiResponse.class)))
+    })
+    @GetMapping("/{responsavelId}/notificacoes")
+    public ResponseEntity<List<NotificacaoResponsavelResponse>> listarNotificacoes(
+            @Parameter(description = "Responsavel") @PathVariable Long responsavelId
+    ) {
+        return ResponseEntity.ok(
+                listarNotificacoesResponsavelUseCase.executar(responsavelId)
+                        .stream()
+                        .map(NotificacaoResponsavelResponse::fromDomain)
+                        .toList()
         );
     }
 }

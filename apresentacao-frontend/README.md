@@ -1,5 +1,19 @@
-# apresentacao-frontend
+# Camada de apresentação web
 
-Módulo alinhado ao **esqueleto** da disciplina (camada de apresentação web separada do REST).
+Esta pasta representa a camada de apresentação web do AcadTrack.
 
-Este repositório concentra a API em **`apresentacao-backend`**. Aqui ficam reservados **SPA / app web** eventual (Angular, React ou outra stack).
+Os arquivos principais da interface são:
+
+- `index.html`
+- `styles.css`
+- `app.js`
+
+A interface consome os endpoints REST do backend e não acessa banco de dados, repositories ou regras de negócio diretamente.
+
+Para que o Spring Boot continue publicando a tela automaticamente pelo navegador, os mesmos arquivos também são mantidos em:
+
+```text
+apresentacao-backend/src/main/resources/static/
+```
+
+Assim, `apresentacao-frontend/` documenta e organiza a camada web dentro da estrutura do projeto, enquanto `static/` mantém a publicação direta pela aplicação Spring Boot.

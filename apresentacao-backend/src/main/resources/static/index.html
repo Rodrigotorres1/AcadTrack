@@ -1,0 +1,410 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>AcadTrack</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<aside class="sidebar">
+    <div class="brand">
+        <span class="brand-mark">AT</span>
+        <div>
+            <strong>AcadTrack</strong>
+            <small>Gestão acadêmica</small>
+        </div>
+    </div>
+
+    <nav class="nav-list" aria-label="Navegação principal">
+        <button class="nav-link active" type="button" data-section="dashboard">Dashboard</button>
+        <button class="nav-link" type="button" data-section="alunos">Alunos</button>
+        <button class="nav-link" type="button" data-section="disciplinas">Disciplinas</button>
+        <button class="nav-link" type="button" data-section="responsaveis">Responsáveis</button>
+        <button class="nav-link" type="button" data-section="relatorio">Relatório</button>
+        <button class="nav-link" type="button" data-section="plano">Plano de estudo</button>
+        <button class="nav-link" type="button" data-section="notificacoes">Notificações</button>
+        <button class="nav-link" type="button" data-section="portal">Portal responsável</button>
+    </nav>
+
+    <div class="sidebar-footer">
+        <span>REST conectado ao backend</span>
+    </div>
+</aside>
+
+<main class="shell">
+    <section class="hero">
+        <div>
+            <p class="eyebrow">Camada de apresentação web</p>
+            <h1>Dashboard AcadTrack</h1>
+            <p class="hero-copy">Visualização dos dados calculados pelo backend, sem duplicar regras de desempenho no frontend.</p>
+        </div>
+        <button id="refreshDashboardButton" class="primary-button" type="button">Atualizar dashboard</button>
+    </section>
+
+    <section id="dashboard" class="content-section active">
+        <div class="section-header">
+            <div>
+                <h2>Resumo acadêmico</h2>
+                <p>Indicadores montados a partir do relatório consolidado da API.</p>
+            </div>
+        </div>
+
+        <div class="metric-grid">
+            <article class="metric-card">
+                <span>Total analisado</span>
+                <strong id="metricTotal">-</strong>
+            </article>
+            <article class="metric-card danger">
+                <span>Risco alto</span>
+                <strong id="metricAlto">-</strong>
+            </article>
+            <article class="metric-card warning">
+                <span>Risco moderado</span>
+                <strong id="metricModerado">-</strong>
+            </article>
+            <article class="metric-card success">
+                <span>Risco baixo</span>
+                <strong id="metricBaixo">-</strong>
+            </article>
+        </div>
+
+        <article class="card">
+            <div class="card-title-row">
+                <h3>Alunos prioritários</h3>
+                <span id="dashboardStatus" class="status-pill neutral">Aguardando consulta</span>
+            </div>
+            <div id="dashboardList" class="compact-list"></div>
+        </article>
+    </section>
+
+    <section id="alunos" class="content-section">
+        <div id="studentsListView">
+            <div class="section-header">
+                <div>
+                    <h2>Alunos</h2>
+                    <p>Gerenciamento de alunos matriculados</p>
+                </div>
+                <button id="newStudentButton" class="primary-button add-button" type="button">+ Novo aluno</button>
+            </div>
+
+            <article class="card students-card">
+                <div id="studentsFeedback" class="students-feedback"></div>
+                <div class="table-wrap">
+                    <table class="students-table">
+                        <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Email</th>
+                            <th>Turma</th>
+                            <th>Situação</th>
+                        </tr>
+                        </thead>
+                        <tbody id="studentsTableBody"></tbody>
+                    </table>
+                </div>
+            </article>
+        </div>
+
+        <div id="studentFormView" hidden>
+            <div class="section-header">
+                <div>
+                    <h2>Novo Aluno</h2>
+                    <p>Cadastrar um novo aluno no sistema</p>
+                </div>
+            </div>
+
+            <article class="card student-form-card">
+                <form id="studentForm" class="student-form">
+                    <div class="form-field">
+                        <label for="studentName">Nome Completo</label>
+                        <input id="studentName" name="nome" type="text" placeholder="Ex: João da Silva" required>
+                    </div>
+
+                    <div class="form-field">
+                        <label for="studentEmail">E-mail</label>
+                        <input id="studentEmail" name="email" type="email" placeholder="Ex: joao@email.com" required>
+                    </div>
+
+                    <div class="form-field">
+                        <label for="studentClass">Turma</label>
+                        <select id="studentClass" name="turmaId" required>
+                            <option value="">Selecione a turma</option>
+                        </select>
+                    </div>
+
+                    <div id="studentFormFeedback" class="students-feedback"></div>
+
+                    <div class="form-actions">
+                        <button class="save-button" type="submit">Salvar</button>
+                        <button id="cancelStudentButton" class="cancel-button" type="button">Cancelar</button>
+                    </div>
+                </form>
+            </article>
+        </div>
+    </section>
+
+    <section id="disciplinas" class="content-section">
+        <div id="subjectsListView">
+            <div class="section-header">
+                <div>
+                    <h2>Disciplinas</h2>
+                    <p>Gerenciar disciplinas do sistema</p>
+                </div>
+                <button id="newSubjectButton" class="primary-button add-button" type="button">+ Nova Disciplina</button>
+            </div>
+
+            <article class="card subjects-card">
+                <div id="subjectsFeedback" class="students-feedback"></div>
+                <div class="table-wrap">
+                    <table class="subjects-table">
+                        <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                        </thead>
+                        <tbody id="subjectsTableBody"></tbody>
+                    </table>
+                </div>
+            </article>
+
+            <article id="subjectDetailsCard" class="card subject-details-card" hidden>
+                <div class="card-title-row">
+                    <h3>Detalhes da disciplina</h3>
+                    <button id="closeSubjectDetailsButton" class="cancel-button" type="button">Fechar</button>
+                </div>
+                <div id="subjectDetailsContent"></div>
+            </article>
+        </div>
+
+        <div id="subjectFormView" hidden>
+            <div class="section-header">
+                <div>
+                    <h2>Nova Disciplina</h2>
+                    <p>Cadastrar nova disciplina no sistema</p>
+                </div>
+            </div>
+
+            <article class="card student-form-card">
+                <form id="subjectForm" class="student-form">
+                    <div class="form-field">
+                        <label for="subjectName">Nome da Disciplina</label>
+                        <input id="subjectName" name="nome" type="text" placeholder="Ex: Matemática" required>
+                    </div>
+
+                    <div id="subjectFormFeedback" class="students-feedback"></div>
+
+                    <div class="form-actions">
+                        <button class="primary-button" type="submit">Salvar</button>
+                        <button id="cancelSubjectButton" class="cancel-button" type="button">Cancelar</button>
+                    </div>
+                </form>
+            </article>
+        </div>
+    </section>
+
+    <section id="responsaveis" class="content-section">
+        <div id="guardiansListView">
+            <div class="section-header">
+                <div>
+                    <h2>Responsáveis</h2>
+                    <p>Gerenciar responsáveis e vínculos com alunos</p>
+                </div>
+                <div class="toolbar">
+                    <button id="linkGuardianButton" class="primary-button add-button" type="button">+ Vincular Responsável</button>
+                    <button id="newGuardianButton" class="primary-button add-button" type="button">+ Criar Responsável</button>
+                </div>
+            </div>
+
+            <article class="card subjects-card">
+                <div id="guardiansFeedback" class="students-feedback"></div>
+                <div class="table-wrap">
+                    <table class="subjects-table">
+                        <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Email</th>
+                            <th>Aluno Vinculado</th>
+                            <th>Status do Vínculo</th>
+                            <th>Ações</th>
+                        </tr>
+                        </thead>
+                        <tbody id="guardiansTableBody"></tbody>
+                    </table>
+                </div>
+            </article>
+
+            <article id="guardianDetailsCard" class="card subject-details-card" hidden>
+                <div class="card-title-row">
+                    <h3>Detalhes do responsável</h3>
+                    <button id="closeGuardianDetailsButton" class="cancel-button" type="button">Fechar</button>
+                </div>
+                <div id="guardianDetailsContent"></div>
+            </article>
+
+            <button id="blockedAccessButton" class="secondary-button blocked-access-button" type="button">Simular Acesso Bloqueado</button>
+        </div>
+
+        <div id="guardianLinkView" hidden>
+            <div class="section-header">
+                <div>
+                    <h2>Vincular Responsável ao Aluno</h2>
+                    <p>Definir permissões de acesso</p>
+                </div>
+            </div>
+
+            <article class="card student-form-card">
+                <form id="guardianLinkForm" class="student-form">
+                    <div class="form-field">
+                        <label for="guardianStudentSelect">Selecionar Aluno</label>
+                        <select id="guardianStudentSelect" name="alunoId" required></select>
+                    </div>
+
+                    <div class="form-field">
+                        <label for="guardianSelect">Selecionar Responsável</label>
+                        <select id="guardianSelect" name="responsavelId" required></select>
+                    </div>
+
+                    <fieldset class="permission-box">
+                        <legend>Permissões de Acesso</legend>
+                        <label><input name="podeVisualizarNotas" type="checkbox" checked> Visualizar Notas</label>
+                        <label><input name="podeVisualizarSimulados" type="checkbox" checked> Visualizar Simulados</label>
+                        <label><input name="podeVisualizarDesempenho" type="checkbox" checked> Visualizar Desempenho</label>
+                    </fieldset>
+
+                    <div id="guardianLinkFeedback" class="students-feedback"></div>
+
+                    <div class="form-actions">
+                        <button class="primary-button" type="submit">Vincular</button>
+                        <button id="cancelGuardianLinkButton" class="cancel-button" type="button">Cancelar</button>
+                    </div>
+                </form>
+            </article>
+        </div>
+
+        <div id="guardianFormView" hidden>
+            <div class="section-header">
+                <div>
+                    <h2>Novo Responsável</h2>
+                </div>
+            </div>
+
+            <article class="card student-form-card">
+                <form id="guardianForm" class="student-form">
+                    <div class="form-field">
+                        <label for="guardianName">Nome</label>
+                        <input id="guardianName" name="nome" type="text" placeholder="Ex: Maria da Silva" required>
+                    </div>
+
+                    <div class="form-field">
+                        <label for="guardianEmail">Email</label>
+                        <input id="guardianEmail" name="email" type="email" placeholder="Ex: maria@email.com" required>
+                    </div>
+
+                    <div id="guardianFormFeedback" class="students-feedback"></div>
+
+                    <div class="form-actions">
+                        <button class="primary-button" type="submit">Salvar</button>
+                        <button id="cancelGuardianButton" class="cancel-button" type="button">Cancelar</button>
+                    </div>
+                </form>
+            </article>
+        </div>
+    </section>
+
+    <section id="relatorio" class="content-section">
+        <div class="section-header">
+            <div>
+                <h2>Relatório de desempenho</h2>
+                <p>Ordenação executada pelo use case com Iterator no backend.</p>
+            </div>
+            <div class="toolbar">
+                <select id="ordenacaoSelect" aria-label="Critério de ordenação">
+                    <option value="MAIOR_RISCO">Maior risco</option>
+                    <option value="MENOR_MEDIA">Menor média</option>
+                    <option value="MELHOR_MEDIA">Melhor média</option>
+                </select>
+                <button id="loadReportButton" class="primary-button" type="button">Carregar</button>
+            </div>
+        </div>
+
+        <article class="card">
+            <div class="card-title-row">
+                <h3 id="reportTitle">Alunos analisados</h3>
+                <span id="reportStatus" class="status-pill neutral">Aguardando consulta</span>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Aluno</th>
+                        <th>Média</th>
+                        <th>Risco</th>
+                        <th>Situação</th>
+                        <th>Plano</th>
+                    </tr>
+                    </thead>
+                    <tbody id="reportTableBody"></tbody>
+                </table>
+            </div>
+        </article>
+    </section>
+
+    <section id="plano" class="content-section">
+        <div class="section-header">
+            <div>
+                <h2>Recomendação de plano</h2>
+                <p>Consulta direta ao endpoint de recomendação por desempenho.</p>
+            </div>
+            <form id="planForm" class="inline-form">
+                <label for="planAlunoId">Aluno ID</label>
+                <input id="planAlunoId" name="alunoId" type="number" min="1" placeholder="Ex.: 1" required>
+                <button class="primary-button" type="submit">Buscar plano</button>
+            </form>
+        </div>
+
+        <article id="planResult" class="card empty-state">
+            Informe um aluno para consultar o plano recomendado pelo backend.
+        </article>
+    </section>
+
+    <section id="notificacoes" class="content-section">
+        <div class="section-header">
+            <div>
+                <h2>Notificações do responsável</h2>
+                <p>Lista persistida criada pelo Observer de risco acadêmico.</p>
+            </div>
+            <form id="notificationsForm" class="inline-form">
+                <label for="notificationsResponsavelId">Responsável ID</label>
+                <input id="notificationsResponsavelId" name="responsavelId" type="number" min="1" placeholder="Ex.: 1" required>
+                <button class="primary-button" type="submit">Listar</button>
+            </form>
+        </div>
+
+        <div id="notificationsList" class="notification-list"></div>
+    </section>
+
+    <section id="portal" class="content-section">
+        <div class="section-header">
+            <div>
+                <h2>Portal do responsável</h2>
+                <p>Acesso validado pelo backend conforme vínculo ativo e permissões.</p>
+            </div>
+            <form id="portalForm" class="inline-form">
+                <label for="portalResponsavelId">Responsável ID</label>
+                <input id="portalResponsavelId" name="responsavelId" type="number" min="1" placeholder="Ex.: 1" required>
+                <label for="portalAlunoId">Aluno ID</label>
+                <input id="portalAlunoId" name="alunoId" type="number" min="1" placeholder="Ex.: 1" required>
+                <button class="primary-button" type="submit">Consultar</button>
+            </form>
+        </div>
+
+        <div id="portalResult" class="portal-grid"></div>
+    </section>
+</main>
+
+<script src="app.js"></script>
+</body>
+</html>
