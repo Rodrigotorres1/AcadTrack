@@ -437,8 +437,8 @@ Este projeto representa a base da evolução do sistema AcadTrack, sendo estendi
 ## 👥 Membros
 
 - **Erick Belo** - eab2@cesar.school  
-  Funcionalidades foco: Gestão de disciplinas; Criação inteligente de simulados.
+  Funcionalidades foco: F3 - Lançamento de notas com cálculo automático da situação acadêmica; F6 - Fluxo de retificação de nota com análise e decisão.
 - **João Marcelo Montenegro** - jmtpm@cesar.school  
-  Funcionalidades foco: Lançamento de notas; Análise consolidada de desempenho.
+  Funcionalidades foco: F1 - Gestão de disciplinas com vínculo pedagógico e restrições acadêmicas; F2- Gestão de responsáveis com controle de acesso.
 - **Rodrigo Torres** - rtgf@cesar.school  
-  Funcionalidades foco: Gestão de responsáveis; Fluxo de retificação de nota.
+  Funcionalidades foco: F4 - Análise consolidada de desempenho acadêmico com alerta de risco; F5 - Criação inteligente de simulados por disciplinas vinculadas.
