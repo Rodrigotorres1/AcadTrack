@@ -35,6 +35,7 @@ import java.util.stream.Collectors;
                 + "ver `docs/script_demonstracao.md`. Os GET /notas/ranking legados não recebem id de aluno no URL.")
 @RestController
 @RequestMapping("/notas")
+@SuppressWarnings("deprecation")
 public class NotaController {
 
     private final LancarNotaUseCase lancarNotaUseCase;

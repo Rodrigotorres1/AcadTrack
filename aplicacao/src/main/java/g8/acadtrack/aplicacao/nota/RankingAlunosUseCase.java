@@ -15,10 +15,12 @@ public class RankingAlunosUseCase {
 
     private final NotaRepository notaRepository;
 
+    @Deprecated(since = "1.0", forRemoval = false)
     public RankingAlunosUseCase(NotaRepository notaRepository) {
         this.notaRepository = notaRepository;
     }
 
+    @Deprecated(since = "1.0", forRemoval = false)
     public List<Map<String, Object>> executar() {
         List<Nota> todasNotas = notaRepository.buscarTodas();
 

@@ -7,6 +7,7 @@ import g8.acadtrack.infraestrutura.persistencia.springdata.TurmaSpringDataReposi
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Repository
@@ -46,7 +47,7 @@ public class TurmaRepositoryJpa implements TurmaRepository {
 
     @Override
     public Optional<Turma> buscarPorId(Long id) {
-        return repository.findById(id)
+        return repository.findById(Objects.requireNonNull(id))
                 .map(entity -> new Turma(
                         entity.getId(),
                         entity.getNome()
@@ -64,6 +65,6 @@ public class TurmaRepositoryJpa implements TurmaRepository {
 
     @Override
     public void excluirPorId(Long id) {
-        repository.deleteById(id);
+        repository.deleteById(Objects.requireNonNull(id));
     }
 }

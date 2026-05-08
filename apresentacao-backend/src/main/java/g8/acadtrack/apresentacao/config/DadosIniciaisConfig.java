@@ -65,7 +65,8 @@ public class DadosIniciaisConfig {
                     "SELECT COALESCE(MAX(\"ID\"), 0) + 1 FROM " + nomeTabela,
                     Number.class
             );
-            jdbcTemplate.execute("ALTER TABLE " + nomeTabela + " ALTER COLUMN \"ID\" RESTART WITH " + proximoId.longValue());
+            long proximoValor = (proximoId != null) ? proximoId.longValue() : 1L;
+            jdbcTemplate.execute("ALTER TABLE " + nomeTabela + " ALTER COLUMN \"ID\" RESTART WITH " + proximoValor);
         }
     }
 

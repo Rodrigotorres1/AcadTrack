@@ -1,6 +1,6 @@
 # Sistema AcadTrack - Plataforma Acadêmica
 
-**Status:** ✅ Entrega 1 concluída
+**Status:** ✅ Entrega 2 concluída
 
 
 
@@ -21,8 +21,10 @@ Ele apoia decisões acadêmicas com base em fluxos reais de avaliação, acesso 
 ## 🔎 Sumário
 
 - [Links essenciais da entrega](#-links-essenciais-da-entrega)
-- [Escopo da Entrega 1](#-escopo-da-entrega-1)
-- [Médias e situação acadêmica](#-médias-e-situação-acadêmica-regra-explícita)
+- [Escopo da Entrega 2](#-escopo-da-entrega-2)
+- [Padrões de projeto adotados](#-padrões-de-projeto-adotados-entrega-2)
+- [Persistência ORM/JPA](#-persistência-ormpja)
+- [Camada de apresentação web](#-camada-de-apresentação-web)
 - [Funcionalidades principais](#-funcionalidades-principais-6-oficiais)
 - [Arquitetura](#-arquitetura)
 - [Personas](#-personas-do-sistema)
@@ -53,15 +55,13 @@ Ele apoia decisões acadêmicas com base em fluxos reais de avaliação, acesso 
 > Clique na imagem para abrir o screencast completo.
 
 
-## 📌 Escopo da Entrega 1
+## 📌 Escopo da Entrega 2
 
-Este repositório representa a **Entrega 1** do projeto AcadTrack, com foco em:
+Esta entrega mantém todos os requisitos da Entrega 1 e acrescenta:
 
-- modelagem de domínio e aplicação de DDD;
-- funcionalidades de média/alta complexidade organizadas em fluxos completos;
-- cenários BDD automatizados como evidência de comportamento.
-
-O objetivo desta etapa é comprovar coerência entre domínio, regras de negócio, API e testes, mantendo arquitetura limpa e rastreabilidade acadêmica.
+- **6 padrões de projeto** implementados (1 por integrante): Iterator, Decorator, Observer, Proxy, Strategy e Template Method;
+- **Camada de persistência** com mapeamento objeto-relacional via JPA/Hibernate;
+- **Camada de apresentação web** integrada (SPA em HTML/CSS/JS servida pelo Spring Boot).
 
 ## 📋 Sobre o domínio
 
@@ -116,29 +116,67 @@ Implementar um sistema acadêmico com funcionalidades de média/alta complexidad
 
 ---
 
-## Entrega 2: consolidação técnica
+## 🧩 Padrões de projeto adotados (Entrega 2)
 
-A segunda entrega prioriza a evolução das funcionalidades existentes, com persistência ORM/JPA, camada web, integração frontend/backend, BDD/Cucumber, arquitetura limpa e padrões de projeto aplicados de forma natural.
+Seis padrões foram implementados, um por integrante do grupo, aplicados de forma natural ao domínio — sem forçar abstrações desnecessárias.
 
-- Plano de estudo por desempenho: excluído do produto.
-- Relatório acadêmico com filtros: excluído como funcionalidade principal.
-- Notificação automática: mantida como evolução de lançamento de notas e análise de desempenho.
-- Ranking acadêmico: mantido como apoio da análise, com Iterator para percorrer coleções ordenadas sem expor a estrutura interna.
+| Padrão | Onde é aplicado | Integrante |
+|---|---|---|
+| **Template Method** | `FluxoAnaliseAcademicaTemplate` — define o esqueleto do fluxo de análise acadêmica (coleta → consolidação → classificação → notificação); subclasses especializam etapas | Rodrigo Torres |
+| **Decorator** | `ValidadorValorNota`, `ValidadorNotaDuplicada`, `ValidadorEntidadesLancamento`, `ValidadorDisciplinaAtiva`, `ValidadorDisciplinaVinculadaSimulado` — cadeia de validações composta dinamicamente no lançamento de notas | Erick Belo |
+| **Observer** | `EventoNotaLancada` / listeners de situação e notificação — aluno e responsável são notificados após mudança de nota ou situação acadêmica | Erick Belo |
+| **Iterator** | Ranking acadêmico — percorre a coleção ordenada de alunos por média/risco sem expor a estrutura interna | João Marcelo Montenegro |
+| **Proxy** | `ResponsavelAcessoProxy` — intermedia a consulta do responsável aos dados do aluno, verificando permissão antes de delegar ao repositório real | João Marcelo Montenegro |
+| **Strategy** | `ClassificadorRiscoAcademico` — permite trocar o critério de classificação de risco (por média, por frequência, combinado) sem alterar o fluxo de análise | Rodrigo Torres |
 
-Padrões consolidados:
+Documentos de apoio:
 
-- Observer: notificações automáticas após mudanças de nota, situação, risco e destaque no Top 10.
-- Iterator: ranking acadêmico ordenado por média, desempenho ou risco.
-- Template Method: fluxo padronizado da análise acadêmica.
-- Decorator: cadeia de validações no lançamento de notas.
-- Proxy: intermediação de acesso do responsável aos dados do aluno por permissões.
-- Strategy: classificação de risco acadêmico por critérios independentes.
-
-Documentos de apoio da Entrega 2:
-
-- Checklist técnico: [`docs/checklist_entrega2.md`](docs/checklist_entrega2.md)
 - Padrões de projeto: [`docs/padroes_entrega2.md`](docs/padroes_entrega2.md)
-- Persistência ORM/JPA: [`docs/persistencia_orm_entrega2.md`](docs/persistencia_orm_entrega2.md)
+- Checklist técnico: [`docs/checklist_entrega2.md`](docs/checklist_entrega2.md)
+
+---
+
+## 🗄️ Persistência ORM/JPA
+
+A camada de persistência utiliza **Spring Data JPA com Hibernate** e banco **H2** (arquivo em disco na pasta `data/`).
+
+Principais decisões de mapeamento:
+
+- Entidades anotadas com `@Entity`, `@Table`, `@Id`, `@GeneratedValue` nos módulos de domínio;
+- Relacionamentos mapeados com `@ManyToOne`, `@OneToMany` e `@JoinColumn` onde aplicável;
+- Repositórios implementados como interfaces `JpaRepository` no módulo `infraestrutura/`;
+- Inicialização de dados de demonstração via `DadosIniciaisConfig` (`@Component` com `CommandLineRunner`);
+- Schema gerado automaticamente pelo Hibernate (`spring.jpa.hibernate.ddl-auto=update`).
+
+Referência de configuração: [`apresentacao-backend/src/main/resources/application.properties`](apresentacao-backend/src/main/resources/application.properties)
+
+Documentação detalhada: [`docs/persistencia_orm_entrega2.md`](docs/persistencia_orm_entrega2.md)
+
+---
+
+## 🌍 Camada de apresentação web
+
+O frontend é uma **SPA em HTML/CSS/JavaScript puro** servida diretamente pelo Spring Boot a partir de:
+
+```text
+apresentacao-backend/src/main/resources/static/
+├── index.html
+├── styles.css
+└── app.js
+```
+
+Funcionalidades da interface:
+
+- Cadastro e listagem de alunos, disciplinas, simulados e turmas;
+- Lançamento de notas e visualização de histórico por aluno;
+- Cálculo e exibição de média ponderada por simulado;
+- Ranking acadêmico com classificação de risco;
+- Fluxo de retificação de nota (solicitação → análise → decisão);
+- Gestão de responsáveis e vínculos com alunos.
+
+O módulo `apresentacao-frontend/` é um placeholder Maven (`packaging=pom`) que representa conceitualmente a camada web; os arquivos de interface residem em `apresentacao-backend/static/` e são servidos pelo Tomcat embutido.
+
+---
 
 ---
 
@@ -301,13 +339,7 @@ http://localhost:8081/
 
 **Observação sobre a camada web**
 
-Os arquivos da interface (HTML, CSS, JavaScript) residem exclusivamente em:
-
-```text
-apresentacao-backend/src/main/resources/static/
-```
-
-O módulo `apresentacao-frontend/` é um placeholder Maven (`packaging=pom`) que representa conceitualmente a camada de apresentação web, mas não contém arquivos de interface — eles são servidos diretamente pelo Spring Boot a partir de `static/`. O frontend apenas consome endpoints REST; as regras de negócio permanecem no backend.
+Os arquivos da interface (HTML, CSS, JavaScript) residem em `apresentacao-backend/src/main/resources/static/` e são servidos pelo Tomcat embutido. Detalhes na seção [Camada de apresentação web](#-camada-de-apresentação-web).
 
 **Build completo**
 

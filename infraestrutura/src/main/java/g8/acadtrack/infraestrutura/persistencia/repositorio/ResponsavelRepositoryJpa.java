@@ -7,6 +7,7 @@ import g8.acadtrack.infraestrutura.persistencia.springdata.ResponsavelSpringData
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Repository
@@ -49,7 +50,7 @@ public class ResponsavelRepositoryJpa implements ResponsavelRepository {
 
     @Override
     public Optional<Responsavel> buscarPorId(Long id) {
-        return repository.findById(id)
+        return repository.findById(Objects.requireNonNull(id))
                 .map(entity -> new Responsavel(
                         entity.getId(),
                         entity.getNome(),
@@ -59,6 +60,6 @@ public class ResponsavelRepositoryJpa implements ResponsavelRepository {
 
     @Override
     public void excluirPorId(Long id) {
-        repository.deleteById(id);
+        repository.deleteById(Objects.requireNonNull(id));
     }
 }
