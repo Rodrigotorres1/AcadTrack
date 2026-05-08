@@ -2,6 +2,7 @@ package g8.acadtrack.aplicacao.disciplina;
 
 import g8.acadtrack.dominioacademico.disciplina.Disciplina;
 import g8.acadtrack.dominioacademico.disciplina.DisciplinaRepository;
+import g8.acadtrack.dominiocompartilhado.excecao.ConflitoDeEstadoException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -17,7 +18,7 @@ public class CriarDisciplinaUseCase {
         String nomeNormalizado = Disciplina.normalizarNome(nome);
         disciplinaRepository.buscarPorNomeNormalizado(nomeNormalizado)
                 .ifPresent(disciplina -> {
-                    throw new IllegalArgumentException("Já existe uma disciplina com este nome");
+                    throw new ConflitoDeEstadoException("Já existe uma disciplina com este nome");
                 });
 
         Disciplina disciplina = new Disciplina(null, nome);

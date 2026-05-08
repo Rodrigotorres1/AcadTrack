@@ -2,6 +2,7 @@ package g8.acadtrack.aplicacao.nota.validacao;
 
 import g8.acadtrack.dominioavaliacao.simulado.SimuladoDisciplina;
 import g8.acadtrack.dominioavaliacao.simulado.SimuladoDisciplinaRepository;
+import g8.acadtrack.dominiocompartilhado.excecao.RegraDeNegocioException;
 
 import java.util.List;
 
@@ -24,7 +25,7 @@ public class ValidadorDisciplinaVinculadaSimuladoDecorator extends ValidadorLanc
                 .anyMatch(item -> item.getDisciplinaId().equals(dados.disciplinaId()));
 
         if (!disciplinaVinculada) {
-            throw new IllegalArgumentException("Disciplina nao vinculada ao simulado");
+            throw new RegraDeNegocioException("Disciplina nao vinculada ao simulado");
         }
 
         super.validar(dados);

@@ -21,4 +21,11 @@ public class Simulado {
     public String getDescricao() {
         return descricao;
     }
+
+    public void atualizar(String descricao) {
+        if (descricao == null || descricao.isBlank()) {
+            throw new IllegalArgumentException("Descrição do simulado não pode ser vazia");
+        }
+        this.descricao = descricao.trim();
+    }
 }

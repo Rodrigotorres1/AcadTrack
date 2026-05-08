@@ -3,6 +3,7 @@ package g8.acadtrack.aplicacao.turma;
 import g8.acadtrack.dominioacademico.aluno.Aluno;
 import g8.acadtrack.dominioacademico.aluno.AlunoRepository;
 import g8.acadtrack.dominioacademico.turma.TurmaRepository;
+import g8.acadtrack.dominiocompartilhado.excecao.EntidadeNaoEncontradaException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -22,10 +23,10 @@ public class VincularAlunoTurmaUseCase {
     public Aluno executar(Long alunoId, Long turmaId) {
 
         Aluno aluno = alunoRepository.buscarPorId(alunoId)
-                .orElseThrow(() -> new IllegalArgumentException("Aluno não encontrado"));
+                .orElseThrow(() -> new EntidadeNaoEncontradaException("Aluno não encontrado"));
 
         turmaRepository.buscarPorId(turmaId)
-                .orElseThrow(() -> new IllegalArgumentException("Turma não encontrada"));
+                .orElseThrow(() -> new EntidadeNaoEncontradaException("Turma não encontrada"));
 
         aluno.vincularTurma(turmaId);
 

@@ -569,16 +569,6 @@ function formatPerformanceStatus(status) {
     return status || "-";
 }
 
-function renderPerformanceStatusBadge(status, nivelRisco) {
-    const className = riskClass(nivelRisco);
-    return `
-        <span class="status-pill ${className === "alto" ? "danger" : className === "moderado" ? "warning" : "success"}">
-            <span class="performance-badge-dot" aria-hidden="true"></span>
-            ${escapeHtml(formatPerformanceStatus(status))}
-        </span>
-    `;
-}
-
 function renderPerformanceExamHistory(historico) {
     const list = document.getElementById("performanceExamHistory");
     if (!historico || historico.length === 0) {
@@ -598,21 +588,6 @@ function renderPerformanceExamHistory(historico) {
     `).join("");
 }
 
-function renderPerformanceSubjectRows(notasPorDisciplina) {
-    const tbody = document.getElementById("performanceSubjectTableBody");
-    if (!notasPorDisciplina || notasPorDisciplina.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="3" class="muted">Nenhuma nota por disciplina encontrada.</td></tr>`;
-        return;
-    }
-
-    tbody.innerHTML = notasPorDisciplina.map((disciplina) => `
-        <tr>
-            <td>${escapeHtml(disciplina.nomeDisciplina || `Disciplina ${disciplina.disciplinaId}`)}</td>
-            <td>${formatNumber(disciplina.media)}</td>
-            <td>${renderPerformanceStatusBadge(disciplina.status, disciplina.nivelRisco)}</td>
-        </tr>
-    `).join("");
-}
 
 function renderPerformancePanel(analise, aluno) {
     state.performanceSelectedAluno = aluno;
@@ -636,7 +611,6 @@ function renderPerformancePanel(analise, aluno) {
     rankingAlert.textContent = analise.mensagemRanking || "Ranking acadêmico indisponível para este aluno.";
 
     renderPerformanceExamHistory(analise.historicoSimulados);
-    renderPerformanceSubjectRows(analise.notasPorDisciplina);
 }
 
 async function handlePerformanceSubmit(event) {
@@ -854,6 +828,7 @@ function mapStudentFromApi(aluno) {
         id: aluno.id,
         nome: aluno.nome || "-",
         email: aluno.email || "-",
+        turmaId: aluno.turmaId,
         turma: getClassName(aluno.turmaId),
         situacao: aluno.situacao || "-"
     };
@@ -929,6 +904,7 @@ function renderStudentsTable() {
                 <td>${renderStudentStatus(aluno.situacao)}</td>
                 <td>
                     <div class="table-actions">
+                        <button class="table-action" type="button" data-student-action="edit" data-student-id="${escapeHtml(aluno.id)}">Editar</button>
                         ${action}
                     </div>
                 </td>
@@ -940,6 +916,7 @@ function renderStudentsTable() {
 function showStudentsList(feedback = "") {
     document.getElementById("studentsListView").hidden = false;
     document.getElementById("studentFormView").hidden = true;
+    document.getElementById("studentEditFormView").hidden = true;
     document.getElementById("studentFormFeedback").innerHTML = "";
     document.getElementById("studentsFeedback").innerHTML = feedback;
     renderStudentsTable();
@@ -1069,13 +1046,68 @@ async function updateStudentStatus(alunoId, shouldActivate) {
     }
 }
 
+function renderEditClassOptions(selectedTurmaId) {
+    const select = document.getElementById("studentEditClass");
+    if (!select) return;
+    const options = state.turmas.map((turma) =>
+        `<option value="${escapeHtml(turma.id)}" ${String(turma.id) === String(selectedTurmaId) ? "selected" : ""}>${escapeHtml(turma.nome)}</option>`
+    ).join("");
+    select.innerHTML = `<option value="">Selecione a turma</option>${options}`;
+}
+
+function showStudentEditForm(alunoId) {
+    const aluno = state.alunos.find((a) => String(a.id) === String(alunoId));
+    if (!aluno) {
+        return;
+    }
+    document.getElementById("studentsListView").hidden = true;
+    document.getElementById("studentFormView").hidden = true;
+    document.getElementById("studentEditFormView").hidden = false;
+    document.getElementById("studentEditName").value = aluno.nome;
+    document.getElementById("studentEditEmail").value = aluno.email;
+    renderEditClassOptions(aluno.turmaId);
+    document.getElementById("studentEditFormFeedback").innerHTML = "";
+    document.getElementById("studentEditForm").dataset.alunoId = alunoId;
+}
+
+async function handleStudentEditSubmit(event) {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const alunoId = form.dataset.alunoId;
+    const formData = new FormData(form);
+    const nome = String(formData.get("nome") || "").trim();
+    const email = String(formData.get("email") || "").trim();
+    const turmaIdRaw = formData.get("turmaId");
+    const turmaId = turmaIdRaw ? Number(turmaIdRaw) : null;
+    const feedback = document.getElementById("studentEditFormFeedback");
+
+    feedback.innerHTML = message("Salvando alterações...");
+
+    try {
+        await requestJson(`/alunos/${encodeURIComponent(alunoId)}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ nome, email, turmaId })
+        });
+        await loadStudentsView();
+        showStudentsList(message("Aluno atualizado com sucesso.", "ok"));
+    } catch (error) {
+        feedback.innerHTML = message(error.message, "error");
+    }
+}
+
 function handleStudentsTableClick(event) {
     const button = event.target.closest("[data-student-action]");
     if (!button) {
         return;
     }
 
-    updateStudentStatus(button.dataset.studentId, button.dataset.studentAction === "active");
+    const action = button.dataset.studentAction;
+    if (action === "edit") {
+        showStudentEditForm(button.dataset.studentId);
+    } else {
+        updateStudentStatus(button.dataset.studentId, action === "active");
+    }
 }
 
 async function handleClassSubmit(event) {
@@ -1147,6 +1179,7 @@ function renderSubjectsTable() {
                 <td>
                     <div class="table-actions">
                         <button class="table-action" type="button" data-subject-action="details" data-subject-id="${escapeHtml(disciplina.id)}">Ver Detalhes</button>
+                        <button class="table-action" type="button" data-subject-action="edit" data-subject-id="${escapeHtml(disciplina.id)}">Editar</button>
                         ${action}
                     </div>
                 </td>
@@ -1158,6 +1191,7 @@ function renderSubjectsTable() {
 function showSubjectsList(feedback = "") {
     document.getElementById("subjectsListView").hidden = false;
     document.getElementById("subjectFormView").hidden = true;
+    document.getElementById("subjectEditFormView").hidden = true;
     document.getElementById("subjectFormFeedback").innerHTML = "";
     document.getElementById("subjectsFeedback").innerHTML = feedback;
     renderSubjectsTable();
@@ -1279,6 +1313,41 @@ async function handleSubjectSubmit(event) {
     }
 }
 
+function showSubjectEditForm(disciplinaId) {
+    const disciplina = state.disciplinas.find((d) => String(d.id) === String(disciplinaId));
+    if (!disciplina) {
+        return;
+    }
+    document.getElementById("subjectsListView").hidden = true;
+    document.getElementById("subjectFormView").hidden = true;
+    document.getElementById("subjectEditFormView").hidden = false;
+    document.getElementById("subjectEditName").value = disciplina.nome;
+    document.getElementById("subjectEditFormFeedback").innerHTML = "";
+    document.getElementById("subjectEditForm").dataset.disciplinaId = disciplinaId;
+}
+
+async function handleSubjectEditSubmit(event) {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const disciplinaId = form.dataset.disciplinaId;
+    const nome = String(new FormData(form).get("nome") || "").trim();
+    const feedback = document.getElementById("subjectEditFormFeedback");
+
+    feedback.innerHTML = message("Salvando alterações...");
+
+    try {
+        await requestJson(`/disciplinas/${encodeURIComponent(disciplinaId)}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ nome })
+        });
+        await loadSubjects();
+        showSubjectsList(message("Disciplina atualizada com sucesso.", "ok"));
+    } catch (error) {
+        feedback.innerHTML = message(error.message, "error");
+    }
+}
+
 function handleSubjectTableClick(event) {
     const button = event.target.closest("[data-subject-action]");
     if (!button) {
@@ -1289,6 +1358,8 @@ function handleSubjectTableClick(event) {
     const action = button.dataset.subjectAction;
     if (action === "details") {
         showSubjectDetails(disciplinaId);
+    } else if (action === "edit") {
+        showSubjectEditForm(disciplinaId);
     } else if (action === "delete") {
         deleteSubject(disciplinaId);
     } else {
@@ -1335,49 +1406,48 @@ function renderNoteFormOptions() {
 }
 
 async function handleNoteExamChange(event) {
-    const simuladoId = String(event?.target?.value ?? "");
-    state.notaSimuladoSelecionadoId = simuladoId || null;
+    const simuladoId = String(event.target.value || "");
+    state.notaSimuladoSelecionadoId = simuladoId;
+
+    const selectDisciplina = document.getElementById("noteSubjectSelect");
+
+    state.notaDisciplinas = [];
+    selectDisciplina.innerHTML = `<option value="">Carregando disciplinas...</option>`;
 
     if (!simuladoId) {
-        state.notaDisciplinas = [];
-        renderNoteSelect(
-            "noteSubjectSelect",
-            [],
-            "Escolha uma disciplina",
-            "Selecione um simulado primeiro",
-            (disciplina) => disciplina.nome || `Disciplina ${disciplina.id}`
-        );
-        document.getElementById("noteFormFeedback").innerHTML = "";
+        selectDisciplina.innerHTML = `<option value="">Selecione um simulado primeiro</option>`;
         return;
     }
 
-    document.getElementById("noteFormFeedback").innerHTML = message("Carregando disciplinas do simulado...");
-
     try {
-        const simulado = await requestJson(`/simulados/${encodeURIComponent(simuladoId)}`);
-        state.notaDisciplinas = Array.isArray(simulado?.disciplinas) ? simulado.disciplinas : [];
-        renderNoteSelect(
-            "noteSubjectSelect",
-            state.notaDisciplinas,
-            "Escolha uma disciplina",
-            "Nenhuma disciplina vinculada ao simulado",
-            (disciplina) => disciplina.nome || `Disciplina ${disciplina.id}`
-        );
-        document.getElementById("noteSubjectSelect").value = "";
+        const disciplinas = await requestJson(`/simulados/${encodeURIComponent(simuladoId)}/disciplinas`);
+
+        state.notaDisciplinas = Array.isArray(disciplinas)
+            ? disciplinas.filter((disciplina) => {
+                const status = String(disciplina.status || "").toLowerCase();
+                return status.includes("ativa") && !status.includes("inativa");
+            })
+            : [];
+
+        if (state.notaDisciplinas.length === 0) {
+            selectDisciplina.innerHTML = `<option value="">Nenhuma disciplina vinculada a este simulado</option>`;
+            return;
+        }
+
+        selectDisciplina.innerHTML =
+            `<option value="">Escolha uma disciplina</option>` +
+            state.notaDisciplinas.map((disciplina) => `
+                <option value="${escapeHtml(disciplina.id)}">
+                    ${escapeHtml(disciplina.nome)}
+                </option>
+            `).join("");
+
         document.getElementById("noteFormFeedback").innerHTML = "";
     } catch (error) {
         state.notaDisciplinas = [];
-        renderNoteSelect(
-            "noteSubjectSelect",
-            [],
-            "Escolha uma disciplina",
-            "Não foi possível carregar disciplinas do simulado",
-            (disciplina) => disciplina.nome || `Disciplina ${disciplina.id}`
-        );
-        document.getElementById("noteFormFeedback").innerHTML = message(
-            error.message || "Não foi possível carregar as disciplinas do simulado.",
-            "error"
-        );
+        selectDisciplina.innerHTML = `<option value="">Erro ao carregar disciplinas</option>`;
+        document.getElementById("noteFormFeedback").innerHTML =
+            message("Não foi possível carregar as disciplinas desse simulado.", "error");
     }
 }
 
@@ -1400,7 +1470,7 @@ function renderStudentNotesList(notas) {
         <div class="compact-row">
             <div>
                 <span class="row-title">Nota ${escapeHtml(index + 1)}</span>
-                <span class="row-subtitle">${escapeHtml(state.disciplinaNomePorId?.[nota.disciplinaId] || `ID ${nota.disciplinaId}`)} | ${escapeHtml(state.simuladoDescricaoPorId?.[nota.simuladoId] || `ID ${nota.simuladoId}`)}</span>
+                <span class="row-subtitle">${escapeHtml(nota.nomeDisciplina || `Disciplina ${nota.disciplinaId}`)} | ${escapeHtml(nota.descricaoSimulado || `Simulado ${nota.simuladoId}`)}</span>
             </div>
             <strong>${formatNumber(nota.valor)}</strong>
         </div>
@@ -1478,6 +1548,9 @@ function validateNoteFormData(formData) {
     }
     if (!disciplinaId) {
         return "Selecione uma disciplina.";
+    }
+    if (!state.notaDisciplinas.some((disciplina) => String(disciplina.id) === String(disciplinaId))) {
+        return "A disciplina selecionada nao esta vinculada ao simulado.";
     }
     if (!valorText || Number.isNaN(valor)) {
         return "Informe uma nota de 0 a 10.";
@@ -1598,6 +1671,7 @@ function showSimulationsList(feedback = "") {
     document.getElementById("simulationsListView").hidden = false;
     document.getElementById("simulationDetailsView").hidden = true;
     document.getElementById("simulationCreateView").hidden = true;
+    document.getElementById("simuladoEditFormView").hidden = true;
     document.getElementById("simulationsFeedback").innerHTML = feedback;
     renderSimulationsTable();
 }
@@ -1619,6 +1693,7 @@ function renderSimulationsTable() {
             <td>${renderSimulationConsistencyBadge(simulado)}</td>
             <td>
                 <button class="table-action" type="button" data-simulation-action="details" data-simulation-id="${escapeHtml(simulado.id)}">Ver Detalhes</button>
+                <button class="table-action" type="button" data-simulation-action="edit" data-simulation-id="${escapeHtml(simulado.id)}">Editar</button>
             </td>
         </tr>
     `).join("");
@@ -1830,6 +1905,89 @@ async function handleSimulationSubmit(event) {
     }
 }
 
+function getSelectedSimuladoEditSubjectIds() {
+    return Array.from(document.querySelectorAll("#simuladoEditSubjectOptions input[name='disciplinasIds']:checked"))
+        .map((input) => Number(input.value));
+}
+
+function updateSimuladoEditCounter() {
+    const counter = document.getElementById("simuladoEditSelectedCounter");
+    if (counter) {
+        counter.textContent = `${getSelectedSimuladoEditSubjectIds().length} disciplina(s) selecionada(s)`;
+    }
+}
+
+function renderSimuladoEditSubjectOptions(selectedIds) {
+    const container = document.getElementById("simuladoEditSubjectOptions");
+    if (!container) return;
+    const selectedSet = new Set((selectedIds || []).map(String));
+    if (state.simuladoDisciplinas.length === 0) {
+        container.innerHTML = message("Nenhuma disciplina cadastrada.");
+        updateSimuladoEditCounter();
+        return;
+    }
+    container.innerHTML = state.simuladoDisciplinas.map((disciplina) => {
+        const ativa = isSubjectActive(disciplina);
+        const checked = selectedSet.has(String(disciplina.id)) && ativa;
+        return `
+            <label class="simulation-subject-option ${ativa ? "" : "disabled"}">
+                <input name="disciplinasIds" type="checkbox" value="${escapeHtml(disciplina.id)}" ${checked ? "checked" : ""} ${ativa ? "" : "disabled"}>
+                <span>${escapeHtml(disciplina.nome || `Disciplina ${disciplina.id}`)}</span>
+                ${renderSimulationSubjectBadge(disciplina.status)}
+            </label>
+        `;
+    }).join("");
+    updateSimuladoEditCounter();
+}
+
+async function showSimulationEditForm(simuladoId) {
+    document.getElementById("simulationsListView").hidden = true;
+    document.getElementById("simulationDetailsView").hidden = true;
+    document.getElementById("simulationCreateView").hidden = true;
+    document.getElementById("simuladoEditFormView").hidden = false;
+    document.getElementById("simuladoEditFormFeedback").innerHTML = message("Carregando...");
+    document.getElementById("simuladoEditSubjectOptions").innerHTML = "";
+    updateSimuladoEditCounter();
+
+    try {
+        const [detalhe, disciplinas] = await Promise.all([
+            requestJson(`/simulados/${encodeURIComponent(simuladoId)}`),
+            requestJson("/disciplinas")
+        ]);
+        state.simuladoDisciplinas = disciplinas;
+        const selectedIds = (detalhe.disciplinas || []).map((d) => d.disciplinaId ?? d.id);
+        document.getElementById("simuladoEditDescricao").value = detalhe.descricao || "";
+        document.getElementById("simuladoEditForm").dataset.simuladoId = simuladoId;
+        renderSimuladoEditSubjectOptions(selectedIds);
+        document.getElementById("simuladoEditFormFeedback").innerHTML = "";
+    } catch (error) {
+        document.getElementById("simuladoEditFormFeedback").innerHTML = message(error.message || "Erro ao carregar simulado.", "error");
+    }
+}
+
+async function handleSimuladoEditSubmit(event) {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const simuladoId = form.dataset.simuladoId;
+    const descricao = String(new FormData(form).get("descricao") || "").trim();
+    const disciplinasIds = getSelectedSimuladoEditSubjectIds();
+    const feedback = document.getElementById("simuladoEditFormFeedback");
+
+    feedback.innerHTML = message("Salvando alterações...");
+
+    try {
+        await requestJson(`/simulados/${encodeURIComponent(simuladoId)}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ descricao, disciplinasIds })
+        });
+        await loadSimulationsView();
+        showSimulationsList(message("Simulado atualizado com sucesso.", "ok"));
+    } catch (error) {
+        feedback.innerHTML = message(error.message || "Erro ao salvar simulado.", "error");
+    }
+}
+
 function handleSimulationTableClick(event) {
     const button = event.target.closest("[data-simulation-action]");
     if (!button) {
@@ -1838,6 +1996,8 @@ function handleSimulationTableClick(event) {
 
     if (button.dataset.simulationAction === "details") {
         showSimulationDetails(button.dataset.simulationId);
+    } else if (button.dataset.simulationAction === "edit") {
+        showSimulationEditForm(button.dataset.simulationId);
     }
 }
 
@@ -2421,13 +2581,6 @@ function openPortalForGuardian(responsavelId) {
         : message("Este responsável ainda não possui aluno vinculado.", "error");
 }
 
-function simulateBlockedAccess() {
-    const inactive = state.responsaveisLinhas.find((item) => item.alunoId && !item.vinculoAtivo);
-    showSection("portal");
-    document.getElementById("portalResponsavelId").value = inactive?.id || "";
-    document.getElementById("portalAlunoId").value = inactive?.alunoId || "";
-    document.getElementById("portalResult").innerHTML = `<div class="card">${message("Acesso bloqueado: vínculo inativo simulado.", "error")}</div>`;
-}
 
 async function toggleGuardianLink(responsavelId, shouldActivate) {
     const responsavel = state.responsaveisLinhas.find((item) => String(item.id) === String(responsavelId));
@@ -2561,6 +2714,8 @@ document.getElementById("portalForm").addEventListener("submit", handlePortalSub
 document.getElementById("newStudentButton").addEventListener("click", showStudentForm);
 document.getElementById("cancelStudentButton").addEventListener("click", () => showStudentsList());
 document.getElementById("studentForm").addEventListener("submit", handleStudentSubmit);
+document.getElementById("cancelStudentEditButton").addEventListener("click", () => showStudentsList());
+document.getElementById("studentEditForm").addEventListener("submit", handleStudentEditSubmit);
 document.getElementById("studentsTableBody").addEventListener("click", handleStudentsTableClick);
 document.getElementById("newClassButton").addEventListener("click", showClassForm);
 document.getElementById("cancelClassButton").addEventListener("click", () => showClassesList());
@@ -2569,6 +2724,8 @@ document.getElementById("newSubjectButton").addEventListener("click", showSubjec
 document.getElementById("cancelSubjectButton").addEventListener("click", () => showSubjectsList());
 document.getElementById("closeSubjectDetailsButton").addEventListener("click", closeSubjectDetails);
 document.getElementById("subjectForm").addEventListener("submit", handleSubjectSubmit);
+document.getElementById("cancelSubjectEditButton").addEventListener("click", () => showSubjectsList());
+document.getElementById("subjectEditForm").addEventListener("submit", handleSubjectEditSubmit);
 document.getElementById("subjectsTableBody").addEventListener("click", handleSubjectTableClick);
 document.getElementById("noteForm").addEventListener("submit", handleNoteSubmit);
 document.getElementById("noteExamSelect").addEventListener("change", handleNoteExamChange);
@@ -2582,6 +2739,9 @@ document.getElementById("backToSimulationsButton").addEventListener("click", () 
 document.getElementById("simulationForm").addEventListener("submit", handleSimulationSubmit);
 document.getElementById("simulationSubjectOptions").addEventListener("change", updateSimulationSelectedCounter);
 document.getElementById("simulationsTableBody").addEventListener("click", handleSimulationTableClick);
+document.getElementById("cancelSimuladoEditButton").addEventListener("click", () => showSimulationsList());
+document.getElementById("simuladoEditForm").addEventListener("submit", handleSimuladoEditSubmit);
+document.getElementById("simuladoEditSubjectOptions").addEventListener("change", updateSimuladoEditCounter);
 document.getElementById("newCorrectionButton").addEventListener("click", showCorrectionRequestView);
 document.getElementById("cancelCorrectionRequestButton").addEventListener("click", handleCancelCorrectionRequest);
 document.getElementById("backToCorrectionsButton").addEventListener("click", returnToCorrectionsList);
@@ -2596,7 +2756,6 @@ document.getElementById("newGuardianButton").addEventListener("click", showGuard
 document.getElementById("cancelGuardianLinkButton").addEventListener("click", () => showGuardiansList());
 document.getElementById("cancelGuardianButton").addEventListener("click", () => showGuardiansList());
 document.getElementById("closeGuardianDetailsButton").addEventListener("click", closeGuardianDetails);
-document.getElementById("blockedAccessButton").addEventListener("click", simulateBlockedAccess);
 document.getElementById("guardianLinkForm").addEventListener("submit", handleGuardianLinkSubmit);
 document.getElementById("guardianForm").addEventListener("submit", handleGuardianSubmit);
 document.getElementById("guardiansTableBody").addEventListener("click", handleGuardianTableClick);

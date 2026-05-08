@@ -1,5 +1,7 @@
 package g8.acadtrack.aplicacao.nota.validacao;
 
+import g8.acadtrack.dominiocompartilhado.excecao.RegraDeNegocioException;
+
 public class ValidadorValorNotaDecorator extends ValidadorLancamentoNotaDecorator {
 
     public ValidadorValorNotaDecorator(ValidadorLancamentoNota proximo) {
@@ -9,7 +11,7 @@ public class ValidadorValorNotaDecorator extends ValidadorLancamentoNotaDecorato
     @Override
     public void validar(DadosLancamentoNota dados) {
         if (dados.valor() < 0.0 || dados.valor() > 10.0) {
-            throw new IllegalArgumentException("Nota deve estar entre 0 e 10");
+            throw new RegraDeNegocioException("Nota deve estar entre 0 e 10");
         }
 
         super.validar(dados);

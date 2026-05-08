@@ -202,6 +202,14 @@ public class Aluno {
         this.situacaoAcademica = situacaoAcademica == null ? SituacaoAcademica.REPROVADO : situacaoAcademica;
     }
 
+    public void atualizar(String nome, String email) {
+        if (nome == null || nome.isBlank()) {
+            throw new IllegalArgumentException("Nome do aluno é obrigatório");
+        }
+        this.nome = nome.trim();
+        this.email = email;
+    }
+
     public void inativar() {
         this.ativo = false;
     }

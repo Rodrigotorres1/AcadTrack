@@ -1,6 +1,7 @@
 package g8.acadtrack.aplicacao.nota.validacao;
 
 import g8.acadtrack.dominioacademico.disciplina.DisciplinaRepository;
+import g8.acadtrack.dominiocompartilhado.excecao.RegraDeNegocioException;
 
 public class ValidadorDisciplinaAtivaDecorator extends ValidadorLancamentoNotaDecorator {
 
@@ -21,7 +22,7 @@ public class ValidadorDisciplinaAtivaDecorator extends ValidadorLancamentoNotaDe
                 .orElse(false);
 
         if (!disciplinaAtiva) {
-            throw new IllegalStateException("Disciplina inativa nao pode receber lancamento de nota");
+            throw new RegraDeNegocioException("Disciplina inativa nao pode receber lancamento de nota");
         }
 
         super.validar(dados);

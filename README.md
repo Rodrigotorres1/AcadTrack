@@ -228,7 +228,7 @@ AcadTrack/
 ├── .mvn/                    (Maven Wrapper)
 ├── aplicacao/
 ├── apresentacao-backend/
-├── apresentacao-frontend/   (camada web: HTML, CSS e JavaScript)
+├── apresentacao-frontend/   (placeholder Maven — sem artefactos; interface servida por apresentacao-backend/static/)
 ├── bdd/
 │   └── acadtrackbdd/
 ├── docs/
@@ -301,19 +301,13 @@ http://localhost:8081/
 
 **Observação sobre a camada web**
 
-Os arquivos da interface ficam organizados em:
-
-```text
-apresentacao-frontend/
-```
-
-E também são mantidos em:
+Os arquivos da interface (HTML, CSS, JavaScript) residem exclusivamente em:
 
 ```text
 apresentacao-backend/src/main/resources/static/
 ```
 
-A pasta `static/` é usada pelo Spring Boot para servir a tela automaticamente pelo navegador. O frontend apenas consome endpoints REST; as regras de negócio permanecem no backend.
+O módulo `apresentacao-frontend/` é um placeholder Maven (`packaging=pom`) que representa conceitualmente a camada de apresentação web, mas não contém arquivos de interface — eles são servidos diretamente pelo Spring Boot a partir de `static/`. O frontend apenas consome endpoints REST; as regras de negócio permanecem no backend.
 
 **Build completo**
 

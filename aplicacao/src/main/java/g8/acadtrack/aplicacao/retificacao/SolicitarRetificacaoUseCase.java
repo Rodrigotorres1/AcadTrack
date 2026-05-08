@@ -3,7 +3,9 @@ package g8.acadtrack.aplicacao.retificacao;
 import g8.acadtrack.dominioavaliacao.nota.NotaRepository;
 import g8.acadtrack.dominioavaliacao.retificacao.SolicitacaoRetificacao;
 import g8.acadtrack.dominioavaliacao.retificacao.SolicitacaoRetificacaoRepository;
+import g8.acadtrack.dominiocompartilhado.excecao.ConflitoDeEstadoException;
 import g8.acadtrack.dominiocompartilhado.excecao.EntidadeNaoEncontradaException;
+import g8.acadtrack.dominiocompartilhado.excecao.RegraDeNegocioException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -22,18 +24,18 @@ public class SolicitarRetificacaoUseCase {
 
     public SolicitacaoRetificacao executar(Long notaId, String justificativa) {
         if (notaId == null) {
-            throw new IllegalArgumentException("Nota é obrigatória");
+            throw new RegraDeNegocioException("Nota é obrigatória");
         }
 
         notaRepository.buscarPorId(notaId)
                 .orElseThrow(() -> new EntidadeNaoEncontradaException("Nota não encontrada"));
 
         if (justificativa == null || justificativa.isBlank()) {
-            throw new IllegalArgumentException("Justificativa é obrigatória");
+            throw new RegraDeNegocioException("Justificativa é obrigatória");
         }
 
         if (solicitacaoRetificacaoRepository.existeEmAbertoPorNotaId(notaId)) {
-            throw new IllegalStateException("Já existe solicitação de retificação em aberto para esta nota");
+            throw new ConflitoDeEstadoException("Já existe solicitação de retificação em aberto para esta nota");
         }
 
         SolicitacaoRetificacao solicitacao = new SolicitacaoRetificacao(

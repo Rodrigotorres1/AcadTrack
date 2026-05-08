@@ -7,4 +7,6 @@ public interface SimuladoDisciplinaRepository {
     SimuladoDisciplina salvar(SimuladoDisciplina simuladoDisciplina);
 
     List<SimuladoDisciplina> buscarPorSimulado(Long simuladoId);
+
+    void excluirPorSimulado(Long simuladoId);
 }

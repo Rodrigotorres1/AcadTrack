@@ -1,8 +1,10 @@
 package g8.acadtrack.apresentacao.controller;
 
+import g8.acadtrack.aplicacao.simulado.AtualizarSimuladoUseCase;
 import g8.acadtrack.aplicacao.simulado.CriarSimuladoUseCase;
 import g8.acadtrack.aplicacao.simulado.DetalharSimuladoUseCase;
 import g8.acadtrack.aplicacao.simulado.ListarSimuladosComResumoUseCase;
+import g8.acadtrack.apresentacao.dto.request.AtualizarSimuladoRequest;
 import g8.acadtrack.apresentacao.dto.request.CriarSimuladoRequest;
 import g8.acadtrack.apresentacao.dto.response.ErroApiResponse;
 import g8.acadtrack.apresentacao.dto.response.SimuladoDetalheResponse;
@@ -28,16 +30,18 @@ import java.util.List;
 public class SimuladoController {
 
     private final CriarSimuladoUseCase criarSimuladoUseCase;
+    private final AtualizarSimuladoUseCase atualizarSimuladoUseCase;
     private final ListarSimuladosComResumoUseCase listarSimuladosComResumoUseCase;
     private final DetalharSimuladoUseCase detalharSimuladoUseCase;
 
-
     public SimuladoController(
             CriarSimuladoUseCase criarSimuladoUseCase,
+            AtualizarSimuladoUseCase atualizarSimuladoUseCase,
             ListarSimuladosComResumoUseCase listarSimuladosComResumoUseCase,
             DetalharSimuladoUseCase detalharSimuladoUseCase
     ) {
         this.criarSimuladoUseCase = criarSimuladoUseCase;
+        this.atualizarSimuladoUseCase = atualizarSimuladoUseCase;
         this.listarSimuladosComResumoUseCase = listarSimuladosComResumoUseCase;
         this.detalharSimuladoUseCase = detalharSimuladoUseCase;
     }
@@ -69,6 +73,35 @@ public class SimuladoController {
         return ResponseEntity.ok(
                 SimuladoDetalheResponse.fromApplication(detalharSimuladoUseCase.executar(simuladoId))
         );
+    }
+
+    @GetMapping("/{simuladoId}/disciplinas")
+public ResponseEntity<List<SimuladoDetalheResponse.DisciplinaVinculadaResponse>> listarDisciplinasDoSimulado(
+        @PathVariable Long simuladoId
+) {
+    return ResponseEntity.ok(
+            SimuladoDetalheResponse.fromApplication(detalharSimuladoUseCase.executar(simuladoId))
+                    .getDisciplinas()
+    );
+}
+
+    @Operation(summary = "Editar simulado")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Simulado atualizado",
+                    content = @Content(schema = @Schema(implementation = SimuladoResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Validação ou regra de composição",
+                    content = @Content(schema = @Schema(implementation = ErroApiResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Simulado não encontrado",
+                    content = @Content(schema = @Schema(implementation = ErroApiResponse.class)))
+    })
+    @PatchMapping("/{simuladoId}")
+    public ResponseEntity<SimuladoResponse> atualizar(
+            @PathVariable Long simuladoId,
+            @RequestBody @Valid AtualizarSimuladoRequest dto) {
+        Simulado simulado = atualizarSimuladoUseCase.executar(
+                simuladoId, dto.getDescricao(), dto.getDisciplinasIds()
+        );
+        return ResponseEntity.ok(new SimuladoResponse(simulado.getId(), simulado.getDescricao()));
     }
 
     @Operation(summary = "Criar simulado",

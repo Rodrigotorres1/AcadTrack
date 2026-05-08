@@ -1,6 +1,7 @@
 package g8.acadtrack.apresentacao.controller;
 
 import g8.acadtrack.aplicacao.aluno.AtivarAlunoUseCase;
+import g8.acadtrack.aplicacao.aluno.AtualizarAlunoUseCase;
 import g8.acadtrack.aplicacao.aluno.CriarAlunoUseCase;
 import g8.acadtrack.aplicacao.aluno.InativarAlunoUseCase;
 import g8.acadtrack.aplicacao.aluno.ListarAlunosUseCase;
@@ -8,6 +9,7 @@ import g8.acadtrack.aplicacao.nota.AnalisarDesempenhoAcademicoUseCase;
 import g8.acadtrack.aplicacao.responsavel.DesvincularResponsavelUseCase;
 import g8.acadtrack.aplicacao.responsavel.VincularResponsavelUseCase;
 import g8.acadtrack.aplicacao.turma.VincularAlunoTurmaUseCase;
+import g8.acadtrack.apresentacao.dto.request.AtualizarAlunoRequest;
 import g8.acadtrack.apresentacao.dto.request.CriarAlunoRequest;
 import g8.acadtrack.apresentacao.dto.request.VincularAlunoTurmaRequest;
 import g8.acadtrack.apresentacao.dto.request.VincularResponsavelRequest;
@@ -44,6 +46,7 @@ import java.util.List;
 public class AlunoController {
 
     private final CriarAlunoUseCase criarAlunoUseCase;
+    private final AtualizarAlunoUseCase atualizarAlunoUseCase;
     private final ListarAlunosUseCase listarAlunosUseCase;
     private final InativarAlunoUseCase inativarAlunoUseCase;
     private final AtivarAlunoUseCase ativarAlunoUseCase;
@@ -54,6 +57,7 @@ public class AlunoController {
 
     public AlunoController(
             CriarAlunoUseCase criarAlunoUseCase,
+            AtualizarAlunoUseCase atualizarAlunoUseCase,
             ListarAlunosUseCase listarAlunosUseCase,
             InativarAlunoUseCase inativarAlunoUseCase,
             AtivarAlunoUseCase ativarAlunoUseCase,
@@ -63,6 +67,7 @@ public class AlunoController {
             AnalisarDesempenhoAcademicoUseCase analisarDesempenhoAcademicoUseCase
     ) {
         this.criarAlunoUseCase = criarAlunoUseCase;
+        this.atualizarAlunoUseCase = atualizarAlunoUseCase;
         this.listarAlunosUseCase = listarAlunosUseCase;
         this.inativarAlunoUseCase = inativarAlunoUseCase;
         this.ativarAlunoUseCase = ativarAlunoUseCase;
@@ -120,6 +125,23 @@ public class AlunoController {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(AlunoResponse.fromDomain(aluno));
+    }
+
+    @Operation(summary = "Editar nome e e-mail do aluno")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Aluno atualizado",
+                    content = @Content(schema = @Schema(implementation = AlunoResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Validação ou e-mail duplicado",
+                    content = @Content(schema = @Schema(implementation = ErroApiResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Aluno não encontrado",
+                    content = @Content(schema = @Schema(implementation = ErroApiResponse.class)))
+    })
+    @PatchMapping("/{alunoId}")
+    public ResponseEntity<AlunoResponse> atualizar(
+            @Parameter(description = "Aluno") @PathVariable Long alunoId,
+            @RequestBody @Valid AtualizarAlunoRequest request) {
+        Aluno aluno = atualizarAlunoUseCase.executar(alunoId, request.getNome(), request.getEmail(), request.getTurmaId());
+        return ResponseEntity.ok(AlunoResponse.fromDomain(aluno));
     }
 
     @Operation(summary = "Inativar aluno")

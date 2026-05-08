@@ -1,11 +1,13 @@
 package g8.acadtrack.apresentacao.controller;
 
+import g8.acadtrack.aplicacao.disciplina.AtualizarDisciplinaUseCase;
 import g8.acadtrack.aplicacao.disciplina.BuscarDisciplinaUseCase;
 import g8.acadtrack.aplicacao.disciplina.CriarDisciplinaUseCase;
 import g8.acadtrack.aplicacao.disciplina.ExcluirDisciplinaUseCase;
 import g8.acadtrack.aplicacao.disciplina.InativarDisciplinaUseCase;
 import g8.acadtrack.aplicacao.disciplina.AtivarDisciplinaUseCase;
 import g8.acadtrack.aplicacao.disciplina.ListarDisciplinasUseCase;
+import g8.acadtrack.apresentacao.dto.request.AtualizarDisciplinaRequest;
 import g8.acadtrack.apresentacao.dto.request.CriarDisciplinaRequest;
 import g8.acadtrack.apresentacao.dto.response.DisciplinaResponse;
 import g8.acadtrack.apresentacao.dto.response.ErroApiResponse;
@@ -38,6 +40,7 @@ import java.util.List;
 public class DisciplinaController {
 
     private final CriarDisciplinaUseCase useCase;
+    private final AtualizarDisciplinaUseCase atualizarDisciplinaUseCase;
     private final ListarDisciplinasUseCase listarDisciplinasUseCase;
     private final BuscarDisciplinaUseCase buscarDisciplinaUseCase;
     private final InativarDisciplinaUseCase inativarDisciplinaUseCase;
@@ -46,6 +49,7 @@ public class DisciplinaController {
 
     public DisciplinaController(
             CriarDisciplinaUseCase useCase,
+            AtualizarDisciplinaUseCase atualizarDisciplinaUseCase,
             ListarDisciplinasUseCase listarDisciplinasUseCase,
             BuscarDisciplinaUseCase buscarDisciplinaUseCase,
             InativarDisciplinaUseCase inativarDisciplinaUseCase,
@@ -53,6 +57,7 @@ public class DisciplinaController {
             ExcluirDisciplinaUseCase excluirDisciplinaUseCase
     ) {
         this.useCase = useCase;
+        this.atualizarDisciplinaUseCase = atualizarDisciplinaUseCase;
         this.listarDisciplinasUseCase = listarDisciplinasUseCase;
         this.buscarDisciplinaUseCase = buscarDisciplinaUseCase;
         this.inativarDisciplinaUseCase = inativarDisciplinaUseCase;
@@ -114,6 +119,23 @@ public class DisciplinaController {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(DisciplinaResponse.fromDomain(disciplina));
+    }
+
+    @Operation(summary = "Editar nome da disciplina")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Disciplina atualizada",
+                    content = @Content(schema = @Schema(implementation = DisciplinaResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Validação ou nome duplicado",
+                    content = @Content(schema = @Schema(implementation = ErroApiResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Disciplina não encontrada",
+                    content = @Content(schema = @Schema(implementation = ErroApiResponse.class)))
+    })
+    @PatchMapping("/{disciplinaId}")
+    public ResponseEntity<DisciplinaResponse> atualizar(
+            @Parameter(description = "Identificador da disciplina") @PathVariable Long disciplinaId,
+            @RequestBody @Valid AtualizarDisciplinaRequest request) {
+        Disciplina disciplina = atualizarDisciplinaUseCase.executar(disciplinaId, request.getNome());
+        return ResponseEntity.ok(DisciplinaResponse.fromDomain(disciplina));
     }
 
     @Operation(summary = "Inativar disciplina (soft-delete)")

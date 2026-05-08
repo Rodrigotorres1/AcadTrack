@@ -1,5 +1,6 @@
 package g8.acadtrack.aplicacao.simulado;
 
+import g8.acadtrack.dominiocompartilhado.excecao.RegraDeNegocioException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -11,16 +12,16 @@ public class ValidarComposicaoSimuladoService {
 
     public void validarDisciplinasParaCriacao(List<Long> disciplinasIds) {
         if (disciplinasIds == null || disciplinasIds.isEmpty()) {
-            throw new IllegalArgumentException("O simulado deve possuir pelo menos uma disciplina");
+            throw new RegraDeNegocioException("O simulado deve possuir pelo menos uma disciplina");
         }
 
         long disciplinasDistintas = disciplinasIds.stream().distinct().count();
         if (disciplinasDistintas != disciplinasIds.size()) {
-            throw new IllegalArgumentException("Não é permitido vincular disciplina repetida no mesmo simulado");
+            throw new RegraDeNegocioException("Não é permitido vincular disciplina repetida no mesmo simulado");
         }
 
         if (disciplinasDistintas < MINIMO_DISCIPLINAS) {
-            throw new IllegalArgumentException("O simulado deve possuir pelo menos duas disciplinas distintas");
+            throw new RegraDeNegocioException("O simulado deve possuir pelo menos duas disciplinas distintas");
         }
     }
 }

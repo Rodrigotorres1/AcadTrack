@@ -2,6 +2,7 @@ package g8.acadtrack.aplicacao.nota;
 
 import g8.acadtrack.dominioacademico.aluno.SituacaoAcademica;
 import g8.acadtrack.dominioavaliacao.nota.Nota;
+import g8.acadtrack.dominiocompartilhado.excecao.ConflitoDeEstadoException;
 
 import java.util.List;
 
@@ -19,7 +20,7 @@ public abstract class FluxoAnaliseAcademicaTemplate {
 
     protected void validarNotas(List<Nota> notas) {
         if (notas.isEmpty()) {
-            throw new IllegalStateException("Aluno sem notas para analise de desempenho");
+            throw new ConflitoDeEstadoException("Aluno sem notas para analise de desempenho");
         }
     }
 

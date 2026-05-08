@@ -214,6 +214,43 @@
                 </form>
             </article>
         </div>
+
+        <div id="studentEditFormView" hidden>
+            <div class="section-header">
+                <div>
+                    <h2>Editar Aluno</h2>
+                    <p>Alterar nome, e-mail e turma do aluno selecionado</p>
+                </div>
+            </div>
+
+            <article class="card student-form-card">
+                <form id="studentEditForm" class="student-form">
+                    <div class="form-field">
+                        <label for="studentEditName">Nome Completo</label>
+                        <input id="studentEditName" name="nome" type="text" placeholder="Ex: João da Silva" required>
+                    </div>
+
+                    <div class="form-field">
+                        <label for="studentEditEmail">E-mail</label>
+                        <input id="studentEditEmail" name="email" type="email" placeholder="Ex: joao@email.com" required>
+                    </div>
+
+                    <div class="form-field">
+                        <label for="studentEditClass">Turma</label>
+                        <select id="studentEditClass" name="turmaId">
+                            <option value="">Selecione a turma</option>
+                        </select>
+                    </div>
+
+                    <div id="studentEditFormFeedback" class="students-feedback"></div>
+
+                    <div class="form-actions">
+                        <button class="save-button" type="submit">Salvar alterações</button>
+                        <button id="cancelStudentEditButton" class="cancel-button" type="button">Cancelar</button>
+                    </div>
+                </form>
+            </article>
+        </div>
     </section>
 
     <section id="turmas" class="content-section">
@@ -322,6 +359,31 @@
                     <div class="form-actions">
                         <button class="primary-button" type="submit">Salvar</button>
                         <button id="cancelSubjectButton" class="cancel-button" type="button">Cancelar</button>
+                    </div>
+                </form>
+            </article>
+        </div>
+
+        <div id="subjectEditFormView" hidden>
+            <div class="section-header">
+                <div>
+                    <h2>Editar Disciplina</h2>
+                    <p>Alterar o nome da disciplina selecionada</p>
+                </div>
+            </div>
+
+            <article class="card student-form-card">
+                <form id="subjectEditForm" class="student-form">
+                    <div class="form-field">
+                        <label for="subjectEditName">Nome da Disciplina</label>
+                        <input id="subjectEditName" name="nome" type="text" placeholder="Ex: Matemática" required>
+                    </div>
+
+                    <div id="subjectEditFormFeedback" class="students-feedback"></div>
+
+                    <div class="form-actions">
+                        <button class="primary-button" type="submit">Salvar alterações</button>
+                        <button id="cancelSubjectEditButton" class="cancel-button" type="button">Cancelar</button>
                     </div>
                 </form>
             </article>
@@ -462,23 +524,6 @@
                     <div id="performanceExamHistory" class="compact-list"></div>
                 </article>
 
-                <article class="card">
-                    <div class="card-title-row">
-                        <h3>Notas por Disciplina</h3>
-                    </div>
-                    <div class="table-wrap">
-                        <table class="performance-table">
-                            <thead>
-                            <tr>
-                                <th>Disciplina</th>
-                                <th>Média</th>
-                                <th>Status</th>
-                            </tr>
-                            </thead>
-                            <tbody id="performanceSubjectTableBody"></tbody>
-                        </table>
-                    </div>
-                </article>
             </div>
 
             <article class="card risk-explanation-card">
@@ -618,6 +663,40 @@
                 </form>
             </article>
         </div>
+
+        <div id="simuladoEditFormView" hidden>
+            <div class="section-header">
+                <div>
+                    <h2>Editar Simulado</h2>
+                    <p>Alterar descrição e disciplinas do simulado selecionado</p>
+                </div>
+            </div>
+
+            <article class="card simulation-form-card">
+                <form id="simuladoEditForm" class="student-form" novalidate>
+                    <div class="form-field">
+                        <label for="simuladoEditDescricao">Descrição do Simulado</label>
+                        <input id="simuladoEditDescricao" name="descricao" type="text" placeholder="Ex: Simulado 1º Bimestre" required>
+                    </div>
+
+                    <section class="simulation-subject-picker">
+                        <div class="simulation-picker-header">
+                            <h3>Selecionar Disciplinas (mínimo 2)</h3>
+                            <span id="simuladoEditSelectedCounter" class="muted">0 disciplina(s) selecionada(s)</span>
+                        </div>
+                        <p class="muted">Disciplinas inativas não podem ser selecionadas</p>
+                        <div id="simuladoEditSubjectOptions" class="simulation-subject-options"></div>
+                    </section>
+
+                    <div id="simuladoEditFormFeedback" class="note-feedback"></div>
+
+                    <div class="form-actions">
+                        <button class="save-button" type="submit">Salvar alterações</button>
+                        <button id="cancelSimuladoEditButton" class="cancel-button" type="button">Cancelar</button>
+                    </div>
+                </form>
+            </article>
+        </div>
     </section>
 
     <section id="retificacoes" class="content-section">
@@ -737,7 +816,7 @@
                     <p>Gerenciar responsáveis e vínculos com alunos</p>
                 </div>
                 <div class="toolbar">
-                    <button id="linkGuardianButton" class="primary-button add-button" type="button">+ Vincular Responsável</button>
+                    <button id="linkGuardianButton" class="primary-button add-button" type="button">Vincular Responsável</button>
                     <button id="newGuardianButton" class="primary-button add-button" type="button">+ Criar Responsável</button>
                 </div>
             </div>
@@ -768,7 +847,6 @@
                 <div id="guardianDetailsContent"></div>
             </article>
 
-            <button id="blockedAccessButton" class="secondary-button blocked-access-button"></button>
         </div>
 
         <div id="guardianLinkView" hidden>

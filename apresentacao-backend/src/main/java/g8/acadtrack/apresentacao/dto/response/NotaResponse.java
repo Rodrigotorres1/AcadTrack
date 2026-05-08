@@ -9,13 +9,18 @@ public class NotaResponse {
     private Long simuladoId;
     private Long disciplinaId;
     private double valor;
+    private String nomeDisciplina;
+    private String descricaoSimulado;
 
-    public NotaResponse(Long id, Long alunoId, Long simuladoId, Long disciplinaId, double valor) {
+    public NotaResponse(Long id, Long alunoId, Long simuladoId, Long disciplinaId, double valor,
+                        String nomeDisciplina, String descricaoSimulado) {
         this.id = id;
         this.alunoId = alunoId;
         this.simuladoId = simuladoId;
         this.disciplinaId = disciplinaId;
         this.valor = valor;
+        this.nomeDisciplina = nomeDisciplina;
+        this.descricaoSimulado = descricaoSimulado;
     }
 
     public static NotaResponse fromDomain(Nota nota) {
@@ -24,7 +29,21 @@ public class NotaResponse {
                 nota.getAlunoId(),
                 nota.getSimuladoId(),
                 nota.getDisciplinaId(),
-                nota.getValor()
+                nota.getValor(),
+                null,
+                null
+        );
+    }
+
+    public static NotaResponse fromDomain(Nota nota, String nomeDisciplina, String descricaoSimulado) {
+        return new NotaResponse(
+                nota.getId(),
+                nota.getAlunoId(),
+                nota.getSimuladoId(),
+                nota.getDisciplinaId(),
+                nota.getValor(),
+                nomeDisciplina,
+                descricaoSimulado
         );
     }
 
@@ -46,5 +65,13 @@ public class NotaResponse {
 
     public double getValor() {
         return valor;
+    }
+
+    public String getNomeDisciplina() {
+        return nomeDisciplina;
+    }
+
+    public String getDescricaoSimulado() {
+        return descricaoSimulado;
     }
 }

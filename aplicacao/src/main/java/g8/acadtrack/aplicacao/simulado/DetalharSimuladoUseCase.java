@@ -45,45 +45,56 @@ public class DetalharSimuladoUseCase {
         this.analisarConsistenciaSimuladoService = analisarConsistenciaSimuladoService;
     }
 
-    public SimuladoDetalheResultado executar(Long simuladoId) {
-        Simulado simulado = simuladoRepository.buscarPorId(simuladoId)
-                .orElseThrow(() -> new EntidadeNaoEncontradaException("Simulado nao encontrado"));
+public SimuladoDetalheResultado executar(Long simuladoId) {
+    Simulado simulado = simuladoRepository.buscarPorId(simuladoId)
+            .orElseThrow(() -> new EntidadeNaoEncontradaException("Simulado nao encontrado"));
 
-        List<SimuladoDisciplina> vinculos = simuladoDisciplinaRepository.buscarPorSimulado(simulado.getId());
-        List<Long> disciplinasIds = vinculos.stream()
-                .map(SimuladoDisciplina::getDisciplinaId)
-                .distinct()
-                .toList();
-        List<Disciplina> disciplinas = disciplinaRepository.buscarPorIds(disciplinasIds);
-        Map<Long, Disciplina> disciplinasPorId = disciplinas.stream()
-                .collect(Collectors.toMap(Disciplina::getId, Function.identity()));
-        ConsistenciaSimuladoResultado consistencia = analisarConsistenciaSimuladoService.analisar(vinculos, disciplinas);
+    List<SimuladoDisciplina> vinculos = simuladoDisciplinaRepository.buscarPorSimulado(simulado.getId())
+            .stream()
+            .filter(v -> v.getSimuladoId().equals(simulado.getId()))
+            .toList();
 
-        List<SimuladoDetalheResultado.DisciplinaVinculada> disciplinasVinculadas = vinculos.stream()
-                .map(vinculo -> montarDisciplinaVinculada(vinculo, disciplinasPorId))
-                .toList();
+    List<Long> disciplinasIds = vinculos.stream()
+            .map(SimuladoDisciplina::getDisciplinaId)
+            .distinct()
+            .toList();
 
-        List<Nota> notas = notaRepository.buscarPorSimuladoId(simulado.getId());
-        Map<Long, List<Nota>> notasPorAluno = notas.stream()
-                .collect(Collectors.groupingBy(Nota::getAlunoId));
+    List<Disciplina> disciplinas = disciplinaRepository.buscarPorIds(disciplinasIds);
 
-        List<SimuladoDetalheResultado.AlunoParticipante> alunosParticipantes = notasPorAluno.entrySet()
-                .stream()
-                .map(entry -> montarAlunoParticipante(entry.getKey(), entry.getValue()))
-                .sorted(Comparator.comparing(SimuladoDetalheResultado.AlunoParticipante::nome))
-                .toList();
+    Map<Long, Disciplina> disciplinasPorId = disciplinas.stream()
+            .collect(Collectors.toMap(Disciplina::getId, Function.identity()));
 
-        return new SimuladoDetalheResultado(
-                simulado.getId(),
-                simulado.getDescricao(),
-                consistencia.consistente(),
-                consistencia.statusConsistencia(),
-                consistencia.motivoInconsistencia(),
-                disciplinasVinculadas,
-                new SimuladoDetalheResultado.NotasRelacionadas(notas.size(), notasPorAluno.size()),
-                alunosParticipantes
-        );
-    }
+    ConsistenciaSimuladoResultado consistencia =
+            analisarConsistenciaSimuladoService.analisar(vinculos, disciplinas);
+
+    List<SimuladoDetalheResultado.DisciplinaVinculada> disciplinasVinculadas =
+            vinculos.stream()
+                    .map(v -> montarDisciplinaVinculada(v, disciplinasPorId))
+                    .toList();
+
+    List<Nota> notas = notaRepository.buscarPorSimuladoId(simulado.getId());
+
+    Map<Long, List<Nota>> notasPorAluno = notas.stream()
+            .collect(Collectors.groupingBy(Nota::getAlunoId));
+
+    List<SimuladoDetalheResultado.AlunoParticipante> alunosParticipantes =
+            notasPorAluno.entrySet()
+                    .stream()
+                    .map(entry -> montarAlunoParticipante(entry.getKey(), entry.getValue()))
+                    .sorted(Comparator.comparing(SimuladoDetalheResultado.AlunoParticipante::nome))
+                    .toList();
+
+    return new SimuladoDetalheResultado(
+            simulado.getId(),
+            simulado.getDescricao(),
+            consistencia.consistente(),
+            consistencia.statusConsistencia(),
+            consistencia.motivoInconsistencia(),
+            disciplinasVinculadas,
+            new SimuladoDetalheResultado.NotasRelacionadas(notas.size(), notasPorAluno.size()),
+            alunosParticipantes
+    );
+}
 
     private SimuladoDetalheResultado.DisciplinaVinculada montarDisciplinaVinculada(
             SimuladoDisciplina vinculo,

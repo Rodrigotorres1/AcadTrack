@@ -1,8 +1,58 @@
+# Build
 target/
-.vscode/
-.idea/
 *.class
-*.log
+*.jar
+*.war
+*.ear
+
+# JVM runtime artifacts
+hs_err_pid*.log
+replay_pid*.log
+*.hprof
+
+# IDEs — IntelliJ
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# IDEs — VS Code
+.vscode/
+
+# IDEs — Eclipse / Spring Tools
+.settings/
+.classpath
+.project
+.factorypath
+*.launch
+
+# IDEs — NetBeans
+nbproject/
+nbbuild/
+dist/
+nbdist/
+
+# Ferramenta Claude Code
+.claude/
+
+# Banco de dados H2 em disco
 data/
+
+# Configurações locais / segredos (nunca versionar)
+.env
+application-local.properties
+application-local.yml
+application-local.yaml
+
+# Logs
+*.log
+..server.log
+
+# Sistema operacional
 .DS_Store
 Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Artefactos de merge
+*.orig

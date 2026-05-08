@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
-public class CriarSimuladoUseCase {
+public class AtualizarSimuladoUseCase {
 
     private static final double PESO_PADRAO = 1.0;
 
@@ -24,7 +24,7 @@ public class CriarSimuladoUseCase {
     private final SimuladoDisciplinaRepository simuladoDisciplinaRepository;
     private final ValidarComposicaoSimuladoService validarComposicaoSimuladoService;
 
-    public CriarSimuladoUseCase(
+    public AtualizarSimuladoUseCase(
             SimuladoRepository simuladoRepository,
             DisciplinaRepository disciplinaRepository,
             SimuladoDisciplinaRepository simuladoDisciplinaRepository,
@@ -37,35 +37,39 @@ public class CriarSimuladoUseCase {
     }
 
     @Transactional
-    public Simulado executar(String descricao, List<Long> disciplinasIds) {
-        if (simuladoRepository.buscarPorDescricaoNormalizada(descricao).isPresent()) {
-            throw new ConflitoDeEstadoException("Já existe simulado cadastrado com esta descrição");
+    public Simulado executar(Long simuladoId, String descricao, List<Long> disciplinasIds) {
+        Simulado simulado = simuladoRepository.buscarPorId(simuladoId)
+                .orElseThrow(() -> new EntidadeNaoEncontradaException("Simulado não encontrado"));
+
+        String descricaoTrimmed = descricao != null ? descricao.trim() : "";
+        if (!descricaoTrimmed.equalsIgnoreCase(simulado.getDescricao())) {
+            simuladoRepository.buscarPorDescricaoNormalizada(descricaoTrimmed)
+                    .ifPresent(outro -> {
+                        throw new ConflitoDeEstadoException("Já existe simulado cadastrado com esta descrição");
+                    });
         }
 
         validarComposicaoSimuladoService.validarDisciplinasParaCriacao(disciplinasIds);
 
         List<Disciplina> disciplinas = disciplinaRepository.buscarPorIds(disciplinasIds);
-
         if (disciplinas.size() != disciplinasIds.size()) {
             throw new EntidadeNaoEncontradaException("Uma ou mais disciplinas não existem");
         }
 
-        boolean existeDisciplinaInativa = disciplinas.stream().anyMatch(disciplina -> !disciplina.estaAtiva());
+        boolean existeDisciplinaInativa = disciplinas.stream().anyMatch(d -> !d.estaAtiva());
         if (existeDisciplinaInativa) {
             throw new RegraDeNegocioException("Disciplina inativa não pode ser vinculada a simulado");
         }
 
-        Simulado simuladoSalvo = simuladoRepository.salvar(new Simulado(null, descricao));
+        simulado.atualizar(descricao);
 
+        simuladoDisciplinaRepository.excluirPorSimulado(simuladoId);
         for (Disciplina disciplina : disciplinas) {
             simuladoDisciplinaRepository.salvar(new SimuladoDisciplina(
-                    null,
-                    simuladoSalvo.getId(),
-                    disciplina.getId(),
-                    PESO_PADRAO
+                    null, simuladoId, disciplina.getId(), PESO_PADRAO
             ));
         }
 
-        return simuladoSalvo;
+        return simuladoRepository.salvar(simulado);
     }
 }

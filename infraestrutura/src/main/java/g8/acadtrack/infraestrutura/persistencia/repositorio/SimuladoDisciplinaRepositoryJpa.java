@@ -37,6 +37,11 @@ public class SimuladoDisciplinaRepositoryJpa implements SimuladoDisciplinaReposi
     }
 
     @Override
+    public void excluirPorSimulado(Long simuladoId) {
+        repository.deleteBySimuladoId(simuladoId);
+    }
+
+    @Override
     public List<SimuladoDisciplina> buscarPorSimulado(Long simuladoId) {
         return repository.findBySimuladoId(simuladoId)
                 .stream()

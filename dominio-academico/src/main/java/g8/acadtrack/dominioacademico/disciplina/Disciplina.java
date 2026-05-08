@@ -44,6 +44,13 @@ public class Disciplina {
         this.status = StatusDisciplina.ATIVA;
     }
 
+    public void renomear(String nome) {
+        if (nome == null || nome.isBlank()) {
+            throw new IllegalArgumentException("Nome da disciplina é obrigatório");
+        }
+        this.nome = normalizarNome(nome);
+    }
+
     public static String normalizarNome(String nome) {
         return nome.trim().replaceAll("\\s+", " ");
     }
