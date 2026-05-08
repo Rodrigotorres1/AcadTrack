@@ -2,9 +2,9 @@
 
 ## Nivel preliminar
 
-No nivel preliminar, foi identificado o problema central do dominio: gerenciar simulados academicos e acompanhar o desempenho dos alunos de forma estruturada, permitindo o lancamento de notas, o calculo de medias ponderadas, a geracao de ranking e o tratamento de solicitacoes de retificacao.
+No nivel preliminar, foi identificado o problema central do dominio: gerenciar simulados academicos e acompanhar o desempenho dos alunos de forma estruturada, permitindo o lancamento de notas, o calculo de medias por simulado, a geracao de ranking e o tratamento de solicitacoes de retificacao.
 
-Tambem foram identificados os principais conceitos do dominio, como aluno, professor, responsavel, turma, simulado, disciplina, nota, media ponderada, ranking e solicitacao de retificacao.
+Tambem foram identificados os principais conceitos do dominio, como aluno, professor como persona do lancamento de notas, responsavel, turma, simulado, disciplina, nota, media por simulado, ranking e solicitacao de retificacao.
 
 ---
 
@@ -13,13 +13,13 @@ Tambem foram identificados os principais conceitos do dominio, como aluno, profe
 No nivel estrategico, o sistema foi dividido em subdominios com responsabilidades bem definidas.
 
 ### Gestao Academica (Core Domain)
-E o dominio principal do sistema, concentrando as regras de negocio de maior valor. E responsavel pela criacao e gerenciamento de simulados, definicao de disciplinas e pesos, calculo de medias ponderadas, geracao de ranking e acompanhamento do desempenho academico.
+E o dominio principal do sistema, concentrando as regras de negocio de maior valor. E responsavel pela criacao e gerenciamento de simulados, composicao por disciplinas, calculo de medias por simulado, geracao de ranking e acompanhamento do desempenho academico.
 
 ### Avaliacao (Dominio de Suporte)
-E responsavel pelo processamento das informacoes avaliativas do sistema, incluindo lancamento de notas, calculo de medias ponderadas, ordenacao dos alunos no ranking e registro de solicitacoes de retificacao.
+E responsavel pelo processamento das informacoes avaliativas do sistema, incluindo lancamento de notas, calculo de medias por simulado, ordenacao dos alunos no ranking e registro de solicitacoes de retificacao.
 
 ### Usuarios (Dominio Generico)
-E responsavel pelo gerenciamento dos perfis do sistema, como aluno, professor, coordenador e responsavel, alem de regras relacionadas a autenticacao, autorizacao e controle de acesso.
+E responsavel pelos vinculos e acessos relacionados aos responsaveis. Professor e coordenador permanecem como personas de negocio, sem cadastro tecnico proprio nesta entrega.
 
 Observacao de escopo da entrega atual:
 - O papel de **coordenador** esta modelado como persona de negocio nos fluxos e na documentacao.
@@ -41,7 +41,6 @@ As principais entidades modeladas no sistema sao:
 - Simulado
 - Disciplina
 - Nota
-- Professor
 - Responsavel
 - Solicitacao de Retificacao
 
@@ -49,8 +48,8 @@ As principais entidades modeladas no sistema sao:
 Os principais objetos de valor identificados no sistema sao:
 
 - Email
-- Peso da disciplina
-- Media ponderada (por simulado, segundo pesos)
+- Peso padrao interno da composicao do simulado
+- Media por simulado
 - Media global simples (agregacao de todas as notas do aluno para situacao registada)
 
 ### Medias duas nocoes sob regras distintas
@@ -58,7 +57,7 @@ Os principais objetos de valor identificados no sistema sao:
 O codigo distingue dois numeros relacionados ao desempenho:
 
 - **Media global simples:** media aritmetica sobre **todas** as notas do aluno. Usada onde o agregado **Aluno** e atualizado (apos lancamento de nota ou aprovacao de retificacao) para guardar media e **situacao academica**, via `AvaliacaoAcademicaService`.
-- **Media ponderada por simulado:** combina valores com os pesos de `SimuladoDisciplina` para aquele simulado. Usada nas consultas de media por simulado, ranking e trechos da analise de desempenho por avaliacao.
+- **Media por simulado:** combina valores das disciplinas da composicao do simulado com peso padrao interno. Usada nas consultas de media por simulado, ranking e trechos da analise de desempenho por avaliacao.
 
 A situacao oficial do cadastro **nao** e so a ultima media ponderada de um simulado; parte da media global simples acima.
 
@@ -74,12 +73,11 @@ Os agregados foram organizados em torno das entidades principais do dominio, com
 As principais regras de negocio foram implementadas por meio de servicos e casos de uso, tais como:
 
 - Lancar nota
-- Calcular media ponderada
+- Calcular media por simulado
 - Gerar ranking
 - Solicitar retificacao de nota
 - Vincular aluno a turma
 - Vincular e desvincular responsavel
-- Definir peso de disciplina no simulado
 - Criar simulados com disciplinas vinculadas
 
 ### Repositorios
@@ -98,7 +96,7 @@ No nivel operacional, o sistema foi implementado com foco na execucao pratica da
 - Organizacao em modulos de dominio, aplicacao, infraestrutura e apresentacao
 - Automatizacao dos cenarios BDD com Cucumber
 - Validacao das funcionalidades por meio de testes de comportamento e testes dos fluxos principais do sistema
-- **Separacao deliberada**: media global simples (persistida para situacao academica no aluno) versus media ponderada por simulado em ranking/consultas ancoradas nos pesos da composicao
+- **Separacao deliberada**: media global simples (persistida para situacao academica no aluno) versus media por simulado em ranking/consultas ancoradas na composicao da avaliacao
 - Implementacao de controle de acesso por perfil (incluindo coordenador tecnico) permanece como evolucao planejada
 
 Na API REST, dados de entrada passam por validacao (formato de e-mail, campos obrigatorios). Para **cadastro de aluno**, o e-mail e tratado como **unico** (case-insensitive); duplicidade responde com **409 Conflict** quando aplicavel.

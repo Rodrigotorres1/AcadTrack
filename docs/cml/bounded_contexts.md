@@ -6,7 +6,7 @@ Este documento resume os bounded contexts definidos no modelo CML do projeto.
 
 ### GestaoAcademicaContext
 - Responsavel por alunos, turmas, simulados e composicao de disciplinas.
-- Casos de uso principais: criar simulado, vincular aluno a turma, configurar disciplina e peso.
+- Casos de uso principais: criar simulado, vincular aluno a turma e configurar disciplinas.
 - No modelo CML refinado, `Simulado` usa `descricao` e foi incluido agregado explicito de `Disciplina` (ativa/inativa), alinhado ao comportamento da API.
 
 ### AvaliacaoDesempenhoContext
@@ -14,7 +14,7 @@ Este documento resume os bounded contexts definidos no modelo CML do projeto.
 - Casos de uso principais: lancar nota, calcular media, gerar ranking e tratar retificacao.
 
 ### UsuariosContext
-- Responsavel por perfis de professor e responsavel.
+- Responsavel por responsaveis, vinculos e permissoes de consulta.
 - Casos de uso principais: vincular e desvincular responsavel.
 
 ## Relacoes entre contextos (Context Map)
@@ -24,7 +24,7 @@ Este documento resume os bounded contexts definidos no modelo CML do projeto.
 - `GestaoAcademicaContext -> UsuariosContext` (`CONFORMIST`)
   - Justificativa: Gestao consome dados de usuarios e se conforma ao contrato publicado por Usuarios.
 - `AvaliacaoDesempenhoContext -> UsuariosContext` (`CONFORMIST`)
-  - Justificativa: Avaliacao tambem consome usuarios (responsavel/professor) sem impor modelo proprio ao contexto de Usuarios.
+  - Justificativa: Avaliacao tambem consome dados de responsaveis sem impor modelo proprio ao contexto de Usuarios.
 
 ## Nota sobre a persona Coordenador
 

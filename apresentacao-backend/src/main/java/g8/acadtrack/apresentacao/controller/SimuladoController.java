@@ -1,8 +1,11 @@
 package g8.acadtrack.apresentacao.controller;
 
 import g8.acadtrack.aplicacao.simulado.CriarSimuladoUseCase;
+import g8.acadtrack.aplicacao.simulado.DetalharSimuladoUseCase;
+import g8.acadtrack.aplicacao.simulado.ListarSimuladosComResumoUseCase;
 import g8.acadtrack.apresentacao.dto.request.CriarSimuladoRequest;
 import g8.acadtrack.apresentacao.dto.response.ErroApiResponse;
+import g8.acadtrack.apresentacao.dto.response.SimuladoDetalheResponse;
 import g8.acadtrack.apresentacao.dto.response.SimuladoResponse;
 import g8.acadtrack.dominioavaliacao.simulado.Simulado;
 import io.swagger.v3.oas.annotations.Operation;
@@ -17,16 +20,55 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @Tag(name = "Simulados", description = "Cadastro de simulados e composição com disciplinas.")
 @RestController
 @RequestMapping("/simulados")
 public class SimuladoController {
 
     private final CriarSimuladoUseCase criarSimuladoUseCase;
+    private final ListarSimuladosComResumoUseCase listarSimuladosComResumoUseCase;
+    private final DetalharSimuladoUseCase detalharSimuladoUseCase;
 
 
-    public SimuladoController(CriarSimuladoUseCase criarSimuladoUseCase) {
+    public SimuladoController(
+            CriarSimuladoUseCase criarSimuladoUseCase,
+            ListarSimuladosComResumoUseCase listarSimuladosComResumoUseCase,
+            DetalharSimuladoUseCase detalharSimuladoUseCase
+    ) {
         this.criarSimuladoUseCase = criarSimuladoUseCase;
+        this.listarSimuladosComResumoUseCase = listarSimuladosComResumoUseCase;
+        this.detalharSimuladoUseCase = detalharSimuladoUseCase;
+    }
+
+    @Operation(summary = "Listar simulados cadastrados")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Lista pode ser vazia")
+    })
+    @GetMapping
+    public ResponseEntity<List<SimuladoResponse>> listar() {
+        return ResponseEntity.ok(
+                listarSimuladosComResumoUseCase.executar()
+                        .stream()
+                        .map(SimuladoResponse::fromResumo)
+                        .toList()
+        );
+    }
+
+    @Operation(summary = "Detalhar simulado",
+            description = "Retorna composicao, status de consistencia, notas relacionadas e alunos participantes calculados no backend.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Simulado encontrado",
+                    content = @Content(schema = @Schema(implementation = SimuladoDetalheResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Simulado nao encontrado",
+                    content = @Content(schema = @Schema(implementation = ErroApiResponse.class)))
+    })
+    @GetMapping("/{simuladoId}")
+    public ResponseEntity<SimuladoDetalheResponse> detalhar(@PathVariable Long simuladoId) {
+        return ResponseEntity.ok(
+                SimuladoDetalheResponse.fromApplication(detalharSimuladoUseCase.executar(simuladoId))
+        );
     }
 
     @Operation(summary = "Criar simulado",

@@ -12,10 +12,10 @@ Feature: Notificacao automatica de responsaveis sobre risco academico
     Entao o responsavel deve receber notificacao com nivel de risco "MODERADO" e prioridade "MEDIA"
     E a notificacao deve estar com status "NAO_LIDA"
 
-  Scenario: Nao criar notificacao quando risco for BAIXO
+  Scenario: Criar notificacao de destaque quando aluno entrar no Top 10
     Dado que o aluno "Nicolas Freire" possui responsavel vinculado para notificacao
     Quando o professor lanca notas que mantem risco academico BAIXO
-    Entao o responsavel nao deve receber notificacao de risco academico
+    Entao o responsavel deve receber notificacao de destaque no ranking academico
 
   Scenario: Nao falhar quando aluno em risco nao tiver responsavel vinculado
     Dado que o aluno "Olivia Ramos" nao possui responsavel vinculado para notificacao

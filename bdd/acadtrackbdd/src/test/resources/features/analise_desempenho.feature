@@ -18,6 +18,12 @@ Feature: Análise consolidada de desempenho acadêmico
     Então o sistema deve indicar risco acadêmico "true"
     E o nível de risco deve ser "MODERADO"
 
+  Scenario: Exibir posicao academica do aluno dentro da analise
+    Dado que o aluno "Elisa Prado" possui concorrentes no ranking academico
+    Quando o sistema gerar a análise consolidada de desempenho do aluno
+    Então a análise deve informar posicao academica "2"
+    E a análise deve indicar aluno no Top 10 "true"
+
   Scenario: Não gerar análise consolidada para aluno sem notas
     Dado que o aluno "Diego Alves" não possui notas lançadas
     Quando o sistema gerar a análise consolidada de desempenho do aluno

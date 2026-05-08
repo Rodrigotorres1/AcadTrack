@@ -4,7 +4,11 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "simulado")
@@ -15,6 +19,9 @@ public class SimuladoJpaEntity {
     private Long id;
 
     private String descricao;
+
+    @OneToMany(mappedBy = "simulado")
+    private List<NotaJpaEntity> notas = new ArrayList<>();
 
     public SimuladoJpaEntity() {
     }

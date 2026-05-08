@@ -1,11 +1,57 @@
 ﻿const state = {
+    perfil: null,
+    alunoMatricula: null,
     dashboardLoaded: false,
-    currentReport: null,
     alunos: [],
     turmas: [],
     disciplinas: [],
+    disciplinaNomePorId: {},
+    simuladoDescricaoPorId: {},
+    notaAlunos: [],
+    notaSimulados: [],
+    notaDisciplinas: [],
+    notaSimuladoSelecionadoId: null,
+    performanceAlunos: [],
+    performanceSelectedAluno: null,
+    simulados: [],
+    simuladoDisciplinas: [],
+    selectedSimulado: null,
+    retificacoes: [],
+    retificacaoAlunos: [],
+    retificacaoNotas: [],
+    selectedRetificacao: null,
     responsaveis: [],
     responsaveisLinhas: []
+};
+
+const PROFILE_CONFIG = {
+    coordenador: {
+        label: "Coordenador",
+        description: "Gerencia disciplinas, simulados, turmas e vínculos.",
+        defaultSection: "disciplinas"
+    },
+    professor: {
+        label: "Professor",
+        description: "Lança notas e participa da avaliação/retificação.",
+        defaultSection: "notas"
+    },
+    aluno: {
+        label: "Aluno",
+        description: "Consulta de desempenho acadêmico e ranking.",
+        defaultSection: "desempenho"
+    },
+    responsavel: {
+        label: "Responsável",
+        description: "Portal, permissões e notificações.",
+        defaultSection: "portal"
+    }
+};
+
+const ROLE_SECTIONS = {
+    coordenador: ["disciplinas", "simulados", "turmas", "alunos", "responsaveis"],
+    professor: ["notas", "desempenho", "retificacoes"],
+    aluno: ["notas", "desempenho", "retificacoes"],
+    responsavel: ["portal", "notificacoes"]
 };
 
 const formatNumber = (value) => {
@@ -19,6 +65,12 @@ const formatNumber = (value) => {
 };
 
 const normalize = (value) => String(value || "").toLowerCase();
+
+const normalizeClassName = (value) => String(value || "")
+    .trim()
+    .toLowerCase()
+    .replaceAll("°", "º")
+    .replace(/\s+/g, "");
 
 const riskClass = (nivelRisco) => {
     const risk = normalize(nivelRisco);
@@ -43,14 +95,136 @@ const escapeHtml = (value) => String(value ?? "")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
 
-async function requestJson(path, options = {}) {
-    const response = await fetch(path, {
-        ...options,
-        headers: {
-            "Accept": "application/json",
-            ...(options.headers || {})
+const API_BASE_URL_STORAGE_KEY = "acadtrackApiBaseUrl";
+const API_PROBE_PATH = "/v3/api-docs";
+const API_CANDIDATE_PORTS = Array.from({ length: 20 }, (_, index) => 8080 + index);
+let apiBaseUrlPromise = null;
+
+function normalizeApiBaseUrl(value) {
+    return String(value || "").trim().replace(/\/+$/, "");
+}
+
+function addUniqueApiBaseUrl(candidates, value) {
+    const normalized = normalizeApiBaseUrl(value);
+    if (normalized && !candidates.includes(normalized)) {
+        candidates.push(normalized);
+    }
+}
+
+function getStoredApiBaseUrl() {
+    try {
+        return window.localStorage.getItem(API_BASE_URL_STORAGE_KEY);
+    } catch {
+        return "";
+    }
+}
+
+function rememberApiBaseUrl(baseUrl) {
+    try {
+        if (baseUrl) {
+            window.localStorage.setItem(API_BASE_URL_STORAGE_KEY, baseUrl);
         }
-    });
+    } catch {
+        // localStorage can be unavailable for file:// pages in some browsers.
+    }
+}
+
+function getApiBaseUrlCandidates() {
+    const candidates = [];
+    const params = new URLSearchParams(window.location.search);
+
+    addUniqueApiBaseUrl(candidates, params.get("api"));
+    addUniqueApiBaseUrl(candidates, params.get("apiBaseUrl"));
+    addUniqueApiBaseUrl(candidates, window.ACADTRACK_API_BASE_URL);
+
+    if (window.location.protocol === "http:" || window.location.protocol === "https:") {
+        addUniqueApiBaseUrl(candidates, window.location.origin);
+    }
+
+    addUniqueApiBaseUrl(candidates, getStoredApiBaseUrl());
+    API_CANDIDATE_PORTS.forEach((port) => addUniqueApiBaseUrl(candidates, `http://localhost:${port}`));
+
+    return candidates;
+}
+
+function isHttpUrl(value) {
+    return /^https?:\/\//i.test(String(value || ""));
+}
+
+function buildApiUrl(path, baseUrl) {
+    if (isHttpUrl(path)) {
+        return path;
+    }
+
+    const normalizedPath = String(path || "").startsWith("/") ? path : `/${path}`;
+    return `${baseUrl}${normalizedPath}`;
+}
+
+async function fetchWithTimeout(url, options = {}, timeoutMs = 12000) {
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), timeoutMs);
+
+    try {
+        return await fetch(url, {
+            ...options,
+            signal: controller.signal
+        });
+    } finally {
+        window.clearTimeout(timeoutId);
+    }
+}
+
+async function canUseApiBaseUrl(baseUrl) {
+    try {
+        const response = await fetchWithTimeout(buildApiUrl(API_PROBE_PATH, baseUrl), {
+            headers: { "Accept": "application/json" }
+        }, 1800);
+
+        return response.ok;
+    } catch {
+        return false;
+    }
+}
+
+async function resolveApiBaseUrl() {
+    if (!apiBaseUrlPromise) {
+        apiBaseUrlPromise = (async () => {
+            const candidates = getApiBaseUrlCandidates();
+
+            for (const baseUrl of candidates) {
+                if (await canUseApiBaseUrl(baseUrl)) {
+                    rememberApiBaseUrl(baseUrl);
+                    return baseUrl;
+                }
+            }
+
+            throw new Error("Não foi possível conectar à API. Inicie o backend Spring Boot e, se ele estiver em outra porta, abra a tela com ?api=http://localhost:PORT.");
+        })().catch((error) => {
+            apiBaseUrlPromise = null;
+            throw error;
+        });
+    }
+
+    return apiBaseUrlPromise;
+}
+
+async function requestJson(path, options = {}) {
+    const apiBaseUrl = isHttpUrl(path) ? "" : await resolveApiBaseUrl();
+    const url = buildApiUrl(path, apiBaseUrl);
+
+    let response;
+    try {
+        response = await fetchWithTimeout(url, {
+            ...options,
+            headers: {
+                "Accept": "application/json",
+                ...(options.headers || {})
+            }
+        });
+    } catch {
+        apiBaseUrlPromise = null;
+        throw new Error("Falha ao conectar à API. Verifique se o backend está em execução e tente novamente.");
+    }
 
     const contentType = response.headers.get("content-type") || "";
     const payload = contentType.includes("application/json") ? await response.json() : await response.text();
@@ -78,7 +252,95 @@ function message(text, kind = "neutral") {
     return `<div class="${className}">${escapeHtml(text)}</div>`;
 }
 
+function getProfileConfig(profile) {
+    return PROFILE_CONFIG[profile] || null;
+}
+
+function getAllowedSections(profile) {
+    return ROLE_SECTIONS[profile] || [];
+}
+
+function canAccessSection(sectionId) {
+    return !state.perfil || getAllowedSections(state.perfil).includes(sectionId);
+}
+
+function applyRoleNavigation(profile) {
+    const allowedSections = getAllowedSections(profile);
+    document.querySelectorAll(".nav-link").forEach((link) => {
+        const allowed = allowedSections.includes(link.dataset.section);
+        link.hidden = !allowed;
+        if (!allowed) {
+            link.classList.remove("active");
+        }
+    });
+}
+
+function renderActiveProfile(profile) {
+    const config = getProfileConfig(profile);
+    document.getElementById("activeProfileLabel").textContent = config?.label || "-";
+    document.getElementById("activeProfileDescription").textContent = config?.description || "";
+}
+
+function isPositiveEnrollment(value) {
+    return /^\d+$/.test(String(value || "").trim()) && Number(value) >= 1;
+}
+
+function rememberStudentEnrollment(value) {
+    state.alunoMatricula = String(value || "").trim() || null;
+}
+
+function getStudentEnrollmentFromForm(form) {
+    return String(new FormData(form).get("alunoId") || "").trim();
+}
+
+function showLogin(feedback = "") {
+    state.perfil = null;
+    state.alunoMatricula = null;
+    applyRoleNavigation(null);
+    document.body.classList.add("login-active");
+    document.getElementById("loginScreen").hidden = false;
+    document.getElementById("loginFeedback").innerHTML = feedback;
+    renderActiveProfile(null);
+}
+
+function enterApplication(profile) {
+    const config = getProfileConfig(profile);
+    if (!config) {
+        showLogin(message("Selecione um perfil válido.", "error"));
+        return;
+    }
+
+    state.perfil = profile;
+    state.alunoMatricula = null;
+    applyRoleNavigation(profile);
+    document.body.classList.remove("login-active");
+    document.getElementById("loginScreen").hidden = true;
+    renderActiveProfile(profile);
+    showSection(config.defaultSection);
+}
+
+function handleLoginSubmit(event) {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    const profile = formData.get("perfil");
+
+    enterApplication(profile);
+}
+
+function handleChangeProfile() {
+    document.getElementById("loginForm").reset();
+    showLogin();
+}
+
 function showSection(sectionId) {
+    if (!canAccessSection(sectionId)) {
+        const fallback = getProfileConfig(state.perfil)?.defaultSection;
+        if (fallback && fallback !== sectionId) {
+            showSection(fallback);
+        }
+        return;
+    }
+
     document.querySelectorAll(".content-section").forEach((section) => {
         section.classList.toggle("active", section.id === sectionId);
     });
@@ -86,14 +348,47 @@ function showSection(sectionId) {
         link.classList.toggle("active", link.dataset.section === sectionId);
     });
 
+    document.getElementById("refreshDashboardButton").hidden = sectionId !== "dashboard";
+
+    if (sectionId === "dashboard" && !state.dashboardLoaded) {
+        loadDashboard();
+    }
+
     if (sectionId === "alunos") {
         showStudentsList();
         loadStudentsView();
     }
 
+    if (sectionId === "turmas") {
+        showClassesList();
+        loadClassesView();
+    }
+
     if (sectionId === "disciplinas") {
         showSubjectsList();
         loadSubjects();
+    }
+
+    if (sectionId === "notas") {
+        loadNotesView();
+    }
+
+    if (sectionId === "desempenho") {
+        loadPerformanceView();
+    }
+
+    if (sectionId === "simulados") {
+        showSimulationsList();
+        loadSimulationsView();
+    }
+
+    if (sectionId === "retificacoes") {
+        if (state.perfil === "aluno") {
+            showCorrectionRequestView();
+        } else {
+            showCorrectionsList();
+            loadCorrectionsView();
+        }
     }
 
     if (sectionId === "responsaveis") {
@@ -106,131 +401,286 @@ function renderRiskPill(nivelRisco) {
     return `<span class="risk-pill ${riskClass(nivelRisco)}">${escapeHtml(nivelRisco || "-")}</span>`;
 }
 
-function renderReportTable(report) {
-    const tbody = document.getElementById("reportTableBody");
-    const alunos = report.alunos || [];
-
-    if (alunos.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" class="muted">Nenhum aluno com notas foi retornado pela API.</td></tr>`;
-        return;
-    }
-
-    tbody.innerHTML = alunos.map((aluno) => `
-        <tr>
-            <td>
-                <span class="row-title">${escapeHtml(aluno.nomeAluno || `Aluno ${aluno.alunoId}`)}</span>
-                <span class="row-subtitle">ID ${escapeHtml(aluno.alunoId)}</span>
-            </td>
-            <td>${formatNumber(aluno.mediaGeral)}</td>
-            <td>${renderRiskPill(aluno.nivelRisco)}</td>
-            <td>${escapeHtml(aluno.situacaoAcademica || "-")}</td>
-            <td>${escapeHtml(aluno.tipoPlanoEstudo || "-")}</td>
-        </tr>
-    `).join("");
+function dashboardRiskWeight(nivelRisco) {
+    const risk = riskClass(nivelRisco);
+    if (risk === "alto") return 0;
+    if (risk === "moderado") return 1;
+    if (risk === "baixo") return 2;
+    return 3;
 }
 
-function renderDashboard(report) {
-    const alunos = report.alunos || [];
-    document.getElementById("metricTotal").textContent = report.totalAlunosAnalisados ?? alunos.length;
+function renderDashboard(alunos, ranking = []) {
+    document.getElementById("metricTotal").textContent = alunos.length;
     document.getElementById("metricAlto").textContent = alunos.filter((aluno) => riskClass(aluno.nivelRisco) === "alto").length;
     document.getElementById("metricModerado").textContent = alunos.filter((aluno) => riskClass(aluno.nivelRisco) === "moderado").length;
     document.getElementById("metricBaixo").textContent = alunos.filter((aluno) => riskClass(aluno.nivelRisco) === "baixo").length;
 
     const dashboardList = document.getElementById("dashboardList");
-    const destaques = alunos.slice(0, 5);
+    const destaques = [...alunos]
+        .sort((a, b) => dashboardRiskWeight(a.nivelRisco) - dashboardRiskWeight(b.nivelRisco)
+            || Number(a.mediaGeral ?? 0) - Number(b.mediaGeral ?? 0))
+        .slice(0, 5);
+
     dashboardList.innerHTML = destaques.length === 0
         ? message("Nenhum aluno com notas foi retornado pela API.")
         : destaques.map((aluno) => `
             <div class="compact-row">
                 <span>
                     <span class="row-title">${escapeHtml(aluno.nomeAluno || `Aluno ${aluno.alunoId}`)}</span>
-                    <span class="row-subtitle">MÃ©dia ${formatNumber(aluno.mediaGeral)} | ${escapeHtml(aluno.situacaoAcademica || "-")}</span>
+                    <span class="row-subtitle">Média ${formatNumber(aluno.mediaGeral)} | ${escapeHtml(formatPerformanceStatus(aluno.situacaoAcademica))}</span>
                 </span>
                 ${renderRiskPill(aluno.nivelRisco)}
-                <span class="muted">${escapeHtml(aluno.tipoPlanoEstudo || "-")}</span>
             </div>
         `).join("");
+
+    renderDashboardRanking(ranking);
 }
 
-async function loadReport(ordenacao = "MAIOR_RISCO", updateDashboard = false) {
-    setStatus("reportStatus", "Carregando", "neutral");
-    const report = await requestJson(`/relatorios/desempenho-academico?ordenacao=${encodeURIComponent(ordenacao)}`);
-    state.currentReport = report;
-    renderReportTable(report);
-    document.getElementById("reportTitle").textContent = `${report.totalAlunosAnalisados ?? 0} alunos analisados`;
-    setStatus("reportStatus", report.ordenacao || ordenacao, "success");
-
-    if (updateDashboard) {
-        renderDashboard(report);
-        state.dashboardLoaded = true;
-        setStatus("dashboardStatus", "Atualizado", "success");
-    }
+function renderDashboardRanking(ranking) {
+    const list = document.getElementById("dashboardRankingList");
+    list.innerHTML = ranking.length === 0
+        ? message("Nenhum aluno apareceu no ranking acadêmico.")
+        : ranking.map((item) => `
+            <div class="compact-row">
+                <span>
+                    <span class="row-title">#${escapeHtml(item.posicao)} ${escapeHtml(item.nomeAluno || `Aluno ${item.alunoId}`)}</span>
+                    <span class="row-subtitle">Média ${formatNumber(item.media)} | ${escapeHtml(formatPerformanceStatus(item.situacaoAcademica))}</span>
+                </span>
+                ${renderRiskPill(item.nivelRisco)}
+            </div>
+        `).join("");
 }
 
 async function loadDashboard() {
     setStatus("dashboardStatus", "Carregando", "neutral");
     try {
-        const report = await requestJson("/relatorios/desempenho-academico?ordenacao=MAIOR_RISCO");
-        renderDashboard(report);
+        const alunos = await requestJson("/alunos");
+        const resultados = await Promise.allSettled(alunos.map(async (aluno) => {
+            const analise = await requestJson(`/alunos/${encodeURIComponent(aluno.id)}/desempenho`);
+            return {
+                ...analise,
+                nomeAluno: aluno.nome || `Aluno ${aluno.id}`
+            };
+        }));
+        const analises = resultados
+            .filter((resultado) => resultado.status === "fulfilled")
+            .map((resultado) => resultado.value);
+        const ranking = await requestJson("/rankings?limite=10");
+
+        renderDashboard(analises, ranking);
         state.dashboardLoaded = true;
         setStatus("dashboardStatus", "Atualizado", "success");
+        setStatus("dashboardRankingStatus", "Atualizado", "success");
     } catch (error) {
         document.getElementById("dashboardList").innerHTML = message(error.message, "error");
+        document.getElementById("dashboardRankingList").innerHTML = message(error.message, "error");
         setStatus("dashboardStatus", "Erro", "danger");
+        setStatus("dashboardRankingStatus", "Erro", "danger");
     }
 }
 
-async function handleReportLoad() {
-    const ordenacao = document.getElementById("ordenacaoSelect").value;
+function showPerformanceSelect(feedback = "") {
+    document.getElementById("performanceSelectView").hidden = false;
+    document.getElementById("performancePanelView").hidden = true;
+    document.getElementById("performanceFeedback").innerHTML = feedback;
+}
+
+function renderPerformanceStudentOptions() {
+    const select = document.getElementById("performanceStudentSelect");
+    const input = document.getElementById("performanceStudentEnrollment");
+    const label = document.getElementById("performanceStudentLabel");
+
+    if (state.perfil === "aluno") {
+        label.textContent = "Matrícula";
+        label.setAttribute("for", "performanceStudentEnrollment");
+        select.hidden = true;
+        select.disabled = true;
+        select.required = false;
+        input.hidden = false;
+        input.disabled = false;
+        input.required = true;
+        input.value = state.alunoMatricula || input.value || "";
+        return;
+    }
+
+    label.textContent = "Selecionar Aluno";
+    label.setAttribute("for", "performanceStudentSelect");
+    input.hidden = true;
+    input.disabled = true;
+    input.required = false;
+    input.value = "";
+    select.hidden = false;
+    select.disabled = false;
+    select.required = true;
+
+    if (state.performanceAlunos.length === 0) {
+        select.innerHTML = `<option value="" disabled selected>Nenhum aluno cadastrado</option>`;
+        return;
+    }
+
+    const options = state.performanceAlunos.map((aluno) =>
+        `<option value="${escapeHtml(aluno.id)}">Matrícula ${escapeHtml(aluno.id)} - ${escapeHtml(aluno.nome || `Aluno ${aluno.id}`)}</option>`
+    ).join("");
+
+    select.innerHTML = `<option value="">Escolha um aluno</option>${options}`;
+}
+
+async function loadPerformanceView() {
+    if (state.perfil === "aluno") {
+        state.performanceAlunos = [];
+        document.getElementById("performanceSelectSubtitle").textContent = "Informe sua matrícula para visualizar o desempenho completo";
+        document.getElementById("performanceSubmitButton").textContent = "Visualizar meu desempenho";
+        showPerformanceSelect(message("Digite sua matrícula para consultar os dados calculados pelo backend."));
+        renderPerformanceStudentOptions();
+        return;
+    }
+
+    document.getElementById("performanceSelectSubtitle").textContent = "Selecione um aluno para visualizar o desempenho completo";
+    document.getElementById("performanceStudentLabel").textContent = "Selecionar Aluno";
+    document.getElementById("performanceSubmitButton").textContent = "Visualizar Desempenho";
+    showPerformanceSelect(message("Carregando alunos..."));
+
     try {
-        await loadReport(ordenacao, ordenacao === "MAIOR_RISCO");
+        state.performanceAlunos = await requestJson("/alunos");
+        renderPerformanceStudentOptions();
+        document.getElementById("performanceFeedback").innerHTML = "";
     } catch (error) {
-        document.getElementById("reportTableBody").innerHTML = `<tr><td colspan="5">${message(error.message, "error")}</td></tr>`;
-        setStatus("reportStatus", "Erro", "danger");
+        state.performanceAlunos = [];
+        renderPerformanceStudentOptions();
+        document.getElementById("performanceFeedback").innerHTML = message("Não foi possível carregar os alunos cadastrados.", "error");
     }
 }
 
-function renderPlan(plan) {
-    const risk = riskClass(plan.nivelRisco);
+function riskAlertClass(nivelRisco) {
+    return `performance-alert ${riskClass(nivelRisco)}`;
+}
+
+function formatPerformanceStatus(status) {
+    const normalized = normalize(status);
+    if (normalized.includes("recuperacao") || normalized.includes("recuperação")) {
+        return "Recuperação";
+    }
+    if (normalized.includes("reprovado")) {
+        return "Reprovado";
+    }
+    if (normalized.includes("aprovado")) {
+        return "Aprovado";
+    }
+    return status || "-";
+}
+
+function renderPerformanceStatusBadge(status, nivelRisco) {
+    const className = riskClass(nivelRisco);
     return `
-        <article class="card">
-            <div class="plan-layout">
-                <div class="plan-stat">
-                    ${renderRiskPill(plan.nivelRisco)}
-                    <strong class="text-${risk === "alto" ? "danger" : risk === "moderado" ? "warning" : "success"}">${formatNumber(plan.mediaGeral)}</strong>
-                    <span class="muted">Aluno ID ${escapeHtml(plan.alunoId)}</span>
-                </div>
-                <div>
-                    <h3>${escapeHtml(plan.tipoPlano || "-")}</h3>
-                    <p class="muted">${escapeHtml(plan.descricao || "")}</p>
-                    <p><strong>Carga semanal sugerida:</strong> ${escapeHtml(plan.cargaHorariaSemanalSugerida ?? "-")}h</p>
-                    <ul class="orientation-list">
-                        ${(plan.orientacoes || []).map((orientacao) => `<li>${escapeHtml(orientacao)}</li>`).join("")}
-                    </ul>
-                </div>
-            </div>
-        </article>
+        <span class="status-pill ${className === "alto" ? "danger" : className === "moderado" ? "warning" : "success"}">
+            <span class="performance-badge-dot" aria-hidden="true"></span>
+            ${escapeHtml(formatPerformanceStatus(status))}
+        </span>
     `;
 }
 
-async function handlePlanSubmit(event) {
+function renderPerformanceExamHistory(historico) {
+    const list = document.getElementById("performanceExamHistory");
+    if (!historico || historico.length === 0) {
+        list.innerHTML = message("Nenhum simulado encontrado para este aluno.");
+        return;
+    }
+
+    list.innerHTML = historico.map((simulado) => `
+        <div class="compact-row performance-history-row">
+            <span>
+                <span class="row-title">${escapeHtml(simulado.nomeSimulado || `Simulado ${simulado.simuladoId}`)}</span>
+                <span class="row-subtitle">${escapeHtml(simulado.quantidadeNotas ?? 0)} notas</span>
+            </span>
+            <span class="muted">Média</span>
+            <strong>${formatNumber(simulado.mediaPonderada)}</strong>
+        </div>
+    `).join("");
+}
+
+function renderPerformanceSubjectRows(notasPorDisciplina) {
+    const tbody = document.getElementById("performanceSubjectTableBody");
+    if (!notasPorDisciplina || notasPorDisciplina.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="3" class="muted">Nenhuma nota por disciplina encontrada.</td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = notasPorDisciplina.map((disciplina) => `
+        <tr>
+            <td>${escapeHtml(disciplina.nomeDisciplina || `Disciplina ${disciplina.disciplinaId}`)}</td>
+            <td>${formatNumber(disciplina.media)}</td>
+            <td>${renderPerformanceStatusBadge(disciplina.status, disciplina.nivelRisco)}</td>
+        </tr>
+    `).join("");
+}
+
+function renderPerformancePanel(analise, aluno) {
+    state.performanceSelectedAluno = aluno;
+    document.getElementById("performanceSelectView").hidden = true;
+    document.getElementById("performancePanelView").hidden = false;
+    document.getElementById("performanceStudentName").textContent = aluno?.nome || `Aluno ${analise.alunoId}`;
+    document.getElementById("changePerformanceStudentButton").hidden = state.perfil === "aluno";
+    document.getElementById("performanceAverage").textContent = formatNumber(analise.mediaGeral);
+    document.getElementById("performanceSituation").textContent = formatPerformanceStatus(analise.situacaoAcademica);
+    document.getElementById("performanceRisk").textContent = analise.nivelRisco || "-";
+    document.getElementById("performanceRankingPosition").textContent = analise.posicaoRanking
+        ? `#${analise.posicaoRanking}`
+        : "-";
+
+    const riskAlert = document.getElementById("performanceRiskAlert");
+    riskAlert.className = riskAlertClass(analise.nivelRisco);
+    riskAlert.textContent = analise.alerta || "Desempenho estável e satisfatório.";
+
+    const rankingAlert = document.getElementById("performanceRankingAlert");
+    rankingAlert.className = `performance-ranking-alert ${analise.alunoNoTop10 ? "top" : ""}`;
+    rankingAlert.textContent = analise.mensagemRanking || "Ranking acadêmico indisponível para este aluno.";
+
+    renderPerformanceExamHistory(analise.historicoSimulados);
+    renderPerformanceSubjectRows(analise.notasPorDisciplina);
+}
+
+async function handlePerformanceSubmit(event) {
     event.preventDefault();
-    const alunoId = new FormData(event.currentTarget).get("alunoId");
-    const result = document.getElementById("planResult");
-    result.className = "card empty-state";
-    result.innerHTML = "Consultando recomendaÃ§Ã£o...";
+    const alunoId = state.perfil === "aluno"
+        ? getStudentEnrollmentFromForm(event.currentTarget)
+        : new FormData(event.currentTarget).get("alunoId");
+    const feedback = document.getElementById("performanceFeedback");
+
+    if (!alunoId) {
+        feedback.innerHTML = message("Informe a matrícula do aluno.", "error");
+        return;
+    }
+    if (state.perfil === "aluno" && !isPositiveEnrollment(alunoId)) {
+        feedback.innerHTML = message("A matrícula deve ser um número inteiro positivo.", "error");
+        return;
+    }
+
+    if (state.perfil === "aluno") {
+        rememberStudentEnrollment(alunoId);
+    }
+
+    const aluno = state.perfil === "aluno"
+        ? { id: alunoId, nome: `Matrícula ${alunoId}` }
+        : state.performanceAlunos.find((item) => String(item.id) === String(alunoId));
+    feedback.innerHTML = message("Carregando desempenho...");
 
     try {
-        const plan = await requestJson(`/alunos/${encodeURIComponent(alunoId)}/plano-estudo`);
-        result.outerHTML = `<div id="planResult">${renderPlan(plan)}</div>`;
+        const analise = await requestJson(`/alunos/${encodeURIComponent(alunoId)}/desempenho`);
+        renderPerformancePanel(analise, aluno);
     } catch (error) {
-        result.innerHTML = message(error.message, "error");
+        feedback.innerHTML = message(error.message || "Não foi possível carregar o desempenho do aluno.", "error");
     }
+}
+
+function handleChangePerformanceStudent() {
+    document.getElementById("performanceForm").reset();
+    showPerformanceSelect();
+    renderPerformanceStudentOptions();
 }
 
 function renderNotifications(notifications) {
     if (!notifications || notifications.length === 0) {
-        return message("Nenhuma notificaÃ§Ã£o encontrada para este responsÃ¡vel.");
+        return message("Nenhuma notificação encontrada para este responsável.");
     }
 
     return notifications.map((notificacao) => {
@@ -256,7 +706,7 @@ async function handleNotificationsSubmit(event) {
     event.preventDefault();
     const responsavelId = new FormData(event.currentTarget).get("responsavelId");
     const list = document.getElementById("notificationsList");
-    list.innerHTML = message("Carregando notificaÃ§Ãµes...");
+    list.innerHTML = message("Carregando notificações...");
 
     try {
         const notifications = await requestJson(`/responsaveis/${encodeURIComponent(responsavelId)}/notificacoes`);
@@ -266,41 +716,97 @@ async function handleNotificationsSubmit(event) {
     }
 }
 
-function renderPortalSuccess(desempenho, notas, simulados) {
+function portalResultFromSettled(result) {
+    if (result.status === "fulfilled") {
+        return { ok: true, data: result.value };
+    }
+
+    return {
+        ok: false,
+        error: result.reason?.message || "A API não autorizou esta consulta."
+    };
+}
+
+function portalBlockedCard(title, error) {
     return `
         <article class="card">
-            <h3>Desempenho</h3>
-            <p class="muted">${escapeHtml(desempenho.alerta || "Consulta autorizada pelo backend.")}</p>
-            <div class="portal-meta">
-                <span>MÃ©dia: ${formatNumber(desempenho.mediaGeral)}</span>
-                <span>Total notas: ${escapeHtml(desempenho.totalNotas ?? "-")}</span>
-                <span>Risco: ${escapeHtml(desempenho.nivelRisco || "-")}</span>
+            <h3>${escapeHtml(title)}</h3>
+            ${message(error, "error")}
+        </article>
+    `;
+}
+
+function portalRiskCard(desempenhoResult) {
+    if (!desempenhoResult.ok) {
+        return `
+            <article class="card portal-risk-card blocked">
+                <h3>Risco Acadêmico</h3>
+                <p class="muted">Campo obrigatório do portal do responsável.</p>
+                ${message("Risco bloqueado. Libere a permissão de desempenho para visualizar este dado.", "error")}
+            </article>
+        `;
+    }
+
+    const desempenho = desempenhoResult.data || {};
+    const className = riskClass(desempenho.nivelRisco);
+
+    return `
+        <article class="card portal-risk-card ${className}">
+            <h3>Risco Acadêmico</h3>
+            <p class="muted">Visível somente quando a permissão de desempenho está liberada.</p>
+            <div class="portal-risk-value">
+                ${renderRiskPill(desempenho.nivelRisco)}
+                <strong>${escapeHtml(desempenho.alerta || "Sem alerta registrado.")}</strong>
             </div>
         </article>
-        <article class="card">
-            <h3>Notas</h3>
-            <p class="muted">${escapeHtml(notas.length)} registros retornados pela API.</p>
-            <div class="compact-list">
-                ${notas.slice(0, 4).map((nota) => `
-                    <div class="compact-row">
-                        <span>Disciplina ${escapeHtml(nota.disciplinaId ?? "-")}</span>
-                        <strong>${formatNumber(nota.valor)}</strong>
-                    </div>
-                `).join("") || `<span class="muted">Sem notas visÃ­veis.</span>`}
-            </div>
-        </article>
-        <article class="card">
-            <h3>Simulados</h3>
-            <p class="muted">${escapeHtml(simulados.length)} simulados disponÃ­veis.</p>
-            <div class="compact-list">
-                ${simulados.slice(0, 6).map((simuladoId) => `
-                    <div class="compact-row">
-                        <span>Simulado</span>
-                        <strong>${escapeHtml(simuladoId)}</strong>
-                    </div>
-                `).join("") || `<span class="muted">Sem simulados visÃ­veis.</span>`}
-            </div>
-        </article>
+    `;
+}
+
+function renderPortalSuccess(desempenhoResult, notasResult, simuladosResult) {
+    const desempenho = desempenhoResult.data || {};
+    const notas = Array.isArray(notasResult.data) ? notasResult.data : [];
+    const simulados = Array.isArray(simuladosResult.data) ? simuladosResult.data : [];
+
+    return `
+        ${desempenhoResult.ok ? `
+            <article class="card">
+                <h3>Desempenho</h3>
+                <p class="muted">${escapeHtml(desempenho.alerta || "Consulta autorizada pelo backend.")}</p>
+                <div class="portal-meta">
+                    <span>Média: ${formatNumber(desempenho.mediaGeral)}</span>
+                    <span>Total notas: ${escapeHtml(desempenho.totalNotas ?? "-")}</span>
+                </div>
+            </article>
+        ` : portalBlockedCard("Desempenho", desempenhoResult.error)}
+        ${portalRiskCard(desempenhoResult)}
+        ${notasResult.ok ? `
+            <article class="card">
+                <h3>Notas</h3>
+                <p class="muted">${escapeHtml(notas.length)} registros retornados pela API.</p>
+                <div class="compact-list">
+                    ${notas.slice(0, 4).map((nota) => `
+                        <div class="compact-row">
+                            <span>Disciplina ${escapeHtml(nota.disciplinaId ?? "-")}</span>
+                            <strong>${formatNumber(nota.valor)}</strong>
+                        </div>
+                    `).join("") || `<span class="muted">Sem notas visíveis.</span>`}
+                </div>
+            </article>
+        ` : portalBlockedCard("Notas", notasResult.error)}
+        ${simuladosResult.ok ? `
+            <article class="card">
+                <h3>Simulados</h3>
+                <p class="muted">${escapeHtml(simulados.length)} simulados disponíveis.</p>
+                <div class="compact-list">
+                    ${simulados.slice(0, 6).map((simuladoId) => `
+                        <div class="compact-row">
+                            <span>Simulado</span>
+                            <strong>${escapeHtml(simuladoId)}</strong>
+                        </div>
+                    `).join("") || `<span class="muted">Sem simulados visíveis.</span>`}
+                </div>
+            </article>
+        ` : portalBlockedCard("Simulados", simuladosResult.error)}
     `;
 }
 
@@ -314,11 +820,16 @@ async function handlePortalSubmit(event) {
 
     try {
         const base = `/responsaveis/${encodeURIComponent(responsavelId)}/alunos/${encodeURIComponent(alunoId)}`;
-        const [desempenho, notas, simulados] = await Promise.all([
+        const [desempenhoResponse, notasResponse, simuladosResponse] = await Promise.allSettled([
             requestJson(`${base}/desempenho`),
             requestJson(`${base}/notas`),
             requestJson(`${base}/simulados`)
         ]);
+
+        const desempenho = portalResultFromSettled(desempenhoResponse);
+        const notas = portalResultFromSettled(notasResponse);
+        const simulados = portalResultFromSettled(simuladosResponse);
+
         result.innerHTML = renderPortalSuccess(desempenho, notas, simulados);
     } catch (error) {
         result.innerHTML = `<div class="card">${message(`Acesso bloqueado pela API: ${error.message}`, "error")}</div>`;
@@ -340,6 +851,7 @@ function getClassName(turmaId) {
 
 function mapStudentFromApi(aluno) {
     return {
+        id: aluno.id,
         nome: aluno.nome || "-",
         email: aluno.email || "-",
         turma: getClassName(aluno.turmaId),
@@ -365,21 +877,64 @@ function renderClassOptions() {
     select.innerHTML = `<option value="">Selecione a turma</option>${options}`;
 }
 
-function renderStudentsTable() {
-    const tbody = document.getElementById("studentsTableBody");
-    if (state.alunos.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="4" class="muted">Nenhum aluno cadastrado.</td></tr>`;
+function uniqueClasses(turmas) {
+    const seen = new Set();
+    return turmas.filter((turma) => {
+        const key = normalizeClassName(turma.nome);
+        if (seen.has(key)) {
+            return false;
+        }
+        seen.add(key);
+        return true;
+    });
+}
+
+function renderClassesTable() {
+    const tbody = document.getElementById("classesTableBody");
+    if (!tbody) {
         return;
     }
 
-    tbody.innerHTML = state.alunos.map((aluno) => `
+    if (state.turmas.length === 0) {
+        tbody.innerHTML = `<tr><td class="muted">Nenhuma turma cadastrada.</td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = state.turmas.map((turma) => `
         <tr>
-            <td>${escapeHtml(aluno.nome)}</td>
-            <td>${escapeHtml(aluno.email)}</td>
-            <td>${escapeHtml(aluno.turma)}</td>
-            <td>${renderStudentStatus(aluno.situacao)}</td>
+            <td>${escapeHtml(turma.nome || "-")}</td>
         </tr>
     `).join("");
+}
+
+function renderStudentsTable() {
+    const tbody = document.getElementById("studentsTableBody");
+    if (state.alunos.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="muted">Nenhum aluno cadastrado.</td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = state.alunos.map((aluno) => {
+        const inactive = normalize(aluno.situacao) === "inativo";
+        const action = inactive
+            ? `<button class="table-action success" type="button" data-student-action="active" data-student-id="${escapeHtml(aluno.id)}">Ativar</button>`
+            : `<button class="table-action danger" type="button" data-student-action="inactive" data-student-id="${escapeHtml(aluno.id)}">Inativar</button>`;
+
+        return `
+            <tr>
+                <td>${escapeHtml(aluno.id)}</td>
+                <td>${escapeHtml(aluno.nome)}</td>
+                <td>${escapeHtml(aluno.email)}</td>
+                <td>${escapeHtml(aluno.turma)}</td>
+                <td>${renderStudentStatus(aluno.situacao)}</td>
+                <td>
+                    <div class="table-actions">
+                        ${action}
+                    </div>
+                </td>
+            </tr>
+        `;
+    }).join("");
 }
 
 function showStudentsList(feedback = "") {
@@ -406,22 +961,24 @@ async function loadStudents() {
     }
 }
 
-async function loadClasses(showFeedback = false) {
-    const feedback = document.getElementById("studentFormFeedback");
+async function loadClasses(showFeedback = false, feedbackElementId = "studentFormFeedback") {
+    const feedback = document.getElementById(feedbackElementId);
     if (showFeedback && feedback) {
         feedback.innerHTML = message("Carregando turmas...");
     }
 
     try {
         const turmas = await requestJson("/turmas");
-        state.turmas = turmas;
+        state.turmas = uniqueClasses(turmas);
         renderClassOptions();
+        renderClassesTable();
         if (showFeedback && feedback) {
             feedback.innerHTML = "";
         }
     } catch (error) {
         state.turmas = [];
         renderClassOptions();
+        renderClassesTable();
         if (showFeedback && feedback) {
             feedback.innerHTML = message("Não foi possível carregar as turmas. Tente novamente em alguns instantes.", "error");
         }
@@ -433,6 +990,18 @@ async function loadStudentsView() {
     await loadStudents();
 }
 
+function showClassesList(feedback = "") {
+    document.getElementById("classesListView").hidden = false;
+    document.getElementById("classFormView").hidden = true;
+    document.getElementById("classFormFeedback").innerHTML = "";
+    document.getElementById("classesFeedback").innerHTML = feedback;
+    renderClassesTable();
+}
+
+async function loadClassesView() {
+    await loadClasses(true, "classesFeedback");
+}
+
 async function showStudentForm() {
     document.getElementById("studentsListView").hidden = true;
     document.getElementById("studentFormView").hidden = false;
@@ -440,6 +1009,13 @@ async function showStudentForm() {
     document.getElementById("studentFormFeedback").innerHTML = "";
     renderClassOptions();
     await loadClasses(true);
+}
+
+function showClassForm() {
+    document.getElementById("classesListView").hidden = true;
+    document.getElementById("classFormView").hidden = false;
+    document.getElementById("classForm").reset();
+    document.getElementById("classFormFeedback").innerHTML = "";
 }
 
 async function handleStudentSubmit(event) {
@@ -473,6 +1049,62 @@ async function handleStudentSubmit(event) {
         showStudentsList();
         await loadStudentsView();
         document.getElementById("studentsFeedback").innerHTML = message("Aluno cadastrado com sucesso.", "ok");
+    } catch (error) {
+        feedback.innerHTML = message(error.message, "error");
+    }
+}
+
+async function updateStudentStatus(alunoId, shouldActivate) {
+    const feedback = document.getElementById("studentsFeedback");
+    feedback.innerHTML = message(shouldActivate ? "Ativando aluno..." : "Inativando aluno...");
+
+    try {
+        await requestJson(`/alunos/${encodeURIComponent(alunoId)}/${shouldActivate ? "ativar" : "inativar"}`, {
+            method: "PATCH"
+        });
+        await loadStudentsView();
+        document.getElementById("studentsFeedback").innerHTML = message(shouldActivate ? "Aluno ativado com sucesso." : "Aluno inativado com sucesso.", "ok");
+    } catch (error) {
+        feedback.innerHTML = message(error.message || "Não foi possível atualizar o aluno.", "error");
+    }
+}
+
+function handleStudentsTableClick(event) {
+    const button = event.target.closest("[data-student-action]");
+    if (!button) {
+        return;
+    }
+
+    updateStudentStatus(button.dataset.studentId, button.dataset.studentAction === "active");
+}
+
+async function handleClassSubmit(event) {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const nome = String(new FormData(form).get("nome") || "").trim();
+    const feedback = document.getElementById("classFormFeedback");
+
+    if (!nome) {
+        feedback.innerHTML = message("Informe o nome da turma.", "error");
+        return;
+    }
+
+    if (state.turmas.some((turma) => normalizeClassName(turma.nome) === normalizeClassName(nome))) {
+        feedback.innerHTML = message("Já existe uma turma cadastrada com esse nome.", "error");
+        return;
+    }
+
+    feedback.innerHTML = message("Salvando turma...");
+
+    try {
+        await requestJson("/turmas", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ nome })
+        });
+
+        await loadClasses(false);
+        showClassesList(message("Turma cadastrada com sucesso.", "ok"));
     } catch (error) {
         feedback.innerHTML = message(error.message, "error");
     }
@@ -516,7 +1148,6 @@ function renderSubjectsTable() {
                     <div class="table-actions">
                         <button class="table-action" type="button" data-subject-action="details" data-subject-id="${escapeHtml(disciplina.id)}">Ver Detalhes</button>
                         ${action}
-                        <button class="table-action danger" type="button" data-subject-action="delete" data-subject-id="${escapeHtml(disciplina.id)}">Excluir</button>
                     </div>
                 </td>
             </tr>
@@ -665,10 +1296,965 @@ function handleSubjectTableClick(event) {
     }
 }
 
+function renderNoteSelect(selectId, items, placeholder, emptyMessage, labelBuilder) {
+    const select = document.getElementById(selectId);
+    if (items.length === 0) {
+        select.innerHTML = `<option value="" disabled selected>${escapeHtml(emptyMessage)}</option>`;
+        return;
+    }
+
+    const options = items.map((item) =>
+        `<option value="${escapeHtml(item.id)}">${escapeHtml(labelBuilder(item))}</option>`
+    ).join("");
+
+    select.innerHTML = `<option value="">${escapeHtml(placeholder)}</option>${options}`;
+}
+
+function renderNoteFormOptions() {
+    renderNoteSelect(
+        "noteStudentSelect",
+        state.notaAlunos,
+        "Escolha um aluno",
+        "Nenhum aluno cadastrado",
+        (aluno) => `Matrícula ${aluno.id} - ${aluno.nome || `Aluno ${aluno.id}`}`
+    );
+    renderNoteSelect(
+        "noteExamSelect",
+        state.notaSimulados,
+        "Escolha um simulado",
+        "Nenhum simulado cadastrado",
+        (simulado) => simulado.descricao || `Simulado ${simulado.id}`
+    );
+    renderNoteSelect(
+        "noteSubjectSelect",
+        state.notaDisciplinas,
+        "Escolha uma disciplina",
+        state.notaSimuladoSelecionadoId ? "Nenhuma disciplina vinculada ao simulado" : "Selecione um simulado primeiro",
+        (disciplina) => disciplina.nome || `Disciplina ${disciplina.id}`
+    );
+}
+
+async function handleNoteExamChange(event) {
+    const simuladoId = String(event?.target?.value ?? "");
+    state.notaSimuladoSelecionadoId = simuladoId || null;
+
+    if (!simuladoId) {
+        state.notaDisciplinas = [];
+        renderNoteSelect(
+            "noteSubjectSelect",
+            [],
+            "Escolha uma disciplina",
+            "Selecione um simulado primeiro",
+            (disciplina) => disciplina.nome || `Disciplina ${disciplina.id}`
+        );
+        document.getElementById("noteFormFeedback").innerHTML = "";
+        return;
+    }
+
+    document.getElementById("noteFormFeedback").innerHTML = message("Carregando disciplinas do simulado...");
+
+    try {
+        const simulado = await requestJson(`/simulados/${encodeURIComponent(simuladoId)}`);
+        state.notaDisciplinas = Array.isArray(simulado?.disciplinas) ? simulado.disciplinas : [];
+        renderNoteSelect(
+            "noteSubjectSelect",
+            state.notaDisciplinas,
+            "Escolha uma disciplina",
+            "Nenhuma disciplina vinculada ao simulado",
+            (disciplina) => disciplina.nome || `Disciplina ${disciplina.id}`
+        );
+        document.getElementById("noteSubjectSelect").value = "";
+        document.getElementById("noteFormFeedback").innerHTML = "";
+    } catch (error) {
+        state.notaDisciplinas = [];
+        renderNoteSelect(
+            "noteSubjectSelect",
+            [],
+            "Escolha uma disciplina",
+            "Não foi possível carregar disciplinas do simulado",
+            (disciplina) => disciplina.nome || `Disciplina ${disciplina.id}`
+        );
+        document.getElementById("noteFormFeedback").innerHTML = message(
+            error.message || "Não foi possível carregar as disciplinas do simulado.",
+            "error"
+        );
+    }
+}
+
+function renderStudentNotesOptions() {
+    if (state.perfil === "aluno") {
+        const input = document.getElementById("studentNotesEnrollment");
+        input.value = state.alunoMatricula || input.value || "";
+        return;
+    }
+}
+
+function renderStudentNotesList(notas) {
+    const list = document.getElementById("studentNotesList");
+    if (!notas || notas.length === 0) {
+        list.innerHTML = message("Nenhuma nota encontrada para este aluno.");
+        return;
+    }
+
+    list.innerHTML = notas.map((nota, index) => `
+        <div class="compact-row">
+            <div>
+                <span class="row-title">Nota ${escapeHtml(index + 1)}</span>
+                <span class="row-subtitle">${escapeHtml(state.disciplinaNomePorId?.[nota.disciplinaId] || `ID ${nota.disciplinaId}`)} | ${escapeHtml(state.simuladoDescricaoPorId?.[nota.simuladoId] || `ID ${nota.simuladoId}`)}</span>
+            </div>
+            <strong>${formatNumber(nota.valor)}</strong>
+        </div>
+    `).join("");
+}
+
+async function loadNotesView() {
+    const feedback = document.getElementById("noteFormFeedback");
+    const studentFeedback = document.getElementById("studentNotesFeedback");
+    const studentList = document.getElementById("studentNotesList");
+
+    if (state.perfil === "aluno") {
+        document.getElementById("noteLaunchView").hidden = true;
+        document.getElementById("studentNoteView").hidden = false;
+        renderStudentNotesOptions();
+        studentFeedback.innerHTML = message("Informe sua matrícula para consultar suas notas.");
+        studentList.innerHTML = "";
+        return;
+    }
+
+    document.getElementById("noteLaunchView").hidden = false;
+    document.getElementById("studentNoteView").hidden = true;
+    feedback.innerHTML = message("Carregando dados...");
+
+    try {
+        const [alunos, simulados] = await Promise.all([
+            requestJson("/alunos"),
+            requestJson("/simulados")
+        ]);
+
+        state.notaAlunos = alunos;
+        state.notaSimulados = simulados;
+        state.notaSimuladoSelecionadoId = null;
+        state.notaDisciplinas = [];
+        renderNoteFormOptions();
+        feedback.innerHTML = message("Selecione um simulado para ver as disciplinas vinculadas.");
+    } catch (error) {
+        state.notaAlunos = [];
+        state.notaSimulados = [];
+        state.notaSimuladoSelecionadoId = null;
+        state.notaDisciplinas = [];
+        renderNoteFormOptions();
+        feedback.innerHTML = message("Não foi possível carregar os dados para lançamento de nota.", "error");
+    }
+}
+
+function clearNoteForm(clearFeedback = true) {
+    document.getElementById("noteForm").reset();
+    state.notaSimuladoSelecionadoId = null;
+    state.notaDisciplinas = [];
+    renderNoteSelect(
+        "noteSubjectSelect",
+        [],
+        "Escolha uma disciplina",
+        "Selecione um simulado primeiro",
+        (disciplina) => disciplina.nome || `Disciplina ${disciplina.id}`
+    );
+    if (clearFeedback) {
+        document.getElementById("noteFormFeedback").innerHTML = "";
+    }
+}
+
+function validateNoteFormData(formData) {
+    const alunoId = formData.get("alunoId");
+    const simuladoId = formData.get("simuladoId");
+    const disciplinaId = formData.get("disciplinaId");
+    const valorText = String(formData.get("valor") ?? "").trim();
+    const valor = Number(valorText);
+
+    if (!alunoId) {
+        return "Selecione um aluno.";
+    }
+    if (!simuladoId) {
+        return "Selecione um simulado.";
+    }
+    if (!disciplinaId) {
+        return "Selecione uma disciplina.";
+    }
+    if (!valorText || Number.isNaN(valor)) {
+        return "Informe uma nota de 0 a 10.";
+    }
+    if (valor < 0 || valor > 10) {
+        return "A nota deve estar entre 0 e 10.";
+    }
+
+    return "";
+}
+
+async function handleNoteSubmit(event) {
+    event.preventDefault();
+    if (state.perfil !== "professor") {
+        document.getElementById("noteFormFeedback").innerHTML = message("Somente professor pode lançar notas.", "error");
+        return;
+    }
+
+    const formData = new FormData(event.currentTarget);
+    const feedback = document.getElementById("noteFormFeedback");
+    const validationMessage = validateNoteFormData(formData);
+
+    if (validationMessage) {
+        feedback.innerHTML = message(validationMessage, "error");
+        return;
+    }
+
+    feedback.innerHTML = message("Lançando nota...");
+
+    try {
+        await requestJson("/notas", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                alunoId: Number(formData.get("alunoId")),
+                simuladoId: Number(formData.get("simuladoId")),
+                disciplinaId: Number(formData.get("disciplinaId")),
+                valor: Number(formData.get("valor"))
+            })
+        });
+
+        clearNoteForm(false);
+        feedback.innerHTML = message("Nota lançada com sucesso.", "ok");
+    } catch (error) {
+        feedback.innerHTML = message(error.message || "Não foi possível lançar a nota.", "error");
+    }
+}
+
+async function handleStudentNotesSubmit(event) {
+    event.preventDefault();
+    const alunoId = state.perfil === "aluno"
+        ? getStudentEnrollmentFromForm(event.currentTarget)
+        : new FormData(event.currentTarget).get("alunoId");
+    const feedback = document.getElementById("studentNotesFeedback");
+    const list = document.getElementById("studentNotesList");
+
+    if (!alunoId) {
+        feedback.innerHTML = message("Informe a matrícula do aluno.", "error");
+        return;
+    }
+    if (state.perfil === "aluno" && !isPositiveEnrollment(alunoId)) {
+        feedback.innerHTML = message("A matrícula deve ser um número inteiro positivo.", "error");
+        return;
+    }
+
+    if (state.perfil === "aluno") {
+        rememberStudentEnrollment(alunoId);
+    }
+
+    feedback.innerHTML = message("Carregando notas...");
+    list.innerHTML = "";
+
+    try {
+        if (!state.disciplinaNomePorId || Object.keys(state.disciplinaNomePorId).length === 0) {
+            const disciplinas = await requestJson("/disciplinas");
+            state.disciplinaNomePorId = Array.isArray(disciplinas)
+                ? disciplinas.reduce((acc, disciplina) => {
+                    acc[String(disciplina.id)] = disciplina.nome || `ID ${disciplina.id}`;
+                    return acc;
+                }, {})
+                : {};
+        }
+        if (!state.simuladoDescricaoPorId || Object.keys(state.simuladoDescricaoPorId).length === 0) {
+            const simulados = await requestJson("/simulados");
+            state.simuladoDescricaoPorId = Array.isArray(simulados)
+                ? simulados.reduce((acc, simulado) => {
+                    acc[String(simulado.id)] = simulado.descricao || `ID ${simulado.id}`;
+                    return acc;
+                }, {})
+                : {};
+        }
+        const notas = await requestJson(`/notas/aluno/${encodeURIComponent(alunoId)}`);
+        renderStudentNotesList(notas);
+        feedback.innerHTML = "";
+    } catch (error) {
+        list.innerHTML = "";
+        feedback.innerHTML = message(error.message || "Não foi possível carregar as notas.", "error");
+    }
+}
+
+function isSubjectActive(subject) {
+    const status = normalize(subject?.status);
+    return status.includes("ativa") && !status.includes("inativa");
+}
+
+function renderSimulationConsistencyBadge(simulado) {
+    const consistente = Boolean(simulado?.consistente);
+    const label = simulado?.status || (consistente ? "Consistente" : "Inconsistente");
+    return `<span class="status-pill ${consistente ? "success" : "danger"}">${escapeHtml(label)}</span>`;
+}
+
+function renderSimulationSubjectBadge(status) {
+    const ativa = isSubjectActive({ status });
+    return `<span class="student-status ${ativa ? "active" : "inactive"}">${ativa ? "Ativa" : "Inativa"}</span>`;
+}
+
+function showSimulationsList(feedback = "") {
+    document.getElementById("simulationsListView").hidden = false;
+    document.getElementById("simulationDetailsView").hidden = true;
+    document.getElementById("simulationCreateView").hidden = true;
+    document.getElementById("simulationsFeedback").innerHTML = feedback;
+    renderSimulationsTable();
+}
+
+function renderSimulationsTable() {
+    const tbody = document.getElementById("simulationsTableBody");
+    if (state.simulados.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" class="muted">Nenhum simulado cadastrado.</td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = state.simulados.map((simulado) => `
+        <tr>
+            <td>
+                <span class="row-title">${escapeHtml(simulado.descricao || `Simulado ${simulado.id}`)}</span>
+                <span class="row-subtitle">ID ${escapeHtml(simulado.id)}</span>
+            </td>
+            <td>${escapeHtml(simulado.quantidadeDisciplinas ?? 0)}</td>
+            <td>${renderSimulationConsistencyBadge(simulado)}</td>
+            <td>
+                <button class="table-action" type="button" data-simulation-action="details" data-simulation-id="${escapeHtml(simulado.id)}">Ver Detalhes</button>
+            </td>
+        </tr>
+    `).join("");
+}
+
+async function loadSimulationsView() {
+    const feedback = document.getElementById("simulationsFeedback");
+    feedback.innerHTML = message("Carregando simulados...");
+
+    try {
+        state.simulados = await requestJson("/simulados");
+        renderSimulationsTable();
+        feedback.innerHTML = "";
+    } catch (error) {
+        state.simulados = [];
+        renderSimulationsTable();
+        feedback.innerHTML = message(error.message || "Não foi possível carregar os simulados.", "error");
+    }
+}
+
+function clearSimulationDetails() {
+    document.getElementById("simulationDetailsTitle").textContent = "Detalhes do Simulado";
+    document.getElementById("simulationDetailsSubtitle").textContent = "Composição e participação";
+    document.getElementById("simulationDescription").textContent = "-";
+    document.getElementById("simulationConsistencyBadge").outerHTML = `<span id="simulationConsistencyBadge" class="status-pill neutral">-</span>`;
+    document.getElementById("simulationConsistencyAlert").innerHTML = "";
+    document.getElementById("simulationLinkedSubjects").innerHTML = "";
+    document.getElementById("simulationTotalNotes").textContent = "0";
+    document.getElementById("simulationStudentsWithNotes").textContent = "0";
+    document.getElementById("simulationParticipants").innerHTML = "";
+}
+
+async function showSimulationDetails(simuladoId) {
+    document.getElementById("simulationsListView").hidden = true;
+    document.getElementById("simulationCreateView").hidden = true;
+    document.getElementById("simulationDetailsView").hidden = false;
+    document.getElementById("simulationDetailsFeedback").innerHTML = message("Carregando detalhes do simulado...");
+    clearSimulationDetails();
+
+    try {
+        const simulado = await requestJson(`/simulados/${encodeURIComponent(simuladoId)}`);
+        state.selectedSimulado = simulado;
+        renderSimulationDetails(simulado);
+        document.getElementById("simulationDetailsFeedback").innerHTML = "";
+    } catch (error) {
+        document.getElementById("simulationDetailsFeedback").innerHTML = message(error.message || "Não foi possível carregar os detalhes.", "error");
+    }
+}
+
+function renderSimulationDetails(simulado) {
+    document.getElementById("simulationDetailsTitle").textContent = "Detalhes do Simulado";
+    document.getElementById("simulationDetailsSubtitle").textContent = simulado.descricao || `Simulado ${simulado.id}`;
+    document.getElementById("simulationDescription").textContent = simulado.descricao || `Simulado ${simulado.id}`;
+    document.getElementById("simulationConsistencyBadge").outerHTML = renderSimulationConsistencyBadge(simulado).replace("<span", `<span id="simulationConsistencyBadge"`);
+
+    const consistencyAlert = document.getElementById("simulationConsistencyAlert");
+    consistencyAlert.innerHTML = simulado.consistente
+        ? ""
+        : `<div class="simulation-alert danger">${escapeHtml(simulado.motivoInconsistencia || "Este simulado possui problemas de consistência.")}</div>`;
+
+    renderSimulationLinkedSubjects(simulado.disciplinas || []);
+    renderSimulationNoteMetrics(simulado.notasRelacionadas || {});
+    renderSimulationParticipants(simulado.alunosParticipantes || []);
+}
+
+function renderSimulationLinkedSubjects(subjects) {
+    const list = document.getElementById("simulationLinkedSubjects");
+    if (subjects.length === 0) {
+        list.innerHTML = message("Nenhuma disciplina vinculada.");
+        return;
+    }
+
+    list.innerHTML = subjects.map((subject) => `
+        <div class="simulation-subject-row">
+            <span>${escapeHtml(subject.nome || `Disciplina ${subject.id}`)}</span>
+            ${renderSimulationSubjectBadge(subject.status)}
+        </div>
+    `).join("");
+}
+
+function renderSimulationNoteMetrics(notas) {
+    document.getElementById("simulationTotalNotes").textContent = notas.totalNotas ?? 0;
+    document.getElementById("simulationStudentsWithNotes").textContent = notas.alunosComNotas ?? 0;
+}
+
+function renderSimulationParticipants(participants) {
+    const list = document.getElementById("simulationParticipants");
+    if (participants.length === 0) {
+        list.innerHTML = message("Nenhum aluno participante.");
+        return;
+    }
+
+    list.innerHTML = participants.map((participant) => `
+        <div class="compact-row simulation-participant-row">
+            <span>
+                <span class="row-title">${escapeHtml(participant.nome || `Aluno ${participant.alunoId}`)}</span>
+                <span class="row-subtitle">${escapeHtml(participant.quantidadeNotas ?? 0)} nota(s)</span>
+            </span>
+            <span class="muted">Média</span>
+            <strong>${formatNumber(participant.media)}</strong>
+        </div>
+    `).join("");
+}
+
+async function showSimulationCreateView() {
+    document.getElementById("simulationsListView").hidden = true;
+    document.getElementById("simulationDetailsView").hidden = true;
+    document.getElementById("simulationCreateView").hidden = false;
+    document.getElementById("simulationForm").reset();
+    document.getElementById("simulationFormFeedback").innerHTML = message("Carregando disciplinas...");
+    document.getElementById("simulationSubjectOptions").innerHTML = "";
+    updateSimulationSelectedCounter();
+
+    try {
+        state.simuladoDisciplinas = await requestJson("/disciplinas");
+        renderSimulationSubjectOptions();
+        document.getElementById("simulationFormFeedback").innerHTML = "";
+    } catch (error) {
+        state.simuladoDisciplinas = [];
+        renderSimulationSubjectOptions();
+        document.getElementById("simulationFormFeedback").innerHTML = message(error.message || "Não foi possível carregar as disciplinas.", "error");
+    }
+}
+
+function renderSimulationSubjectOptions() {
+    const container = document.getElementById("simulationSubjectOptions");
+    if (state.simuladoDisciplinas.length === 0) {
+        container.innerHTML = message("Nenhuma disciplina cadastrada.");
+        updateSimulationSelectedCounter();
+        return;
+    }
+
+    container.innerHTML = state.simuladoDisciplinas.map((disciplina) => {
+        const ativa = isSubjectActive(disciplina);
+        return `
+            <label class="simulation-subject-option ${ativa ? "" : "disabled"}">
+                <input name="disciplinasIds" type="checkbox" value="${escapeHtml(disciplina.id)}" ${ativa ? "" : "disabled"}>
+                <span>${escapeHtml(disciplina.nome || `Disciplina ${disciplina.id}`)}</span>
+                ${renderSimulationSubjectBadge(disciplina.status)}
+            </label>
+        `;
+    }).join("");
+    updateSimulationSelectedCounter();
+}
+
+function getSelectedSimulationSubjectIds() {
+    return Array.from(document.querySelectorAll("#simulationSubjectOptions input[name='disciplinasIds']:checked"))
+        .map((input) => Number(input.value));
+}
+
+function updateSimulationSelectedCounter() {
+    const counter = document.getElementById("simulationSelectedCounter");
+    const total = getSelectedSimulationSubjectIds().length;
+    counter.textContent = `${total} disciplina(s) selecionada(s)`;
+}
+
+function validateSimulationFormData(formData) {
+    const descricao = String(formData.get("descricao") || "").trim();
+    const disciplinasIds = getSelectedSimulationSubjectIds();
+
+    if (!descricao) {
+        return "Informe a descrição do simulado.";
+    }
+
+    if (disciplinasIds.length < 2) {
+        return "Selecione pelo menos 2 disciplinas.";
+    }
+
+    const possuiInativa = disciplinasIds.some((id) => {
+        const disciplina = state.simuladoDisciplinas.find((item) => Number(item.id) === id);
+        return !isSubjectActive(disciplina);
+    });
+
+    if (possuiInativa) {
+        return "Disciplinas inativas não podem ser selecionadas.";
+    }
+
+    return "";
+}
+
+async function handleSimulationSubmit(event) {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    const feedback = document.getElementById("simulationFormFeedback");
+    const validationMessage = validateSimulationFormData(formData);
+
+    if (validationMessage) {
+        feedback.innerHTML = message(validationMessage, "error");
+        return;
+    }
+
+    feedback.innerHTML = message("Criando simulado...");
+
+    try {
+        await requestJson("/simulados", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                descricao: String(formData.get("descricao") || "").trim(),
+                disciplinasIds: getSelectedSimulationSubjectIds()
+            })
+        });
+
+        showSimulationsList(message("Atualizando simulados..."));
+        await loadSimulationsView();
+        document.getElementById("simulationsFeedback").innerHTML = message("Simulado criado com sucesso.", "ok");
+    } catch (error) {
+        feedback.innerHTML = message(error.message || "Não foi possível criar o simulado.", "error");
+    }
+}
+
+function handleSimulationTableClick(event) {
+    const button = event.target.closest("[data-simulation-action]");
+    if (!button) {
+        return;
+    }
+
+    if (button.dataset.simulationAction === "details") {
+        showSimulationDetails(button.dataset.simulationId);
+    }
+}
+
+function correctionStatusInfo(status) {
+    const normalized = String(status || "").toUpperCase();
+    if (normalized === "EM_ANALISE") {
+        return { label: "Em Análise", className: "warning", open: true };
+    }
+    if (normalized === "APROVADA") {
+        return { label: "Aprovada", className: "success", open: false };
+    }
+    if (normalized === "REPROVADA") {
+        return { label: "Reprovada", className: "danger", open: false };
+    }
+    return { label: "Pendente", className: "neutral", open: true };
+}
+
+function renderCorrectionStatusBadge(status) {
+    const info = correctionStatusInfo(status);
+    return `<span class="status-pill ${info.className}">${escapeHtml(info.label)}</span>`;
+}
+
+function showCorrectionsList(feedback = "") {
+    document.getElementById("correctionsListView").hidden = false;
+    document.getElementById("correctionRequestView").hidden = true;
+    document.getElementById("correctionReviewView").hidden = true;
+    document.getElementById("correctionsFeedback").innerHTML = feedback;
+    renderCorrectionsTable();
+}
+
+function renderCorrectionsTable() {
+    const tbody = document.getElementById("correctionsTableBody");
+    if (state.retificacoes.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="muted">Nenhuma solicitação de retificação cadastrada.</td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = state.retificacoes.map((retificacao) => {
+        const statusInfo = correctionStatusInfo(retificacao.status);
+        const action = statusInfo.open ? "Analisar" : "Ver";
+        return `
+            <tr>
+                <td>
+                    <span class="row-title">${escapeHtml(retificacao.alunoNome || `Aluno ${retificacao.alunoId || "-"}`)}</span>
+                    <span class="row-subtitle">Nota ID ${escapeHtml(retificacao.notaId)}</span>
+                </td>
+                <td>${formatNumber(retificacao.notaAtual)}</td>
+                <td>${escapeHtml(retificacao.justificativa || "-")}</td>
+                <td>${renderCorrectionStatusBadge(retificacao.status)}</td>
+                <td>
+                    <button class="table-action" type="button" data-correction-action="${statusInfo.open ? "review" : "view"}" data-correction-id="${escapeHtml(retificacao.id)}">${action}</button>
+                </td>
+            </tr>
+        `;
+    }).join("");
+}
+
+async function loadCorrectionsView() {
+    const feedback = document.getElementById("correctionsFeedback");
+    feedback.innerHTML = message("Carregando retificações...");
+
+    try {
+        state.retificacoes = await requestJson("/retificacoes");
+        renderCorrectionsTable();
+        feedback.innerHTML = "";
+    } catch (error) {
+        state.retificacoes = [];
+        renderCorrectionsTable();
+        feedback.innerHTML = message(error.message || "Não foi possível carregar as retificações.", "error");
+    }
+}
+
+function renderCorrectionStudentOptions() {
+    const select = document.getElementById("correctionStudentSelect");
+    const input = document.getElementById("correctionStudentEnrollment");
+    const label = document.getElementById("correctionStudentLabel");
+
+    if (state.perfil === "aluno") {
+        label.textContent = "Matrícula";
+        label.setAttribute("for", "correctionStudentEnrollment");
+        select.hidden = true;
+        select.disabled = true;
+        select.required = false;
+        input.hidden = false;
+        input.disabled = false;
+        input.required = true;
+        input.value = state.alunoMatricula || input.value || "";
+        return;
+    }
+
+    label.textContent = "Selecionar Aluno";
+    label.setAttribute("for", "correctionStudentSelect");
+    input.hidden = true;
+    input.disabled = true;
+    input.required = false;
+    input.value = "";
+    select.hidden = false;
+    select.disabled = false;
+    select.required = true;
+
+    if (state.retificacaoAlunos.length === 0) {
+        select.innerHTML = `<option value="" disabled selected>Nenhum aluno cadastrado</option>`;
+        return;
+    }
+
+    select.innerHTML = `<option value="">Escolha um aluno</option>${state.retificacaoAlunos.map((aluno) =>
+        `<option value="${escapeHtml(aluno.id)}">Matrícula ${escapeHtml(aluno.id)} - ${escapeHtml(aluno.nome || `Aluno ${aluno.id}`)}</option>`
+    ).join("")}`;
+}
+
+function renderCorrectionNoteOptions(emptyMessage = "Nenhuma nota encontrada para este aluno") {
+    const select = document.getElementById("correctionNoteSelect");
+    if (state.retificacaoNotas.length === 0) {
+        select.disabled = true;
+        select.innerHTML = `<option value="" disabled selected>${escapeHtml(emptyMessage)}</option>`;
+        return;
+    }
+
+    select.disabled = false;
+    select.innerHTML = `<option value="">Escolha uma nota</option>${state.retificacaoNotas.map((nota, index) => `
+        <option value="${escapeHtml(nota.id)}">Nota ${escapeHtml(index + 1)} - ${formatNumber(nota.valor)} | ${escapeHtml(state.disciplinaNomePorId?.[nota.disciplinaId] || `ID ${nota.disciplinaId}`)} | ${escapeHtml(state.simuladoDescricaoPorId?.[nota.simuladoId] || `ID ${nota.simuladoId}`)}</option>
+    `).join("")}`;
+}
+
+async function showCorrectionRequestView() {
+    document.getElementById("correctionsListView").hidden = true;
+    document.getElementById("correctionReviewView").hidden = true;
+    document.getElementById("correctionRequestView").hidden = false;
+    document.getElementById("correctionRequestForm").reset();
+    document.getElementById("correctionRequestFeedback").innerHTML = state.perfil === "aluno"
+        ? message("Informe sua matrícula para carregar as notas disponíveis.")
+        : message("Carregando alunos...");
+    state.retificacaoNotas = [];
+    renderCorrectionNoteOptions(state.perfil === "aluno"
+        ? "Informe a matrícula para carregar as notas"
+        : "Escolha um aluno para carregar as notas");
+
+    if (state.perfil === "aluno") {
+        renderCorrectionStudentOptions();
+        if (state.alunoMatricula) {
+            await loadCorrectionNotesForStudent(state.alunoMatricula);
+        }
+        return;
+    }
+
+    try {
+        state.retificacaoAlunos = await requestJson("/alunos");
+        renderCorrectionStudentOptions();
+        document.getElementById("correctionRequestFeedback").innerHTML = "";
+    } catch (error) {
+        state.retificacaoAlunos = [];
+        renderCorrectionStudentOptions();
+        document.getElementById("correctionRequestFeedback").innerHTML = message(error.message || "Não foi possível carregar os alunos.", "error");
+    }
+}
+
+function handleCancelCorrectionRequest() {
+    if (state.perfil === "aluno") {
+        showSection("notas");
+        return;
+    }
+    showCorrectionsList();
+}
+
+async function handleCorrectionStudentChange(event) {
+    const alunoId = state.perfil === "aluno"
+        ? String(event.currentTarget.value || "").trim()
+        : event.currentTarget.value;
+
+    if (state.perfil === "aluno") {
+        if (!alunoId) {
+            state.retificacaoNotas = [];
+            renderCorrectionNoteOptions("Informe a matrícula para carregar as notas");
+            return;
+        }
+        if (!isPositiveEnrollment(alunoId)) {
+            state.retificacaoNotas = [];
+            renderCorrectionNoteOptions("Informe uma matrícula válida");
+            document.getElementById("correctionRequestFeedback").innerHTML = message("A matrícula deve ser um número inteiro positivo.", "error");
+            return;
+        }
+        rememberStudentEnrollment(alunoId);
+    }
+
+    await loadCorrectionNotesForStudent(alunoId);
+}
+
+async function loadCorrectionNotesForStudent(alunoId) {
+    const feedback = document.getElementById("correctionRequestFeedback");
+    state.retificacaoNotas = [];
+    renderCorrectionNoteOptions();
+
+    if (!alunoId) {
+        return;
+    }
+
+    feedback.innerHTML = message("Carregando notas do aluno...");
+
+    try {
+        if (!state.disciplinaNomePorId || Object.keys(state.disciplinaNomePorId).length === 0) {
+            const disciplinas = await requestJson("/disciplinas");
+            state.disciplinaNomePorId = Array.isArray(disciplinas)
+                ? disciplinas.reduce((acc, disciplina) => {
+                    acc[String(disciplina.id)] = disciplina.nome || `ID ${disciplina.id}`;
+                    return acc;
+                }, {})
+                : {};
+        }
+        if (!state.simuladoDescricaoPorId || Object.keys(state.simuladoDescricaoPorId).length === 0) {
+            const simulados = await requestJson("/simulados");
+            state.simuladoDescricaoPorId = Array.isArray(simulados)
+                ? simulados.reduce((acc, simulado) => {
+                    acc[String(simulado.id)] = simulado.descricao || `ID ${simulado.id}`;
+                    return acc;
+                }, {})
+                : {};
+        }
+        state.retificacaoNotas = await requestJson(`/notas/aluno/${encodeURIComponent(alunoId)}`);
+        renderCorrectionNoteOptions();
+        feedback.innerHTML = "";
+    } catch (error) {
+        state.retificacaoNotas = [];
+        renderCorrectionNoteOptions();
+        feedback.innerHTML = message(error.message || "Não foi possível carregar as notas do aluno.", "error");
+    }
+}
+
+function validateCorrectionRequestForm(formData) {
+    const alunoId = String(formData.get("alunoId") || "").trim();
+    if (!alunoId) {
+        return state.perfil === "aluno" ? "Informe a matrícula do aluno." : "Selecione um aluno.";
+    }
+    if (state.perfil === "aluno" && !isPositiveEnrollment(alunoId)) {
+        return "A matrícula deve ser um número inteiro positivo.";
+    }
+    if (!formData.get("notaId")) {
+        return "Selecione uma nota.";
+    }
+    if (!String(formData.get("justificativa") || "").trim()) {
+        return "Informe a justificativa da retificação.";
+    }
+    return "";
+}
+
+async function handleCorrectionRequestSubmit(event) {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    const feedback = document.getElementById("correctionRequestFeedback");
+    const validationMessage = validateCorrectionRequestForm(formData);
+
+    if (validationMessage) {
+        feedback.innerHTML = message(validationMessage, "error");
+        return;
+    }
+
+    if (state.perfil === "aluno") {
+        rememberStudentEnrollment(formData.get("alunoId"));
+    }
+
+    feedback.innerHTML = message("Enviando solicitação...");
+
+    try {
+        await requestJson("/retificacoes", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                notaId: Number(formData.get("notaId")),
+                justificativa: String(formData.get("justificativa") || "").trim()
+            })
+        });
+
+        if (state.perfil === "aluno") {
+            event.currentTarget.reset();
+            renderCorrectionStudentOptions();
+            state.retificacaoNotas = [];
+            renderCorrectionNoteOptions("Informe a matrícula para carregar as notas");
+            feedback.innerHTML = message("Solicitação de retificação cadastrada com sucesso.", "ok");
+            return;
+        }
+
+        showCorrectionsList(message("Atualizando solicitações..."));
+        await loadCorrectionsView();
+        document.getElementById("correctionsFeedback").innerHTML = message("Solicitação de retificação cadastrada com sucesso.", "ok");
+    } catch (error) {
+        feedback.innerHTML = message(error.message || "Não foi possível solicitar a retificação.", "error");
+    }
+}
+
+function renderCorrectionReviewInfo(retificacao) {
+    document.getElementById("correctionReviewInfo").innerHTML = `
+        <span><strong>Aluno</strong><small>${escapeHtml(retificacao.alunoNome || "-")}</small></span>
+        <span><strong>Disciplina</strong><small>${escapeHtml(retificacao.disciplinaNome || "-")}</small></span>
+        <span><strong>Simulado</strong><small>${escapeHtml(retificacao.simuladoDescricao || "-")}</small></span>
+        <span><strong>Nota Atual</strong><small>${formatNumber(retificacao.notaAtual)}</small></span>
+        <span class="correction-full-row"><strong>Justificativa do Aluno</strong><small>${escapeHtml(retificacao.justificativa || "-")}</small></span>
+    `;
+}
+
+function renderCorrectionReview(retificacao, readOnly = false) {
+    state.selectedRetificacao = retificacao;
+    document.getElementById("correctionsListView").hidden = true;
+    document.getElementById("correctionRequestView").hidden = true;
+    document.getElementById("correctionReviewView").hidden = false;
+    document.getElementById("correctionReviewStatus").textContent = correctionStatusInfo(retificacao.status).label;
+    renderCorrectionReviewInfo(retificacao);
+
+    const form = document.getElementById("correctionDecisionForm");
+    form.reset();
+    document.getElementById("correctionDecisionFeedback").innerHTML = readOnly && retificacao.justificativaDecisao
+        ? message(`Decisão registrada: ${retificacao.justificativaDecisao}`)
+        : "";
+    document.getElementById("correctionNewGrade").disabled = readOnly;
+    document.getElementById("correctionDecisionJustification").disabled = readOnly;
+    document.getElementById("approveCorrectionButton").hidden = readOnly;
+    document.getElementById("rejectCorrectionButton").hidden = readOnly;
+}
+
+async function returnToCorrectionsList() {
+    showCorrectionsList();
+    await loadCorrectionsView();
+}
+
+async function showCorrectionReview(correctionId, readOnly = false) {
+    document.getElementById("correctionsFeedback").innerHTML = message("Carregando solicitação...");
+
+    try {
+        if (!readOnly) {
+            const current = state.retificacoes.find((item) => String(item.id) === String(correctionId));
+            if (String(current?.status || "").toUpperCase() === "PENDENTE") {
+                await requestJson(`/retificacoes/${encodeURIComponent(correctionId)}/em-analise`, { method: "PATCH" });
+            }
+        }
+
+        const retificacao = await requestJson(`/retificacoes/${encodeURIComponent(correctionId)}`);
+        renderCorrectionReview(retificacao, readOnly || !correctionStatusInfo(retificacao.status).open);
+        document.getElementById("correctionsFeedback").innerHTML = "";
+    } catch (error) {
+        document.getElementById("correctionsFeedback").innerHTML = message(error.message || "Não foi possível carregar a solicitação.", "error");
+    }
+}
+
+function validateCorrectionDecision(shouldApprove) {
+    const justification = String(document.getElementById("correctionDecisionJustification").value || "").trim();
+    const gradeText = String(document.getElementById("correctionNewGrade").value || "").trim();
+    const grade = Number(gradeText);
+
+    if (shouldApprove && (!gradeText || Number.isNaN(grade) || grade < 0 || grade > 10)) {
+        return "Informe uma nova nota entre 0 e 10.";
+    }
+    if (!justification) {
+        return "Informe a justificativa da decisão.";
+    }
+
+    return "";
+}
+
+async function submitCorrectionDecision(shouldApprove) {
+    const feedback = document.getElementById("correctionDecisionFeedback");
+    const retificacao = state.selectedRetificacao;
+    const validationMessage = validateCorrectionDecision(shouldApprove);
+
+    if (!retificacao?.id) {
+        feedback.innerHTML = message("Selecione uma solicitação para análise.", "error");
+        return;
+    }
+
+    if (validationMessage) {
+        feedback.innerHTML = message(validationMessage, "error");
+        return;
+    }
+
+    const justification = String(document.getElementById("correctionDecisionJustification").value || "").trim();
+    feedback.innerHTML = message(shouldApprove ? "Aprovando retificação..." : "Reprovando retificação...");
+
+    try {
+        await requestJson(`/retificacoes/${encodeURIComponent(retificacao.id)}/${shouldApprove ? "aprovar" : "reprovar"}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(shouldApprove
+                ? {
+                    novoValorNota: Number(document.getElementById("correctionNewGrade").value),
+                    justificativaDecisao: justification
+                }
+                : { justificativaDecisao: justification })
+        });
+
+        showCorrectionsList(message("Atualizando solicitações..."));
+        await loadCorrectionsView();
+        document.getElementById("correctionsFeedback").innerHTML = message(shouldApprove ? "Retificação aprovada com sucesso." : "Retificação reprovada com sucesso.", "ok");
+    } catch (error) {
+        feedback.innerHTML = message(error.message || "Não foi possível registrar a decisão.", "error");
+    }
+}
+
+function handleCorrectionsTableClick(event) {
+    const button = event.target.closest("[data-correction-action]");
+    if (!button) {
+        return;
+    }
+
+    showCorrectionReview(button.dataset.correctionId, button.dataset.correctionAction === "view");
+}
+
 function renderGuardianStatus(active) {
     const label = active ? "Ativo" : "Inativo";
     const className = active ? "active" : "inactive";
     return `<span class="student-status ${className}">${label}</span>`;
+}
+
+function guardianPermissionsText(responsavel) {
+    const permissions = [
+        responsavel?.podeVisualizarNotas ? "Notas" : null,
+        responsavel?.podeVisualizarSimulados ? "Simulados" : null,
+        responsavel?.podeVisualizarDesempenho ? "Desempenho" : null
+    ].filter(Boolean);
+
+    return permissions.length > 0 ? permissions.join(", ") : "Nenhuma permissão";
 }
 
 function buildGuardianRows() {
@@ -713,6 +2299,7 @@ function renderGuardiansTable() {
                         <button class="table-action" type="button" data-guardian-action="portal" data-guardian-id="${escapeHtml(responsavel.id)}">Ver como responsável</button>
                         <button class="table-action" type="button" data-guardian-action="details" data-guardian-id="${escapeHtml(responsavel.id)}">Detalhes</button>
                         ${toggle}
+                        <button class="table-action danger" type="button" data-guardian-action="delete" data-guardian-id="${escapeHtml(responsavel.id)}">Excluir</button>
                     </div>
                 </td>
             </tr>
@@ -819,6 +2406,7 @@ function showGuardianDetails(responsavelId) {
             <span><strong>Email</strong><small>${escapeHtml(responsavel.email)}</small></span>
             <span><strong>Aluno vinculado</strong><small>${escapeHtml(responsavel.alunoNome)}</small></span>
             <span><strong>Status do vínculo</strong>${responsavel.alunoId ? renderGuardianStatus(responsavel.vinculoAtivo) : `<small>Sem vínculo</small>`}</span>
+            <span><strong>Permissões</strong><small>${escapeHtml(guardianPermissionsText(responsavel))}</small></span>
         </div>
     `;
 }
@@ -829,7 +2417,7 @@ function openPortalForGuardian(responsavelId) {
     document.getElementById("portalResponsavelId").value = responsavel?.id || responsavelId;
     document.getElementById("portalAlunoId").value = responsavel?.alunoId || "";
     document.getElementById("portalResult").innerHTML = responsavel?.alunoId
-        ? message("Responsável selecionado. Consulte os dados em modo leitura pelo botão Consultar.")
+        ? message(`Responsável selecionado. Permissões: ${guardianPermissionsText(responsavel)}. Consulte os dados em modo leitura pelo botão Consultar.`)
         : message("Este responsável ainda não possui aluno vinculado.", "error");
 }
 
@@ -867,6 +2455,26 @@ async function toggleGuardianLink(responsavelId, shouldActivate) {
         }
         closeGuardianDetails();
         await loadGuardiansView();
+    } catch (error) {
+        feedback.innerHTML = message(error.message, "error");
+    }
+}
+
+async function deleteGuardian(responsavelId) {
+    const responsavel = state.responsaveisLinhas.find((item) => String(item.id) === String(responsavelId));
+    const confirmed = window.confirm("Deseja excluir este responsável definitivamente? Vínculos com alunos serão removidos.");
+    if (!confirmed) {
+        return;
+    }
+
+    const feedback = document.getElementById("guardiansFeedback");
+    feedback.innerHTML = message(`Excluindo ${responsavel?.nome || "responsável"}...`);
+
+    try {
+        await requestJson(`/responsaveis/${encodeURIComponent(responsavelId)}`, { method: "DELETE" });
+        closeGuardianDetails();
+        await loadGuardiansView();
+        document.getElementById("guardiansFeedback").innerHTML = message("Responsável excluído com sucesso.", "ok");
     } catch (error) {
         feedback.innerHTML = message(error.message, "error");
     }
@@ -934,6 +2542,8 @@ function handleGuardianTableClick(event) {
         openPortalForGuardian(responsavelId);
     } else if (action === "details") {
         showGuardianDetails(responsavelId);
+    } else if (action === "delete") {
+        deleteGuardian(responsavelId);
     } else {
         toggleGuardianLink(responsavelId, action === "active");
     }
@@ -943,19 +2553,44 @@ document.querySelectorAll(".nav-link").forEach((link) => {
     link.addEventListener("click", () => showSection(link.dataset.section));
 });
 
+document.getElementById("loginForm").addEventListener("submit", handleLoginSubmit);
+document.getElementById("changeProfileButton").addEventListener("click", handleChangeProfile);
 document.getElementById("refreshDashboardButton").addEventListener("click", loadDashboard);
-document.getElementById("loadReportButton").addEventListener("click", handleReportLoad);
-document.getElementById("planForm").addEventListener("submit", handlePlanSubmit);
 document.getElementById("notificationsForm").addEventListener("submit", handleNotificationsSubmit);
 document.getElementById("portalForm").addEventListener("submit", handlePortalSubmit);
 document.getElementById("newStudentButton").addEventListener("click", showStudentForm);
 document.getElementById("cancelStudentButton").addEventListener("click", () => showStudentsList());
 document.getElementById("studentForm").addEventListener("submit", handleStudentSubmit);
+document.getElementById("studentsTableBody").addEventListener("click", handleStudentsTableClick);
+document.getElementById("newClassButton").addEventListener("click", showClassForm);
+document.getElementById("cancelClassButton").addEventListener("click", () => showClassesList());
+document.getElementById("classForm").addEventListener("submit", handleClassSubmit);
 document.getElementById("newSubjectButton").addEventListener("click", showSubjectForm);
 document.getElementById("cancelSubjectButton").addEventListener("click", () => showSubjectsList());
 document.getElementById("closeSubjectDetailsButton").addEventListener("click", closeSubjectDetails);
 document.getElementById("subjectForm").addEventListener("submit", handleSubjectSubmit);
 document.getElementById("subjectsTableBody").addEventListener("click", handleSubjectTableClick);
+document.getElementById("noteForm").addEventListener("submit", handleNoteSubmit);
+document.getElementById("noteExamSelect").addEventListener("change", handleNoteExamChange);
+document.getElementById("studentNotesForm").addEventListener("submit", handleStudentNotesSubmit);
+document.getElementById("clearNoteButton").addEventListener("click", () => clearNoteForm());
+document.getElementById("performanceForm").addEventListener("submit", handlePerformanceSubmit);
+document.getElementById("changePerformanceStudentButton").addEventListener("click", handleChangePerformanceStudent);
+document.getElementById("newSimulationButton").addEventListener("click", showSimulationCreateView);
+document.getElementById("cancelSimulationButton").addEventListener("click", () => showSimulationsList());
+document.getElementById("backToSimulationsButton").addEventListener("click", () => showSimulationsList());
+document.getElementById("simulationForm").addEventListener("submit", handleSimulationSubmit);
+document.getElementById("simulationSubjectOptions").addEventListener("change", updateSimulationSelectedCounter);
+document.getElementById("simulationsTableBody").addEventListener("click", handleSimulationTableClick);
+document.getElementById("newCorrectionButton").addEventListener("click", showCorrectionRequestView);
+document.getElementById("cancelCorrectionRequestButton").addEventListener("click", handleCancelCorrectionRequest);
+document.getElementById("backToCorrectionsButton").addEventListener("click", returnToCorrectionsList);
+document.getElementById("correctionStudentSelect").addEventListener("change", handleCorrectionStudentChange);
+document.getElementById("correctionStudentEnrollment").addEventListener("change", handleCorrectionStudentChange);
+document.getElementById("correctionRequestForm").addEventListener("submit", handleCorrectionRequestSubmit);
+document.getElementById("approveCorrectionButton").addEventListener("click", () => submitCorrectionDecision(true));
+document.getElementById("rejectCorrectionButton").addEventListener("click", () => submitCorrectionDecision(false));
+document.getElementById("correctionsTableBody").addEventListener("click", handleCorrectionsTableClick);
 document.getElementById("linkGuardianButton").addEventListener("click", showGuardianLinkForm);
 document.getElementById("newGuardianButton").addEventListener("click", showGuardianForm);
 document.getElementById("cancelGuardianLinkButton").addEventListener("click", () => showGuardiansList());
@@ -966,8 +2601,4 @@ document.getElementById("guardianLinkForm").addEventListener("submit", handleGua
 document.getElementById("guardianForm").addEventListener("submit", handleGuardianSubmit);
 document.getElementById("guardiansTableBody").addEventListener("click", handleGuardianTableClick);
 
-loadDashboard();
-loadReport("MAIOR_RISCO").catch(() => {
-    setStatus("reportStatus", "Aguardando dados", "neutral");
-});
-
+showLogin();

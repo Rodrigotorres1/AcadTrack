@@ -11,12 +11,29 @@ public record AnaliseDesempenhoAcademicoResultado(
         boolean riscoAcademico,
         String nivelRisco,
         String alerta,
-        List<MediaSimulado> historicoSimulados
+        String situacaoAcademica,
+        Integer posicaoRanking,
+        int totalAlunosRanking,
+        boolean alunoNoTop10,
+        String mensagemRanking,
+        List<MediaSimulado> historicoSimulados,
+        List<MediaDisciplina> notasPorDisciplina
 ) {
     public record MediaSimulado(
             Long simuladoId,
+            String nomeSimulado,
+            int quantidadeNotas,
             double mediaPonderada,
             boolean baixoDesempenho
+    ) {
+    }
+
+    public record MediaDisciplina(
+            Long disciplinaId,
+            String nomeDisciplina,
+            double media,
+            String status,
+            String nivelRisco
     ) {
     }
 }

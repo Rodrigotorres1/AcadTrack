@@ -10,12 +10,15 @@ import g8.acadtrack.dominioacademico.aluno.Aluno;
 import g8.acadtrack.dominioacademico.disciplina.Disciplina;
 import g8.acadtrack.dominioavaliacao.simulado.Simulado;
 import io.cucumber.java.pt.Dado;
+import io.cucumber.java.pt.Entao;
 import io.cucumber.java.pt.Quando;
-import io.cucumber.java.pt.Então;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class CalcularMediaPonderadaSteps {
 
@@ -49,19 +52,18 @@ public class CalcularMediaPonderadaSteps {
         this.calcularMediaPonderadaUseCase = calcularMediaPonderadaUseCase;
     }
 
-    @Dado("que o aluno possui notas nas disciplinas com pesos definidos")
-    public void queOAlunoPossuiNotasNasDisciplinasComPesosDefinidos() {
+    @Dado("que o aluno possui notas nas disciplinas da composicao padrao")
+    public void queOAlunoPossuiNotasNasDisciplinasDaComposicaoPadrao() {
         context.resetMensagens();
         mediaCalculada = null;
         excecao = null;
 
-        aluno = criarAlunoUseCase.executar("João Silva", "joao@email.com");
-
-        disciplina1 = criarDisciplinaUseCase.executar("Matemática");
-        disciplina2 = criarDisciplinaUseCase.executar("Português");
+        aluno = criarAlunoUseCase.executar("Joao Silva", "joao.media.simulado@email.com");
+        disciplina1 = criarDisciplinaUseCase.executar("Matematica");
+        disciplina2 = criarDisciplinaUseCase.executar("Portugues");
 
         simulado = criarSimuladoUseCase.executar(
-                "Simulado com pesos",
+                "Simulado com composicao padrao",
                 List.of(disciplina1.getId(), disciplina2.getId())
         );
 
@@ -69,28 +71,8 @@ public class CalcularMediaPonderadaSteps {
         lancarNotaUseCase.executar(aluno.getId(), simulado.getId(), disciplina2.getId(), 6.0);
     }
 
-    @Dado("que existem disciplinas sem peso definido")
-    public void queExistemDisciplinasSemPesoDefinido() {
-        context.resetMensagens();
-        mediaCalculada = null;
-        excecao = null;
-
-        aluno = criarAlunoUseCase.executar("João Silva", "joao2@email.com");
-
-        disciplina1 = criarDisciplinaUseCase.executar("História");
-        disciplina2 = criarDisciplinaUseCase.executar("Geografia");
-
-        simulado = criarSimuladoUseCase.executar(
-                "Simulado incompleto",
-                List.of(disciplina1.getId())
-        );
-
-        lancarNotaUseCase.executar(aluno.getId(), simulado.getId(), disciplina1.getId(), 8.0);
-        lancarNotaUseCase.executar(aluno.getId(), simulado.getId(), disciplina2.getId(), 6.0);
-    }
-
-    @Quando("o sistema calcula a média ponderada")
-    public void oSistemaCalculaAMediaPonderada() {
+    @Quando("o sistema calcula a media por simulado")
+    public void oSistemaCalculaAMediaPorSimulado() {
         try {
             mediaCalculada = calcularMediaPonderadaUseCase.executar(aluno.getId(), simulado.getId());
             context.setOperacaoExecutada(true);
@@ -101,24 +83,11 @@ public class CalcularMediaPonderadaSteps {
         }
     }
 
-    @Quando("o sistema tenta calcular a média ponderada")
-    public void oSistemaTentaCalcularAMediaPonderada() {
-        oSistemaCalculaAMediaPonderada();
-    }
-
-    @Então("o sistema retorna a média correta do aluno")
-    public void oSistemaRetornaAMediaCorretaDoAluno() {
+    @Entao("o sistema retorna a media por simulado correta")
+    public void oSistemaRetornaAMediaPorSimuladoCorreta() {
         assertTrue(context.isOperacaoExecutada());
         assertNull(excecao);
         assertNotNull(mediaCalculada);
-        assertEquals(7.33, mediaCalculada, 0.01);
-    }
-
-    @Então("o sistema retorna média 0 para o aluno")
-    public void oSistemaRetornaMediaZeroParaOAluno() {
-        assertTrue(context.isOperacaoExecutada());
-        assertNull(excecao);
-        assertNotNull(mediaCalculada);
-        assertEquals(0.0, mediaCalculada, 0.0);
+        assertEquals(7.0, mediaCalculada, 0.01);
     }
 }

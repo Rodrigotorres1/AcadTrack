@@ -1,17 +1,19 @@
 package g8.acadtrack.apresentacao.controller;
 
+import g8.acadtrack.aplicacao.aluno.AtivarAlunoUseCase;
 import g8.acadtrack.aplicacao.aluno.CriarAlunoUseCase;
+import g8.acadtrack.aplicacao.aluno.InativarAlunoUseCase;
 import g8.acadtrack.aplicacao.aluno.ListarAlunosUseCase;
-import g8.acadtrack.aplicacao.planoestudo.RecomendarPlanoEstudoUseCase;
+import g8.acadtrack.aplicacao.nota.AnalisarDesempenhoAcademicoUseCase;
 import g8.acadtrack.aplicacao.responsavel.DesvincularResponsavelUseCase;
 import g8.acadtrack.aplicacao.responsavel.VincularResponsavelUseCase;
 import g8.acadtrack.aplicacao.turma.VincularAlunoTurmaUseCase;
 import g8.acadtrack.apresentacao.dto.request.CriarAlunoRequest;
 import g8.acadtrack.apresentacao.dto.request.VincularAlunoTurmaRequest;
 import g8.acadtrack.apresentacao.dto.request.VincularResponsavelRequest;
+import g8.acadtrack.apresentacao.dto.response.AnaliseDesempenhoResponse;
 import g8.acadtrack.apresentacao.dto.response.AlunoResponse;
 import g8.acadtrack.apresentacao.dto.response.ErroApiResponse;
-import g8.acadtrack.apresentacao.dto.response.PlanoEstudoResponse;
 import g8.acadtrack.dominioacademico.aluno.Aluno;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -26,6 +28,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -42,25 +45,31 @@ public class AlunoController {
 
     private final CriarAlunoUseCase criarAlunoUseCase;
     private final ListarAlunosUseCase listarAlunosUseCase;
+    private final InativarAlunoUseCase inativarAlunoUseCase;
+    private final AtivarAlunoUseCase ativarAlunoUseCase;
     private final VincularAlunoTurmaUseCase vincularAlunoTurmaUseCase;
     private final VincularResponsavelUseCase vincularResponsavelUseCase;
     private final DesvincularResponsavelUseCase desvincularResponsavelUseCase;
-    private final RecomendarPlanoEstudoUseCase recomendarPlanoEstudoUseCase;
+    private final AnalisarDesempenhoAcademicoUseCase analisarDesempenhoAcademicoUseCase;
 
     public AlunoController(
             CriarAlunoUseCase criarAlunoUseCase,
             ListarAlunosUseCase listarAlunosUseCase,
+            InativarAlunoUseCase inativarAlunoUseCase,
+            AtivarAlunoUseCase ativarAlunoUseCase,
             VincularAlunoTurmaUseCase vincularAlunoTurmaUseCase,
             VincularResponsavelUseCase vincularResponsavelUseCase,
             DesvincularResponsavelUseCase desvincularResponsavelUseCase,
-            RecomendarPlanoEstudoUseCase recomendarPlanoEstudoUseCase
+            AnalisarDesempenhoAcademicoUseCase analisarDesempenhoAcademicoUseCase
     ) {
         this.criarAlunoUseCase = criarAlunoUseCase;
         this.listarAlunosUseCase = listarAlunosUseCase;
+        this.inativarAlunoUseCase = inativarAlunoUseCase;
+        this.ativarAlunoUseCase = ativarAlunoUseCase;
         this.vincularAlunoTurmaUseCase = vincularAlunoTurmaUseCase;
         this.vincularResponsavelUseCase = vincularResponsavelUseCase;
         this.desvincularResponsavelUseCase = desvincularResponsavelUseCase;
-        this.recomendarPlanoEstudoUseCase = recomendarPlanoEstudoUseCase;
+        this.analisarDesempenhoAcademicoUseCase = analisarDesempenhoAcademicoUseCase;
     }
 
     @Operation(summary = "Listar alunos cadastrados")
@@ -111,6 +120,34 @@ public class AlunoController {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(AlunoResponse.fromDomain(aluno));
+    }
+
+    @Operation(summary = "Inativar aluno")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Aluno inativado",
+                    content = @Content(schema = @Schema(implementation = AlunoResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Aluno nao encontrado",
+                    content = @Content(schema = @Schema(implementation = ErroApiResponse.class)))
+    })
+    @PatchMapping("/{alunoId}/inativar")
+    public ResponseEntity<AlunoResponse> inativar(
+            @Parameter(description = "Aluno") @PathVariable Long alunoId) {
+        Aluno aluno = inativarAlunoUseCase.executar(alunoId);
+        return ResponseEntity.ok(AlunoResponse.fromDomain(aluno));
+    }
+
+    @Operation(summary = "Ativar aluno")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Aluno ativado",
+                    content = @Content(schema = @Schema(implementation = AlunoResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Aluno nao encontrado",
+                    content = @Content(schema = @Schema(implementation = ErroApiResponse.class)))
+    })
+    @PatchMapping("/{alunoId}/ativar")
+    public ResponseEntity<AlunoResponse> ativar(
+            @Parameter(description = "Aluno") @PathVariable Long alunoId) {
+        Aluno aluno = ativarAlunoUseCase.executar(alunoId);
+        return ResponseEntity.ok(AlunoResponse.fromDomain(aluno));
     }
 
     @Operation(summary = "Definir ou trocar turma do aluno",
@@ -199,19 +236,19 @@ public class AlunoController {
         return ResponseEntity.ok(AlunoResponse.fromDomain(aluno));
     }
 
-    @Operation(summary = "Recomendar plano de estudo por desempenho",
-            description = "Gera uma recomendacao com base no nivel de risco academico ja calculado para o aluno.")
+    @Operation(summary = "Consultar desempenho completo do aluno",
+            description = "Retorna media, situacao, risco, historico por simulado e medias por disciplina calculados pelo backend.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Plano recomendado",
-                    content = @Content(schema = @Schema(implementation = PlanoEstudoResponse.class))),
-            @ApiResponse(responseCode = "409", description = "Aluno sem notas para recomendacao",
+            @ApiResponse(responseCode = "200", description = "Analise de desempenho",
+                    content = @Content(schema = @Schema(implementation = AnaliseDesempenhoResponse.class))),
+            @ApiResponse(responseCode = "409", description = "Aluno sem notas para analise",
                     content = @Content(schema = @Schema(implementation = ErroApiResponse.class)))
     })
-    @GetMapping("/{alunoId}/plano-estudo")
-    public ResponseEntity<PlanoEstudoResponse> recomendarPlanoEstudo(
+    @GetMapping("/{alunoId}/desempenho")
+    public ResponseEntity<AnaliseDesempenhoResponse> consultarDesempenho(
             @Parameter(description = "Aluno") @PathVariable Long alunoId) {
         return ResponseEntity.ok(
-                PlanoEstudoResponse.fromApplication(recomendarPlanoEstudoUseCase.executar(alunoId))
+                AnaliseDesempenhoResponse.fromApplication(analisarDesempenhoAcademicoUseCase.executar(alunoId))
         );
     }
 }

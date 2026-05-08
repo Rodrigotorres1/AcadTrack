@@ -2,9 +2,12 @@ package g8.acadtrack.infraestrutura.persistencia.entidade;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
@@ -19,12 +22,26 @@ public class AlunoJpaEntity {
 
     @Column(unique = true)
     private String email;
+
+    @Column(name = "turma_id")
     private Long turmaId;
+
+    @Column(name = "responsavel_id")
     private Long responsavelId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "turma_id", insertable = false, updatable = false)
+    private TurmaJpaEntity turma;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "responsavel_id", insertable = false, updatable = false)
+    private ResponsavelJpaEntity responsavel;
+
     private boolean vinculoResponsavelAtivo;
     private boolean permissaoVisualizarNotas;
     private boolean permissaoVisualizarSimulados;
     private boolean permissaoVisualizarDesempenho;
+    private Boolean ativo = true;
     private double mediaAtual;
     private String situacaoAcademica;
 
@@ -74,6 +91,36 @@ public class AlunoJpaEntity {
             double mediaAtual,
             String situacaoAcademica
     ) {
+        this(
+                id,
+                nome,
+                email,
+                turmaId,
+                responsavelId,
+                vinculoResponsavelAtivo,
+                permissaoVisualizarNotas,
+                permissaoVisualizarSimulados,
+                permissaoVisualizarDesempenho,
+                true,
+                mediaAtual,
+                situacaoAcademica
+        );
+    }
+
+    public AlunoJpaEntity(
+            Long id,
+            String nome,
+            String email,
+            Long turmaId,
+            Long responsavelId,
+            boolean vinculoResponsavelAtivo,
+            boolean permissaoVisualizarNotas,
+            boolean permissaoVisualizarSimulados,
+            boolean permissaoVisualizarDesempenho,
+            boolean ativo,
+            double mediaAtual,
+            String situacaoAcademica
+    ) {
         this.id = id;
         this.nome = nome;
         this.email = email;
@@ -83,6 +130,7 @@ public class AlunoJpaEntity {
         this.permissaoVisualizarNotas = permissaoVisualizarNotas;
         this.permissaoVisualizarSimulados = permissaoVisualizarSimulados;
         this.permissaoVisualizarDesempenho = permissaoVisualizarDesempenho;
+        this.ativo = ativo;
         this.mediaAtual = mediaAtual;
         this.situacaoAcademica = situacaoAcademica;
     }
@@ -121,6 +169,10 @@ public class AlunoJpaEntity {
 
     public boolean isPermissaoVisualizarDesempenho() {
         return permissaoVisualizarDesempenho;
+    }
+
+    public boolean isAtivo() {
+        return ativo == null || ativo;
     }
 
     public double getMediaAtual() {
@@ -165,6 +217,10 @@ public class AlunoJpaEntity {
 
     public void setPermissaoVisualizarDesempenho(boolean permissaoVisualizarDesempenho) {
         this.permissaoVisualizarDesempenho = permissaoVisualizarDesempenho;
+    }
+
+    public void setAtivo(boolean ativo) {
+        this.ativo = ativo;
     }
 
     public void setMediaAtual(double mediaAtual) {

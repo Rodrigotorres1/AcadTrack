@@ -1,6 +1,9 @@
 package g8.acadtrack.aplicacao.retificacao;
 
 import g8.acadtrack.aplicacao.nota.AvaliacaoAcademicaService;
+import g8.acadtrack.aplicacao.nota.AnalisarDesempenhoAcademicoUseCase;
+import g8.acadtrack.aplicacao.nota.AnaliseDesempenhoAcademicoResultado;
+import g8.acadtrack.aplicacao.riscoacademico.PublicadorRiscoAcademico;
 import g8.acadtrack.dominioacademico.aluno.Aluno;
 import g8.acadtrack.dominioacademico.aluno.AlunoRepository;
 import g8.acadtrack.dominioavaliacao.nota.Nota;
@@ -18,17 +21,23 @@ public class AprovarRetificacaoUseCase {
     private final NotaRepository notaRepository;
     private final AlunoRepository alunoRepository;
     private final AvaliacaoAcademicaService avaliacaoAcademicaService;
+    private final AnalisarDesempenhoAcademicoUseCase analisarDesempenhoAcademicoUseCase;
+    private final PublicadorRiscoAcademico publicadorRiscoAcademico;
 
     public AprovarRetificacaoUseCase(
             SolicitacaoRetificacaoRepository solicitacaoRetificacaoRepository,
             NotaRepository notaRepository,
             AlunoRepository alunoRepository,
-            AvaliacaoAcademicaService avaliacaoAcademicaService
+            AvaliacaoAcademicaService avaliacaoAcademicaService,
+            AnalisarDesempenhoAcademicoUseCase analisarDesempenhoAcademicoUseCase,
+            PublicadorRiscoAcademico publicadorRiscoAcademico
     ) {
         this.solicitacaoRetificacaoRepository = solicitacaoRetificacaoRepository;
         this.notaRepository = notaRepository;
         this.alunoRepository = alunoRepository;
         this.avaliacaoAcademicaService = avaliacaoAcademicaService;
+        this.analisarDesempenhoAcademicoUseCase = analisarDesempenhoAcademicoUseCase;
+        this.publicadorRiscoAcademico = publicadorRiscoAcademico;
     }
 
     @Transactional
@@ -49,6 +58,9 @@ public class AprovarRetificacaoUseCase {
         double mediaAtual = avaliacaoAcademicaService.calcularMedia(notaRepository.buscarPorAlunoId(aluno.getId()));
         aluno.atualizarDesempenhoAcademico(mediaAtual, avaliacaoAcademicaService.calcularSituacao(mediaAtual));
         alunoRepository.salvar(aluno);
+
+        AnaliseDesempenhoAcademicoResultado analise = analisarDesempenhoAcademicoUseCase.executar(aluno.getId());
+        publicadorRiscoAcademico.publicarSeRiscoNotificavel(analise);
 
         return solicitacaoRetificacaoRepository.salvar(solicitacao);
     }

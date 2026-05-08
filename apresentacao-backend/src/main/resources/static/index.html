@@ -7,6 +7,59 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+<section id="loginScreen" class="login-screen" aria-label="Selecionar perfil de acesso">
+    <div class="login-brand">
+        <span class="brand-mark">AT</span>
+        <div>
+            <strong>AcadTrack</strong>
+            <small>Gestão acadêmica</small>
+        </div>
+    </div>
+
+    <form id="loginForm" class="login-panel">
+        <div>
+            <p class="eyebrow">Acesso inicial</p>
+            <h1>Entrar no AcadTrack</h1>
+            <p class="login-copy">Selecione o perfil para acessar a camada web.</p>
+        </div>
+
+        <fieldset class="role-options">
+            <legend>Perfil de usuário</legend>
+            <label class="role-option">
+                <input type="radio" name="perfil" value="coordenador" required>
+                <span>
+                    <strong>Coordenador</strong>
+                    <small>Disciplinas, simulados, turmas e vínculos.</small>
+                </span>
+            </label>
+            <label class="role-option">
+                <input type="radio" name="perfil" value="professor" required>
+                <span>
+                    <strong>Professor</strong>
+                    <small>Lançamento de notas, avaliação e retificações.</small>
+                </span>
+            </label>
+            <label class="role-option">
+                <input type="radio" name="perfil" value="aluno" required>
+                <span>
+                    <strong>Aluno</strong>
+                    <small>Consulta de desempenho acadêmico e ranking.</small>
+                </span>
+            </label>
+            <label class="role-option">
+                <input type="radio" name="perfil" value="responsavel" required>
+                <span>
+                    <strong>Responsável</strong>
+                    <small>Portal do responsável, permissões e notificações.</small>
+                </span>
+            </label>
+        </fieldset>
+
+        <div id="loginFeedback"></div>
+        <button class="primary-button" type="submit">Entrar</button>
+    </form>
+</section>
+
 <aside class="sidebar">
     <div class="brand">
         <span class="brand-mark">AT</span>
@@ -19,25 +72,32 @@
     <nav class="nav-list" aria-label="Navegação principal">
         <button class="nav-link active" type="button" data-section="dashboard">Dashboard</button>
         <button class="nav-link" type="button" data-section="alunos">Alunos</button>
+        <button class="nav-link" type="button" data-section="turmas">Turmas</button>
         <button class="nav-link" type="button" data-section="disciplinas">Disciplinas</button>
+        <button class="nav-link" type="button" data-section="notas">Notas</button>
+        <button class="nav-link" type="button" data-section="desempenho">Desempenho</button>
+        <button class="nav-link" type="button" data-section="simulados">Simulados</button>
+        <button class="nav-link" type="button" data-section="retificacoes">Retificações</button>
         <button class="nav-link" type="button" data-section="responsaveis">Responsáveis</button>
-        <button class="nav-link" type="button" data-section="relatorio">Relatório</button>
-        <button class="nav-link" type="button" data-section="plano">Plano de estudo</button>
         <button class="nav-link" type="button" data-section="notificacoes">Notificações</button>
         <button class="nav-link" type="button" data-section="portal">Portal responsável</button>
     </nav>
 
     <div class="sidebar-footer">
         <span>REST conectado ao backend</span>
+        <div class="active-profile">
+            <span>Perfil ativo</span>
+            <strong id="activeProfileLabel">-</strong>
+            <small id="activeProfileDescription"></small>
+        </div>
+        <button id="changeProfileButton" class="profile-button" type="button">Sair</button>
     </div>
 </aside>
 
 <main class="shell">
     <section class="hero">
         <div>
-            <p class="eyebrow">Camada de apresentação web</p>
             <h1>Dashboard AcadTrack</h1>
-            <p class="hero-copy">Visualização dos dados calculados pelo backend, sem duplicar regras de desempenho no frontend.</p>
         </div>
         <button id="refreshDashboardButton" class="primary-button" type="button">Atualizar dashboard</button>
     </section>
@@ -46,7 +106,7 @@
         <div class="section-header">
             <div>
                 <h2>Resumo acadêmico</h2>
-                <p>Indicadores montados a partir do relatório consolidado da API.</p>
+                <p>Indicadores montados a partir das análises de desempenho calculadas pela API.</p>
             </div>
         </div>
 
@@ -69,13 +129,23 @@
             </article>
         </div>
 
-        <article class="card">
-            <div class="card-title-row">
-                <h3>Alunos prioritários</h3>
-                <span id="dashboardStatus" class="status-pill neutral">Aguardando consulta</span>
-            </div>
-            <div id="dashboardList" class="compact-list"></div>
-        </article>
+        <div class="dashboard-grid">
+            <article class="card">
+                <div class="card-title-row">
+                    <h3>Alunos prioritários</h3>
+                    <span id="dashboardStatus" class="status-pill neutral">Aguardando consulta</span>
+                </div>
+                <div id="dashboardList" class="compact-list"></div>
+            </article>
+
+            <article class="card">
+                <div class="card-title-row">
+                    <h3>Top 10 acadêmico</h3>
+                    <span id="dashboardRankingStatus" class="status-pill neutral">Aguardando consulta</span>
+                </div>
+                <div id="dashboardRankingList" class="compact-list"></div>
+            </article>
+        </div>
     </section>
 
     <section id="alunos" class="content-section">
@@ -94,10 +164,12 @@
                     <table class="students-table">
                         <thead>
                         <tr>
+                            <th>Matrícula</th>
                             <th>Nome</th>
                             <th>Email</th>
                             <th>Turma</th>
                             <th>Situação</th>
+                            <th>Ações</th>
                         </tr>
                         </thead>
                         <tbody id="studentsTableBody"></tbody>
@@ -138,6 +210,57 @@
                     <div class="form-actions">
                         <button class="save-button" type="submit">Salvar</button>
                         <button id="cancelStudentButton" class="cancel-button" type="button">Cancelar</button>
+                    </div>
+                </form>
+            </article>
+        </div>
+    </section>
+
+    <section id="turmas" class="content-section">
+        <div id="classesListView">
+            <div class="section-header">
+                <div>
+                    <h2>Turmas</h2>
+                    <p>Gerenciar turmas disponíveis para matrícula de alunos</p>
+                </div>
+                <button id="newClassButton" class="primary-button add-button" type="button">+ Nova turma</button>
+            </div>
+
+            <article class="card students-card">
+                <div id="classesFeedback" class="students-feedback"></div>
+                <div class="table-wrap">
+                    <table class="students-table">
+                        <thead>
+                        <tr>
+                            <th>Nome da Turma</th>
+                        </tr>
+                        </thead>
+                        <tbody id="classesTableBody"></tbody>
+                    </table>
+                </div>
+            </article>
+        </div>
+
+        <div id="classFormView" hidden>
+            <div class="section-header">
+                <div>
+                    <h2>Nova Turma</h2>
+                    <p>Cadastrar turma disponível para matrícula de alunos</p>
+                </div>
+            </div>
+
+            <article class="card student-form-card">
+                <form id="classForm" class="student-form">
+                    <div class="form-field">
+                        <label for="className">Nome da Turma</label>
+                        <input id="className" name="nome" type="text" placeholder="Ex: 1º A" required>
+                    </div>
+
+                    <div id="classFormFeedback" class="students-feedback"></div>
+
+                    <div class="form-actions">
+                        <button class="save-button" type="submit">Salvar</button>
+                        <button id="cancelClassButton" class="cancel-button" type="button">Cancelar</button>
                     </div>
                 </form>
             </article>
@@ -205,6 +328,407 @@
         </div>
     </section>
 
+    <section id="notas" class="content-section">
+        <div id="noteLaunchView">
+        <div class="section-header">
+            <div>
+                <h2>Lançamento de Nota</h2>
+                <p>Registrar nova nota de aluno</p>
+            </div>
+        </div>
+
+        <article class="card note-form-card">
+            <form id="noteForm" class="student-form" novalidate>
+                <div class="form-field">
+                    <label for="noteStudentSelect">Selecionar Aluno</label>
+                    <select id="noteStudentSelect" name="alunoId" required>
+                        <option value="">Escolha um aluno</option>
+                    </select>
+                </div>
+
+                <div class="form-field">
+                    <label for="noteExamSelect">Selecionar Simulado</label>
+                    <select id="noteExamSelect" name="simuladoId" required>
+                        <option value="">Escolha um simulado</option>
+                    </select>
+                </div>
+
+                <div class="form-field">
+                    <label for="noteSubjectSelect">Selecionar Disciplina</label>
+                    <select id="noteSubjectSelect" name="disciplinaId" required>
+                        <option value="">Escolha uma disciplina</option>
+                    </select>
+                </div>
+
+                <div class="form-field">
+                    <label for="noteValue">Nota (0 a 10)</label>
+                    <input id="noteValue" name="valor" type="number" min="0" max="10" step="0.1" placeholder="Ex: 8.5" required>
+                </div>
+
+                <div id="noteFormFeedback" class="note-feedback"></div>
+
+                <div class="form-actions">
+                    <button class="primary-button" type="submit">Lançar Nota</button>
+                    <button id="clearNoteButton" class="cancel-button" type="button">Limpar</button>
+                </div>
+            </form>
+        </article>
+        </div>
+
+        <div id="studentNoteView" hidden>
+            <div class="section-header">
+                <div>
+                    <h2>Consulta de Notas</h2>
+                    <p>Acompanhar notas lançadas no backend</p>
+                </div>
+            </div>
+
+            <article class="card note-form-card">
+                <form id="studentNotesForm" class="inline-form">
+                    <label for="studentNotesEnrollment">Matrícula</label>
+                    <input id="studentNotesEnrollment" name="alunoId" type="number" min="1" placeholder="Ex.: 1" required>
+                    <button class="primary-button" type="submit">Consultar</button>
+                </form>
+                <div id="studentNotesFeedback" class="note-feedback"></div>
+                <div id="studentNotesList" class="compact-list"></div>
+            </article>
+        </div>
+    </section>
+
+    <section id="desempenho" class="content-section">
+        <div id="performanceSelectView">
+            <div class="section-header">
+                <div>
+                    <h2>Análise de Desempenho</h2>
+                    <p id="performanceSelectSubtitle">Selecione um aluno para visualizar o desempenho completo</p>
+                </div>
+            </div>
+
+            <article class="card performance-form-card">
+                <form id="performanceForm" class="student-form" novalidate>
+                    <div class="form-field">
+                        <label id="performanceStudentLabel" for="performanceStudentSelect">Selecionar Aluno</label>
+                        <select id="performanceStudentSelect" name="alunoId" required>
+                            <option value="">Escolha um aluno</option>
+                        </select>
+                        <input id="performanceStudentEnrollment" name="alunoId" type="number" min="1" placeholder="Ex.: 1" hidden disabled>
+                    </div>
+
+                    <div id="performanceFeedback" class="note-feedback"></div>
+
+                    <div class="form-actions">
+                        <button id="performanceSubmitButton" class="primary-button" type="submit">Visualizar Desempenho</button>
+                    </div>
+                </form>
+            </article>
+        </div>
+
+        <div id="performancePanelView" hidden>
+            <div class="section-header">
+                <div>
+                    <h2>Painel de Desempenho</h2>
+                    <p id="performanceStudentName">-</p>
+                </div>
+                <button id="changePerformanceStudentButton" class="cancel-button" type="button">Trocar Aluno</button>
+            </div>
+
+            <div class="metric-grid performance-metrics">
+                <article class="metric-card">
+                    <span>Média Geral</span>
+                    <strong id="performanceAverage">-</strong>
+                </article>
+                <article class="metric-card">
+                    <span>Situação Acadêmica</span>
+                    <strong id="performanceSituation">-</strong>
+                </article>
+                <article class="metric-card">
+                    <span>Nível de Risco</span>
+                    <strong id="performanceRisk">-</strong>
+                </article>
+                <article class="metric-card">
+                    <span>Ranking Acadêmico</span>
+                    <strong id="performanceRankingPosition">-</strong>
+                </article>
+            </div>
+
+            <div id="performanceRiskAlert" class="performance-alert"></div>
+            <div id="performanceRankingAlert" class="performance-ranking-alert"></div>
+
+            <div class="performance-grid">
+                <article class="card">
+                    <div class="card-title-row">
+                        <h3>Histórico por Simulado</h3>
+                    </div>
+                    <div id="performanceExamHistory" class="compact-list"></div>
+                </article>
+
+                <article class="card">
+                    <div class="card-title-row">
+                        <h3>Notas por Disciplina</h3>
+                    </div>
+                    <div class="table-wrap">
+                        <table class="performance-table">
+                            <thead>
+                            <tr>
+                                <th>Disciplina</th>
+                                <th>Média</th>
+                                <th>Status</th>
+                            </tr>
+                            </thead>
+                            <tbody id="performanceSubjectTableBody"></tbody>
+                        </table>
+                    </div>
+                </article>
+            </div>
+
+            <article class="card risk-explanation-card">
+                <h3>Explicação dos Níveis de Risco</h3>
+                <div class="risk-explanation-grid">
+                    <div class="risk-explanation-item baixo">
+                        <strong>Risco Baixo</strong>
+                        <p>Média ≥ 7.0, sem reprovações. Desempenho estável e satisfatório.</p>
+                    </div>
+                    <div class="risk-explanation-item moderado">
+                        <strong>Risco Moderado</strong>
+                        <p>Média entre 5.0 e 6.9. Necessita acompanhamento pedagógico.</p>
+                    </div>
+                    <div class="risk-explanation-item alto">
+                        <strong>Risco Alto</strong>
+                        <p>Média &lt; 5.0 ou múltiplas reprovações. Necessita intervenção imediata.</p>
+                    </div>
+                </div>
+            </article>
+        </div>
+    </section>
+
+    <section id="simulados" class="content-section">
+        <div id="simulationsListView">
+            <div class="section-header">
+                <div>
+                    <h2>Simulados</h2>
+                    <p>Gerenciar simulados do sistema</p>
+                </div>
+                <button id="newSimulationButton" class="primary-button add-button" type="button">+ Criar Simulado</button>
+            </div>
+
+            <article class="card simulations-card">
+                <div id="simulationsFeedback" class="students-feedback"></div>
+                <div class="table-wrap">
+                    <table class="simulations-table">
+                        <thead>
+                        <tr>
+                            <th>Descrição</th>
+                            <th>Disciplinas</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                        </thead>
+                        <tbody id="simulationsTableBody"></tbody>
+                    </table>
+                </div>
+            </article>
+        </div>
+
+        <div id="simulationDetailsView" hidden>
+            <div class="section-header">
+                <div>
+                    <h2 id="simulationDetailsTitle">Detalhes do Simulado</h2>
+                    <p id="simulationDetailsSubtitle">Composição e participação</p>
+                </div>
+                <button id="backToSimulationsButton" class="cancel-button" type="button">Voltar</button>
+            </div>
+
+            <div id="simulationDetailsFeedback" class="note-feedback"></div>
+
+            <article class="card simulation-details-card">
+                <div class="card-title-row">
+                    <h3 id="simulationDescription">-</h3>
+                    <span id="simulationConsistencyBadge" class="status-pill neutral">-</span>
+                </div>
+                <div id="simulationConsistencyAlert"></div>
+
+                <div class="simulation-details-grid">
+                    <section>
+                        <h3>Disciplinas Vinculadas</h3>
+                        <div id="simulationLinkedSubjects" class="simulation-subject-list"></div>
+                    </section>
+
+                    <section>
+                        <h3>Notas Relacionadas</h3>
+                        <div class="simulation-note-metrics">
+                            <article>
+                                <span>Total de Notas</span>
+                                <strong id="simulationTotalNotes">0</strong>
+                            </article>
+                            <article>
+                                <span>Alunos com Notas</span>
+                                <strong id="simulationStudentsWithNotes">0</strong>
+                            </article>
+                        </div>
+                    </section>
+                </div>
+
+                <section class="simulation-participants-section">
+                    <h3>Alunos Participantes</h3>
+                    <div id="simulationParticipants" class="compact-list"></div>
+                </section>
+            </article>
+        </div>
+
+        <div id="simulationCreateView" hidden>
+            <div class="section-header">
+                <div>
+                    <h2>Criar Novo Simulado</h2>
+                    <p>Composição inteligente com validações</p>
+                </div>
+            </div>
+
+            <article class="card simulation-form-card">
+                <form id="simulationForm" class="student-form" novalidate>
+                    <div class="form-field">
+                        <label for="simulationDescriptionInput">Descrição do Simulado</label>
+                        <input id="simulationDescriptionInput" name="descricao" type="text" placeholder="Ex: Simulado 1º Bimestre" required>
+                    </div>
+
+                    <section class="simulation-subject-picker">
+                        <div class="simulation-picker-header">
+                            <h3>Selecionar Disciplinas (mínimo 2)</h3>
+                            <span id="simulationSelectedCounter" class="muted">0 disciplina(s) selecionada(s)</span>
+                        </div>
+                        <p class="muted">Disciplinas inativas não podem ser selecionadas</p>
+                        <div id="simulationSubjectOptions" class="simulation-subject-options"></div>
+                    </section>
+
+                    <article class="simulation-rules-card">
+                        <h3>Regras de Validação:</h3>
+                        <ul>
+                            <li>Mínimo de 2 disciplinas</li>
+                            <li>Não permitir disciplinas repetidas</li>
+                            <li>Não permitir disciplinas inativas</li>
+                            <li>Descrição não pode ser duplicada</li>
+                        </ul>
+                    </article>
+
+                    <div id="simulationFormFeedback" class="note-feedback"></div>
+
+                    <div class="form-actions">
+                        <button class="primary-button" type="submit">Criar Simulado</button>
+                        <button id="cancelSimulationButton" class="cancel-button" type="button">Cancelar</button>
+                    </div>
+                </form>
+            </article>
+        </div>
+    </section>
+
+    <section id="retificacoes" class="content-section">
+        <div id="correctionsListView">
+            <div class="section-header">
+                <div>
+                    <h2>Retificações de Nota</h2>
+                    <p>Gerenciar solicitações de retificação</p>
+                </div>
+                <button id="newCorrectionButton" class="primary-button add-button" type="button">+ Solicitar Retificação</button>
+            </div>
+
+            <article class="card corrections-card">
+                <div id="correctionsFeedback" class="students-feedback"></div>
+                <div class="table-wrap">
+                    <table class="corrections-table">
+                        <thead>
+                        <tr>
+                            <th>Aluno</th>
+                            <th>Nota Atual</th>
+                            <th>Justificativa</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                        </thead>
+                        <tbody id="correctionsTableBody"></tbody>
+                    </table>
+                </div>
+            </article>
+        </div>
+
+        <div id="correctionRequestView" hidden>
+            <div class="section-header">
+                <div>
+                    <h2>Solicitar Retificação</h2>
+                    <p>Preencha os dados da solicitação</p>
+                </div>
+            </div>
+
+            <article class="card correction-form-card">
+                <form id="correctionRequestForm" class="student-form" novalidate>
+                    <div class="form-field">
+                        <label id="correctionStudentLabel" for="correctionStudentSelect">Selecionar Aluno</label>
+                        <select id="correctionStudentSelect" name="alunoId" required>
+                            <option value="">Escolha um aluno</option>
+                        </select>
+                        <input id="correctionStudentEnrollment" name="alunoId" type="number" min="1" placeholder="Ex.: 1" hidden disabled>
+                    </div>
+
+                    <div class="form-field">
+                        <label for="correctionNoteSelect">Selecionar Nota</label>
+                        <select id="correctionNoteSelect" name="notaId" disabled required>
+                            <option value="">Escolha uma nota</option>
+                        </select>
+                    </div>
+
+                    <div class="form-field">
+                        <label for="correctionJustification">Justificativa</label>
+                        <textarea id="correctionJustification" name="justificativa" placeholder="Descreva o motivo da solicitação de retificação..." required></textarea>
+                    </div>
+
+                    <div id="correctionRequestFeedback" class="note-feedback"></div>
+
+                    <div class="form-actions">
+                        <button class="primary-button" type="submit">Solicitar</button>
+                        <button id="cancelCorrectionRequestButton" class="cancel-button" type="button">Cancelar</button>
+                    </div>
+                </form>
+            </article>
+        </div>
+
+        <div id="correctionReviewView" hidden>
+            <div class="section-header">
+                <div>
+                    <h2>Análise de Retificação</h2>
+                    <p>Status: <span id="correctionReviewStatus">Em Análise</span></p>
+                </div>
+                <button id="backToCorrectionsButton" class="cancel-button" type="button">Voltar</button>
+            </div>
+
+            <div class="correction-review-grid">
+                <article class="card correction-info-card">
+                    <h3>Informações da Solicitação</h3>
+                    <div id="correctionReviewInfo" class="subject-details-grid"></div>
+                </article>
+
+                <article class="card correction-decision-card">
+                    <h3>Decisão da Análise</h3>
+                    <form id="correctionDecisionForm" class="student-form" novalidate>
+                        <div class="form-field">
+                            <label for="correctionNewGrade">Nova Nota (0 a 10)</label>
+                            <input id="correctionNewGrade" name="novoValorNota" type="number" min="0" max="10" step="0.1" placeholder="Ex: 7.5">
+                        </div>
+
+                        <div class="form-field">
+                            <label for="correctionDecisionJustification">Justificativa da Decisão</label>
+                            <textarea id="correctionDecisionJustification" name="justificativaDecisao" placeholder="Descreva o motivo da aprovação ou reprovação..." required></textarea>
+                        </div>
+
+                        <div id="correctionDecisionFeedback" class="note-feedback"></div>
+
+                        <div class="form-actions">
+                            <button id="approveCorrectionButton" class="primary-button" type="button">Aprovar</button>
+                            <button id="rejectCorrectionButton" class="danger-button" type="button">Reprovar</button>
+                        </div>
+                    </form>
+                </article>
+            </div>
+        </div>
+    </section>
+
     <section id="responsaveis" class="content-section">
         <div id="guardiansListView">
             <div class="section-header">
@@ -244,7 +768,7 @@
                 <div id="guardianDetailsContent"></div>
             </article>
 
-            <button id="blockedAccessButton" class="secondary-button blocked-access-button" type="button">Simular Acesso Bloqueado</button>
+            <button id="blockedAccessButton" class="secondary-button blocked-access-button"></button>
         </div>
 
         <div id="guardianLinkView" hidden>
@@ -312,62 +836,6 @@
                 </form>
             </article>
         </div>
-    </section>
-
-    <section id="relatorio" class="content-section">
-        <div class="section-header">
-            <div>
-                <h2>Relatório de desempenho</h2>
-                <p>Ordenação executada pelo use case com Iterator no backend.</p>
-            </div>
-            <div class="toolbar">
-                <select id="ordenacaoSelect" aria-label="Critério de ordenação">
-                    <option value="MAIOR_RISCO">Maior risco</option>
-                    <option value="MENOR_MEDIA">Menor média</option>
-                    <option value="MELHOR_MEDIA">Melhor média</option>
-                </select>
-                <button id="loadReportButton" class="primary-button" type="button">Carregar</button>
-            </div>
-        </div>
-
-        <article class="card">
-            <div class="card-title-row">
-                <h3 id="reportTitle">Alunos analisados</h3>
-                <span id="reportStatus" class="status-pill neutral">Aguardando consulta</span>
-            </div>
-            <div class="table-wrap">
-                <table>
-                    <thead>
-                    <tr>
-                        <th>Aluno</th>
-                        <th>Média</th>
-                        <th>Risco</th>
-                        <th>Situação</th>
-                        <th>Plano</th>
-                    </tr>
-                    </thead>
-                    <tbody id="reportTableBody"></tbody>
-                </table>
-            </div>
-        </article>
-    </section>
-
-    <section id="plano" class="content-section">
-        <div class="section-header">
-            <div>
-                <h2>Recomendação de plano</h2>
-                <p>Consulta direta ao endpoint de recomendação por desempenho.</p>
-            </div>
-            <form id="planForm" class="inline-form">
-                <label for="planAlunoId">Aluno ID</label>
-                <input id="planAlunoId" name="alunoId" type="number" min="1" placeholder="Ex.: 1" required>
-                <button class="primary-button" type="submit">Buscar plano</button>
-            </form>
-        </div>
-
-        <article id="planResult" class="card empty-state">
-            Informe um aluno para consultar o plano recomendado pelo backend.
-        </article>
     </section>
 
     <section id="notificacoes" class="content-section">

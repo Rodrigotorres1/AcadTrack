@@ -12,8 +12,11 @@ Esta pasta centraliza os artefatos da documentacao do AcadTrack.
 
 - `arquitetura_limpa.md`
 - `bdd.md`
+- `checklist_entrega2.md`
 - `ddd_niveis.md`
 - `descricao_do_dominio.md`
+- `padroes_entrega2.md`
+- `persistencia_orm_entrega2.md`
 - `validacoes.md` (catálogo); imagens PNG em [`validacoes/`](./validacoes/)
 - `funcionalidades.md`
 - `prototipos.md`

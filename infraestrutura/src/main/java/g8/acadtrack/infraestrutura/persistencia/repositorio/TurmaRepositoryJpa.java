@@ -52,4 +52,18 @@ public class TurmaRepositoryJpa implements TurmaRepository {
                         entity.getNome()
                 ));
     }
+
+    @Override
+    public boolean existeComNomeNormalizado(String nomeNormalizado) {
+        return repository.findAll()
+                .stream()
+                .map(TurmaJpaEntity::getNome)
+                .map(Turma::normalizarNome)
+                .anyMatch(nomeNormalizado::equals);
+    }
+
+    @Override
+    public void excluirPorId(Long id) {
+        repository.deleteById(id);
+    }
 }
