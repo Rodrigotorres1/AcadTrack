@@ -2,6 +2,7 @@ package g8.acadtrack.apresentacao.controller;
 
 import g8.acadtrack.aplicacao.notificacao.ListarNotificacoesResponsavelUseCase;
 import g8.acadtrack.aplicacao.responsavel.CriarResponsavelUseCase;
+import g8.acadtrack.aplicacao.responsavel.ExcluirResponsavelUseCase;
 import g8.acadtrack.aplicacao.responsavel.ListarResponsaveisUseCase;
 import g8.acadtrack.aplicacao.responsavel.ConsultarDesempenhoAlunoPorResponsavelUseCase;
 import g8.acadtrack.aplicacao.responsavel.ConsultarNotasAlunoPorResponsavelUseCase;
@@ -36,6 +37,7 @@ import java.util.List;
 public class ResponsavelController {
 
     private final CriarResponsavelUseCase criarResponsavelUseCase;
+    private final ExcluirResponsavelUseCase excluirResponsavelUseCase;
     private final ListarResponsaveisUseCase listarResponsaveisUseCase;
     private final ConsultarNotasAlunoPorResponsavelUseCase consultarNotasAlunoPorResponsavelUseCase;
     private final ConsultarSimuladosAlunoPorResponsavelUseCase consultarSimuladosAlunoPorResponsavelUseCase;
@@ -44,6 +46,7 @@ public class ResponsavelController {
 
     public ResponsavelController(
             CriarResponsavelUseCase criarResponsavelUseCase,
+            ExcluirResponsavelUseCase excluirResponsavelUseCase,
             ListarResponsaveisUseCase listarResponsaveisUseCase,
             ConsultarNotasAlunoPorResponsavelUseCase consultarNotasAlunoPorResponsavelUseCase,
             ConsultarSimuladosAlunoPorResponsavelUseCase consultarSimuladosAlunoPorResponsavelUseCase,
@@ -51,6 +54,7 @@ public class ResponsavelController {
             ListarNotificacoesResponsavelUseCase listarNotificacoesResponsavelUseCase
     ) {
         this.criarResponsavelUseCase = criarResponsavelUseCase;
+        this.excluirResponsavelUseCase = excluirResponsavelUseCase;
         this.listarResponsaveisUseCase = listarResponsaveisUseCase;
         this.consultarNotasAlunoPorResponsavelUseCase = consultarNotasAlunoPorResponsavelUseCase;
         this.consultarSimuladosAlunoPorResponsavelUseCase = consultarSimuladosAlunoPorResponsavelUseCase;
@@ -106,6 +110,19 @@ public class ResponsavelController {
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ResponsavelResponse.fromDomain(responsavel));
+    }
+
+    @Operation(summary = "Excluir responsavel definitivamente", description = "Remove o cadastro do responsavel e limpa vinculos existentes com alunos.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Responsavel excluido"),
+            @ApiResponse(responseCode = "404", description = "Responsavel nao encontrado",
+                    content = @Content(schema = @Schema(implementation = ErroApiResponse.class)))
+    })
+    @DeleteMapping("/{responsavelId}")
+    public ResponseEntity<Void> excluir(
+            @Parameter(description = "Identificador do responsavel") @PathVariable Long responsavelId) {
+        excluirResponsavelUseCase.executar(responsavelId);
+        return ResponseEntity.noContent().build();
     }
 
     @Operation(summary = "Listar notas do aluno (com validação responsável/aluno)")

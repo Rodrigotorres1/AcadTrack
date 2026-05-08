@@ -52,7 +52,7 @@ public class AlunoResponse {
                 aluno.getEmail(),
                 aluno.getTurmaId(),
                 aluno.getResponsavelId(),
-                "Ativo",
+                aluno.isAtivo() ? "Ativo" : "Inativo",
                 aluno.isVinculoResponsavelAtivo(),
                 aluno.isPermissaoVisualizarNotas(),
                 aluno.isPermissaoVisualizarSimulados(),

@@ -7,7 +7,7 @@ import g8.acadtrack.dominiocompartilhado.excecao.EntidadeNaoEncontradaException;
 import org.springframework.stereotype.Service;
 
 @Service
-public class ValidarAcessoResponsavelAlunoUseCase {
+public class ValidarAcessoResponsavelAlunoUseCase implements AcessoResponsavelAlunoProxy {
 
     private final AlunoRepository alunoRepository;
 
@@ -15,6 +15,7 @@ public class ValidarAcessoResponsavelAlunoUseCase {
         this.alunoRepository = alunoRepository;
     }
 
+    @Override
     public Aluno executar(Long alunoId, Long responsavelId, PermissaoResponsavel permissaoResponsavel) {
         Aluno aluno = alunoRepository.buscarPorId(alunoId)
                 .orElseThrow(() -> new EntidadeNaoEncontradaException("Aluno não encontrado"));

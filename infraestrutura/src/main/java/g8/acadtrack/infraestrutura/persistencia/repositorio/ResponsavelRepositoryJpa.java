@@ -56,4 +56,9 @@ public class ResponsavelRepositoryJpa implements ResponsavelRepository {
                         entity.getEmail()
                 ));
     }
+
+    @Override
+    public void excluirPorId(Long id) {
+        repository.deleteById(id);
+    }
 }

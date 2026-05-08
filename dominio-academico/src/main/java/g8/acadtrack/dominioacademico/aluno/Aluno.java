@@ -11,6 +11,7 @@ public class Aluno {
     private boolean permissaoVisualizarNotas;
     private boolean permissaoVisualizarSimulados;
     private boolean permissaoVisualizarDesempenho;
+    private boolean ativo;
     private double mediaAtual;
     private SituacaoAcademica situacaoAcademica;
 
@@ -69,6 +70,36 @@ public class Aluno {
             double mediaAtual,
             SituacaoAcademica situacaoAcademica
     ) {
+        this(
+                id,
+                nome,
+                email,
+                turmaId,
+                responsavelId,
+                vinculoResponsavelAtivo,
+                permissaoVisualizarNotas,
+                permissaoVisualizarSimulados,
+                permissaoVisualizarDesempenho,
+                true,
+                mediaAtual,
+                situacaoAcademica
+        );
+    }
+
+    public Aluno(
+            Long id,
+            String nome,
+            String email,
+            Long turmaId,
+            Long responsavelId,
+            boolean vinculoResponsavelAtivo,
+            boolean permissaoVisualizarNotas,
+            boolean permissaoVisualizarSimulados,
+            boolean permissaoVisualizarDesempenho,
+            boolean ativo,
+            double mediaAtual,
+            SituacaoAcademica situacaoAcademica
+    ) {
         if (nome == null || nome.isBlank()) {
             throw new IllegalArgumentException("Nome do aluno é obrigatório");
         }
@@ -81,6 +112,7 @@ public class Aluno {
         this.permissaoVisualizarNotas = permissaoVisualizarNotas;
         this.permissaoVisualizarSimulados = permissaoVisualizarSimulados;
         this.permissaoVisualizarDesempenho = permissaoVisualizarDesempenho;
+        this.ativo = ativo;
         this.mediaAtual = mediaAtual;
         this.situacaoAcademica = situacaoAcademica == null ? SituacaoAcademica.REPROVADO : situacaoAcademica;
     }
@@ -91,6 +123,13 @@ public class Aluno {
         }
         if (this.turmaId != null) {
             throw new IllegalStateException("O aluno já está vinculado a uma turma");
+        }
+        this.turmaId = turmaId;
+    }
+
+    public void substituirTurma(Long turmaId) {
+        if (turmaId == null) {
+            throw new IllegalArgumentException("Turma é obrigatória");
         }
         this.turmaId = turmaId;
     }
@@ -134,6 +173,14 @@ public class Aluno {
         this.permissaoVisualizarDesempenho = false;
     }
 
+    public void removerResponsavel() {
+        this.responsavelId = null;
+        this.vinculoResponsavelAtivo = false;
+        this.permissaoVisualizarNotas = false;
+        this.permissaoVisualizarSimulados = false;
+        this.permissaoVisualizarDesempenho = false;
+    }
+
     public void validarAcessoResponsavel(Long responsavelId, PermissaoResponsavel permissao) {
         if (responsavelId == null || this.responsavelId == null || !this.responsavelId.equals(responsavelId) || !this.vinculoResponsavelAtivo) {
             throw new IllegalStateException("Responsável sem vínculo ativo com o aluno");
@@ -153,6 +200,14 @@ public class Aluno {
     public void atualizarDesempenhoAcademico(double mediaAtual, SituacaoAcademica situacaoAcademica) {
         this.mediaAtual = mediaAtual;
         this.situacaoAcademica = situacaoAcademica == null ? SituacaoAcademica.REPROVADO : situacaoAcademica;
+    }
+
+    public void inativar() {
+        this.ativo = false;
+    }
+
+    public void ativar() {
+        this.ativo = true;
     }
 
     public Long getId() {
@@ -189,6 +244,10 @@ public class Aluno {
 
     public boolean isPermissaoVisualizarDesempenho() {
         return permissaoVisualizarDesempenho;
+    }
+
+    public boolean isAtivo() {
+        return ativo;
     }
 
     public double getMediaAtual() {

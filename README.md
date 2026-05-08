@@ -39,7 +39,7 @@ Ele apoia decisões acadêmicas com base em fluxos reais de avaliação, acesso 
 - **Resumo dos bounded contexts:** [`docs/cml/bounded_contexts.md`](docs/cml/bounded_contexts.md)
 - **Níveis DDD** (preliminar → operacional): [`docs/ddd_niveis.md`](docs/ddd_niveis.md)
 
-- Relatório da entrega 1: [Google Docs — Relatorio AcadTrack Entrega1](https://docs.google.com/document/d/1cM4kKdVW_yvDcdhpTa-CGE4ilq1bWi1Up5M02WKOrrg/edit?usp=sharing)
+- Documento da entrega 1: [Google Docs — AcadTrack Entrega1](https://docs.google.com/document/d/1cM4kKdVW_yvDcdhpTa-CGE4ilq1bWi1Up5M02WKOrrg/edit?usp=sharing)
 - Protótipo: [Abrir Figma](https://stew-skip-70401626.figma.site)
 - Slides da apresentação: [Abrir slides no Gamma](https://gamma.app/docs/AcadTrack-fbl5e19j5zy2rvi?mode=doc)
 - Story map: [Abrir story map no Avion](https://sistema-acadtrack.avion.io/share/8rNKdtSMQmCNdr3u3)
@@ -67,7 +67,7 @@ O objetivo desta etapa é comprovar coerência entre domínio, regras de negóci
 
 O AcadTrack modela o contexto acadêmico envolvendo:
 
-- alunos, responsáveis, professores e turmas;
+- alunos, responsáveis e turmas;
 - disciplinas e simulados;
 - notas por aluno/simulado/disciplina;
 - análise consolidada de desempenho e risco;
@@ -113,6 +113,32 @@ Implementar um sistema acadêmico com funcionalidades de média/alta complexidad
    - valida composição e consistência do simulado antes da persistência.
 6. **Fluxo de retificação de nota com análise e decisão**
    - conduz solicitação, análise e decisão com efeito no desempenho do aluno.
+
+---
+
+## Entrega 2: consolidação técnica
+
+A segunda entrega prioriza a evolução das funcionalidades existentes, com persistência ORM/JPA, camada web, integração frontend/backend, BDD/Cucumber, arquitetura limpa e padrões de projeto aplicados de forma natural.
+
+- Plano de estudo por desempenho: excluído do produto.
+- Relatório acadêmico com filtros: excluído como funcionalidade principal.
+- Notificação automática: mantida como evolução de lançamento de notas e análise de desempenho.
+- Ranking acadêmico: mantido como apoio da análise, com Iterator para percorrer coleções ordenadas sem expor a estrutura interna.
+
+Padrões consolidados:
+
+- Observer: notificações automáticas após mudanças de nota, situação, risco e destaque no Top 10.
+- Iterator: ranking acadêmico ordenado por média, desempenho ou risco.
+- Template Method: fluxo padronizado da análise acadêmica.
+- Decorator: cadeia de validações no lançamento de notas.
+- Proxy: intermediação de acesso do responsável aos dados do aluno por permissões.
+- Strategy: classificação de risco acadêmico por critérios independentes.
+
+Documentos de apoio da Entrega 2:
+
+- Checklist técnico: [`docs/checklist_entrega2.md`](docs/checklist_entrega2.md)
+- Padrões de projeto: [`docs/padroes_entrega2.md`](docs/padroes_entrega2.md)
+- Persistência ORM/JPA: [`docs/persistencia_orm_entrega2.md`](docs/persistencia_orm_entrega2.md)
 
 ---
 
@@ -163,7 +189,6 @@ Em outras palavras, itens como "calcular média" ou "criar aluno" não são apre
 **Fluxo acadêmico básico**
 
 - criar aluno;
-- criar professor;
 - criar turma;
 - vincular aluno à turma;
 - criar/ativar/inativar disciplina.
@@ -355,7 +380,7 @@ Abre o Swagger na secção **API e Swagger** abaixo. Se usaste **`run-backend.ps
 
 Os testes de comportamento estão centralizados em `bdd/acadtrackbdd` com cenários Gherkin.
 
-- Total atual: **~39 cenários** automatizados;
+- Suite BDD automatizada com cenários principais e de apoio;
 - Cobertura de fluxos positivos e negativos;
 - Validação de regras de negócio e contratos comportamentais do sistema.
 
@@ -379,7 +404,6 @@ Funcionalidades principais (oficiais da entrega):
 Cenários complementares/legados de apoio ao domínio (mantidos no projeto):
 
 - `extra/calcular_media_ponderada.feature`
-- `extra/definir_peso_disciplina.feature`
 - `extra/gerar_ranking.feature`
 - `extra/vincular_aluno_turma.feature`
 
@@ -387,7 +411,7 @@ Cenários complementares/legados de apoio ao domínio (mantidos no projeto):
 
 ## ✅ Estado atual da entrega
 
-- 39 cenários BDD passando.
+- Cenários BDD passando via `.\mvnw.cmd test`.
 - Funcionalidades principais organizadas em fluxos completos.
 
 ---

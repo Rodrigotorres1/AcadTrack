@@ -1,7 +1,9 @@
 package g8.acadtrack.apresentacao.controller;
 
 import g8.acadtrack.aplicacao.retificacao.AprovarRetificacaoUseCase;
+import g8.acadtrack.aplicacao.retificacao.DetalharRetificacaoUseCase;
 import g8.acadtrack.aplicacao.retificacao.IniciarAnaliseRetificacaoUseCase;
+import g8.acadtrack.aplicacao.retificacao.ListarRetificacoesUseCase;
 import g8.acadtrack.aplicacao.retificacao.ReprovarRetificacaoUseCase;
 import g8.acadtrack.aplicacao.retificacao.SolicitarRetificacaoUseCase;
 import g8.acadtrack.apresentacao.dto.request.AprovarRetificacaoRequest;
@@ -22,26 +24,63 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @Tag(name = "Retificações", description = "Workflow de solicitação, análise, aprovação e reprovação de notas.")
 @RestController
 @RequestMapping("/retificacoes")
 public class RetificacaoController {
 
+    private final ListarRetificacoesUseCase listarRetificacoesUseCase;
+    private final DetalharRetificacaoUseCase detalharRetificacaoUseCase;
     private final SolicitarRetificacaoUseCase solicitarRetificacaoUseCase;
     private final IniciarAnaliseRetificacaoUseCase iniciarAnaliseRetificacaoUseCase;
     private final AprovarRetificacaoUseCase aprovarRetificacaoUseCase;
     private final ReprovarRetificacaoUseCase reprovarRetificacaoUseCase;
 
     public RetificacaoController(
+            ListarRetificacoesUseCase listarRetificacoesUseCase,
+            DetalharRetificacaoUseCase detalharRetificacaoUseCase,
             SolicitarRetificacaoUseCase solicitarRetificacaoUseCase,
             IniciarAnaliseRetificacaoUseCase iniciarAnaliseRetificacaoUseCase,
             AprovarRetificacaoUseCase aprovarRetificacaoUseCase,
             ReprovarRetificacaoUseCase reprovarRetificacaoUseCase
     ) {
+        this.listarRetificacoesUseCase = listarRetificacoesUseCase;
+        this.detalharRetificacaoUseCase = detalharRetificacaoUseCase;
         this.solicitarRetificacaoUseCase = solicitarRetificacaoUseCase;
         this.iniciarAnaliseRetificacaoUseCase = iniciarAnaliseRetificacaoUseCase;
         this.aprovarRetificacaoUseCase = aprovarRetificacaoUseCase;
         this.reprovarRetificacaoUseCase = reprovarRetificacaoUseCase;
+    }
+
+    @Operation(summary = "Listar solicitações de retificação")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Lista pode ser vazia")
+    })
+    @GetMapping
+    public ResponseEntity<List<SolicitacaoRetificacaoResponse>> listar() {
+        return ResponseEntity.ok(
+                listarRetificacoesUseCase.executar()
+                        .stream()
+                        .map(SolicitacaoRetificacaoResponse::fromApplication)
+                        .toList()
+        );
+    }
+
+    @Operation(summary = "Buscar detalhes da solicitação de retificação")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Solicitação encontrada",
+                    content = @Content(schema = @Schema(implementation = SolicitacaoRetificacaoResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Solicitação não encontrada",
+                    content = @Content(schema = @Schema(implementation = ErroApiResponse.class)))
+    })
+    @GetMapping("/{solicitacaoId}")
+    public ResponseEntity<SolicitacaoRetificacaoResponse> detalhar(
+            @Parameter(description = "Identificador da solicitação") @PathVariable Long solicitacaoId) {
+        return ResponseEntity.ok(
+                SolicitacaoRetificacaoResponse.fromApplication(detalharRetificacaoUseCase.executar(solicitacaoId))
+        );
     }
 
     @Operation(summary = "Registrar solicitação de retificação de nota")

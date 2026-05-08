@@ -32,6 +32,7 @@ public class AlunoRepositoryJpa implements AlunoRepository {
                 aluno.isPermissaoVisualizarNotas(),
                 aluno.isPermissaoVisualizarSimulados(),
                 aluno.isPermissaoVisualizarDesempenho(),
+                aluno.isAtivo(),
                 aluno.getMediaAtual(),
                 aluno.getSituacaoAcademica().name()
         );
@@ -48,6 +49,7 @@ public class AlunoRepositoryJpa implements AlunoRepository {
                 salvo.isPermissaoVisualizarNotas(),
                 salvo.isPermissaoVisualizarSimulados(),
                 salvo.isPermissaoVisualizarDesempenho(),
+                salvo.isAtivo(),
                 salvo.getMediaAtual(),
                 mapearSituacaoAcademica(salvo.getSituacaoAcademica())
         );
@@ -75,6 +77,7 @@ public class AlunoRepositoryJpa implements AlunoRepository {
                         entity.isPermissaoVisualizarNotas(),
                         entity.isPermissaoVisualizarSimulados(),
                         entity.isPermissaoVisualizarDesempenho(),
+                        entity.isAtivo(),
                         entity.getMediaAtual(),
                         mapearSituacaoAcademica(entity.getSituacaoAcademica())
                 ));
@@ -94,6 +97,7 @@ public class AlunoRepositoryJpa implements AlunoRepository {
                         entity.isPermissaoVisualizarNotas(),
                         entity.isPermissaoVisualizarSimulados(),
                         entity.isPermissaoVisualizarDesempenho(),
+                        entity.isAtivo(),
                         entity.getMediaAtual(),
                         mapearSituacaoAcademica(entity.getSituacaoAcademica())
                 ))

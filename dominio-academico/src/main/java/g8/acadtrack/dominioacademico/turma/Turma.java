@@ -1,5 +1,7 @@
 package g8.acadtrack.dominioacademico.turma;
 
+import java.util.Locale;
+
 public class Turma {
 
     private Long id;
@@ -11,7 +13,15 @@ public class Turma {
         }
 
         this.id = id;
-        this.nome = nome;
+        this.nome = nome.trim();
+    }
+
+    public static String normalizarNome(String nome) {
+        return String.valueOf(nome)
+                .trim()
+                .toLowerCase(Locale.ROOT)
+                .replace("°", "º")
+                .replaceAll("\\s+", "");
     }
 
     public Long getId() {
@@ -20,5 +30,9 @@ public class Turma {
 
     public String getNome() {
         return nome;
+    }
+
+    public String getNomeNormalizado() {
+        return normalizarNome(nome);
     }
 }

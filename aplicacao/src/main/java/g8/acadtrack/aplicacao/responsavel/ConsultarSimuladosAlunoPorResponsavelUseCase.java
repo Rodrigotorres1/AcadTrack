@@ -10,19 +10,19 @@ import java.util.List;
 @Service
 public class ConsultarSimuladosAlunoPorResponsavelUseCase {
 
-    private final ValidarAcessoResponsavelAlunoUseCase validarAcessoResponsavelAlunoUseCase;
+    private final AcessoResponsavelAlunoProxy acessoResponsavelAlunoProxy;
     private final BuscarNotasPorAlunoUseCase buscarNotasPorAlunoUseCase;
 
     public ConsultarSimuladosAlunoPorResponsavelUseCase(
-            ValidarAcessoResponsavelAlunoUseCase validarAcessoResponsavelAlunoUseCase,
+            AcessoResponsavelAlunoProxy acessoResponsavelAlunoProxy,
             BuscarNotasPorAlunoUseCase buscarNotasPorAlunoUseCase
     ) {
-        this.validarAcessoResponsavelAlunoUseCase = validarAcessoResponsavelAlunoUseCase;
+        this.acessoResponsavelAlunoProxy = acessoResponsavelAlunoProxy;
         this.buscarNotasPorAlunoUseCase = buscarNotasPorAlunoUseCase;
     }
 
     public List<Long> executar(Long responsavelId, Long alunoId) {
-        validarAcessoResponsavelAlunoUseCase.executar(alunoId, responsavelId, PermissaoResponsavel.VISUALIZAR_SIMULADOS);
+        acessoResponsavelAlunoProxy.executar(alunoId, responsavelId, PermissaoResponsavel.VISUALIZAR_SIMULADOS);
         return buscarNotasPorAlunoUseCase.executar(alunoId)
                 .stream()
                 .map(Nota::getSimuladoId)

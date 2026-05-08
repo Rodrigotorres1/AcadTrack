@@ -10,4 +10,6 @@ public interface ResponsavelRepository {
     List<Responsavel> buscarTodos();
 
     Optional<Responsavel> buscarPorId(Long id);
+
+    void excluirPorId(Long id);
 }

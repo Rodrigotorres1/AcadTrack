@@ -4,7 +4,11 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "responsavel")
@@ -16,6 +20,9 @@ public class ResponsavelJpaEntity {
 
     private String nome;
     private String email;
+
+    @OneToMany(mappedBy = "responsavel")
+    private List<AlunoJpaEntity> alunos = new ArrayList<>();
 
     public ResponsavelJpaEntity() {
     }

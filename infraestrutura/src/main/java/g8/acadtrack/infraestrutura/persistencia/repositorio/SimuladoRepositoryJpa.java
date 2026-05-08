@@ -6,6 +6,7 @@ import g8.acadtrack.infraestrutura.persistencia.entidade.SimuladoJpaEntity;
 import g8.acadtrack.infraestrutura.persistencia.springdata.SimuladoSpringDataRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -31,6 +32,17 @@ public class SimuladoRepositoryJpa implements SimuladoRepository {
                 salvo.getId(),
                 salvo.getDescricao()
         );
+    }
+
+    @Override
+    public List<Simulado> buscarTodos() {
+        return repository.findAll()
+                .stream()
+                .map(entity -> new Simulado(
+                        entity.getId(),
+                        entity.getDescricao()
+                ))
+                .toList();
     }
 
     @Override

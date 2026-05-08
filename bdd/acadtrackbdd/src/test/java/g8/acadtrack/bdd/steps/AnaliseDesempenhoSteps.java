@@ -99,6 +99,21 @@ public class AnaliseDesempenhoSteps {
         prepararAluno(nomeAluno);
     }
 
+    @Dado("que o aluno {string} possui concorrentes no ranking academico")
+    public void queOAlunoPossuiConcorrentesNoRankingAcademico(String nomeAluno) {
+        prepararAluno(nomeAluno);
+
+        Disciplina disciplina = criarDisciplinaUseCase.executar("Ranking disciplina " + nomeAluno);
+        var simulado = criarSimuladoUseCase.executar("Simulado ranking " + nomeAluno, List.of(disciplina.getId()));
+
+        Aluno primeiroLugar = criarAlunoUseCase.executar("Primeiro Ranking " + nomeAluno, "primeiro." + emailSeguro(nomeAluno));
+        Aluno terceiroLugar = criarAlunoUseCase.executar("Terceiro Ranking " + nomeAluno, "terceiro." + emailSeguro(nomeAluno));
+
+        lancarNotaUseCase.executar(primeiroLugar.getId(), simulado.getId(), disciplina.getId(), 9.5);
+        lancarNotaUseCase.executar(aluno.getId(), simulado.getId(), disciplina.getId(), 8.0);
+        lancarNotaUseCase.executar(terceiroLugar.getId(), simulado.getId(), disciplina.getId(), 6.5);
+    }
+
     @Quando("o sistema gerar a análise consolidada de desempenho do aluno")
     public void oSistemaGerarAAnaliseConsolidadaDeDesempenhoDoAluno() {
         try {
@@ -127,6 +142,20 @@ public class AnaliseDesempenhoSteps {
         assertEquals(nivelEsperado, analise.nivelRisco());
     }
 
+    @Então("a análise deve informar posicao academica {string}")
+    public void aAnaliseDeveInformarPosicaoAcademica(String posicaoEsperada) {
+        assertTrue(context.isOperacaoExecutada());
+        assertNotNull(analise);
+        assertEquals(Integer.valueOf(posicaoEsperada), analise.posicaoRanking());
+    }
+
+    @Então("a análise deve indicar aluno no Top 10 {string}")
+    public void aAnaliseDeveIndicarAlunoNoTop10(String top10Esperado) {
+        assertTrue(context.isOperacaoExecutada());
+        assertNotNull(analise);
+        assertEquals(Boolean.parseBoolean(top10Esperado), analise.alunoNoTop10());
+    }
+
     @Então("o sistema informa que o aluno está sem notas para análise")
     public void oSistemaInformaQueOAlunoEstaSemNotasParaAnalise() {
         assertFalse(context.isOperacaoExecutada());
@@ -138,6 +167,10 @@ public class AnaliseDesempenhoSteps {
         context.resetMensagens();
         excecao = null;
         analise = null;
-        aluno = criarAlunoUseCase.executar(nomeAluno, nomeAluno.toLowerCase().replace(" ", ".") + "@email.com");
+        aluno = criarAlunoUseCase.executar(nomeAluno, emailSeguro(nomeAluno));
+    }
+
+    private String emailSeguro(String nomeAluno) {
+        return nomeAluno.toLowerCase().replace(" ", ".") + "@email.com";
     }
 }

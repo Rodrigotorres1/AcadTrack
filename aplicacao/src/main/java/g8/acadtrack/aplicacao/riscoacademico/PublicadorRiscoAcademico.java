@@ -19,14 +19,20 @@ public class PublicadorRiscoAcademico {
     }
 
     public void publicarSeRiscoNotificavel(AnaliseDesempenhoAcademicoResultado analise) {
-        if (!"ALTO".equals(analise.nivelRisco()) && !"MODERADO".equals(analise.nivelRisco())) {
+        boolean riscoNotificavel = "ALTO".equals(analise.nivelRisco()) || "MODERADO".equals(analise.nivelRisco());
+        boolean destaqueRanking = analise.alunoNoTop10();
+
+        if (!riscoNotificavel && !destaqueRanking) {
             return;
         }
 
         publicar(new RiscoAcademicoEvent(
                 analise.alunoId(),
                 analise.mediaGeral(),
-                analise.nivelRisco()
+                analise.nivelRisco(),
+                analise.situacaoAcademica(),
+                analise.posicaoRanking(),
+                analise.alunoNoTop10()
         ));
     }
 }

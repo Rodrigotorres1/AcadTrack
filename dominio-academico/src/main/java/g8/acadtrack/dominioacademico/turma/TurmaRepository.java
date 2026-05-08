@@ -10,4 +10,8 @@ public interface TurmaRepository {
     List<Turma> buscarTodos();
 
     Optional<Turma> buscarPorId(Long id);
+
+    boolean existeComNomeNormalizado(String nomeNormalizado);
+
+    void excluirPorId(Long id);
 }

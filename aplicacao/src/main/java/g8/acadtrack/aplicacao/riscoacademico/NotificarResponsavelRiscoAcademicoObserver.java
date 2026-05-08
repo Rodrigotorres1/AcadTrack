@@ -53,6 +53,18 @@ public class NotificarResponsavelRiscoAcademicoObserver implements ObservadorRis
     }
 
     private String montarMensagem(RiscoAcademicoEvent event) {
+        if ("BAIXO".equals(event.nivelRisco()) && event.alunoNoTop10()) {
+            return "Parabens! Aluno " + event.alunoId()
+                    + " entrou no Top 10 academico na posicao " + event.posicaoRanking()
+                    + " com media geral " + event.mediaGeral() + ".";
+        }
+
+        if ("RECUPERACAO".equals(event.situacaoAcademica())) {
+            return "Aluno " + event.alunoId()
+                    + " ficou em recuperacao, com risco academico " + event.nivelRisco()
+                    + " e media geral " + event.mediaGeral() + ".";
+        }
+
         return "Aluno " + event.alunoId()
                 + " apresentou risco academico " + event.nivelRisco()
                 + " com media geral " + event.mediaGeral() + ".";

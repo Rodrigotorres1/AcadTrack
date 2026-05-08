@@ -1,6 +1,6 @@
 # Funcionalidades e Regras de Negocio
 
-> **Medidas no sistema:** ao **lancar** ou **aprovar retificacao**, o cadastro do aluno usa **media global simples** e **situacao academica**. Consultas de **media ponderada**, **ranking** e parte da **analise por simulado** usam pesos da composicao — ver [`descricao_do_dominio.md`](descricao_do_dominio.md) (secao *Medidas de desempenho*) e [`README.md`](../README.md).
+> **Medidas no sistema:** ao **lancar** ou **aprovar retificacao**, o cadastro do aluno usa **media global simples** e **situacao academica**. Consultas por simulado, ranking e parte da analise usam a composicao do simulado com peso padrao interno, sem tela ou endpoint para definicao manual de peso.
 
 ## 1. Lancar nota
 
@@ -17,36 +17,52 @@ Nao se trata apenas de salvar um numero no banco. O sistema aplica validacao sob
 
 ---
 
-## 2. Calcular media ponderada
+## 2. Calcular media por simulado
 
 **Regra de negocio:**
-Para um **simulado concreto**, a media do aluno combina as notas obtidas com os **pesos** definidos para cada disciplina **naquele** simulado (nao substitui por si so a media global simples usada na situacao registrada no cadastro).
+Para um **simulado concreto**, a media do aluno combina as notas obtidas nas disciplinas que compoem aquele simulado. Atualmente cada disciplina entra com peso padrao interno 1.0, pois a definicao manual de peso foi removida do escopo da entrega.
 
 **Por que nao e CRUD:**
-Essa funcionalidade exige processamento de dados, combinacao entre notas e pesos e aplicacao de formula de calculo, nao sendo apenas cadastro ou leitura de dados.
+Essa funcionalidade exige processamento de dados, combinacao entre notas e composicao do simulado e aplicacao de formula de calculo, nao sendo apenas cadastro ou leitura de dados.
 
 **Validacoes:**
 - O aluno deve possuir notas vinculadas ao simulado
-- As disciplinas do simulado devem possuir pesos definidos
-- Se nao houver pesos validos, a media nao pode ser calculada corretamente
+- As disciplinas devem pertencer a composicao do simulado
+- Se nao houver composicao valida, a media por simulado nao pode ser calculada corretamente
 
 ---
 
-## 3. Gerar ranking
+## 3. Ranking academico como apoio da analise
 
 **Regra de negocio:**
-Os alunos sao ordenados com base no desempenho obtido no simulado, utilizando a media ponderada como criterio principal.
+Os alunos sao ordenados para apoiar a analise academica. O ranking por simulado usa media por simulado; o ranking academico geral usa a media global persistida no aluno.
 
 **Por que nao e CRUD:**
-Essa funcionalidade exige calculo, comparacao e ordenacao dos alunos, produzindo uma classificacao baseada em regra de negocio.
+Essa funcionalidade exige calculo, comparacao e ordenacao dos alunos. Na Entrega 2 ela nao e tratada como funcionalidade principal separada, mas como apoio da analise de desempenho e como aplicacao do padrao Iterator.
 
 **Validacoes:**
 - Apenas alunos com notas validas participam do ranking
-- A ordenacao deve ocorrer do maior para o menor desempenho
+- A ordenacao pode considerar media, desempenho ou risco academico
+- A colecao ordenada e percorrida por Iterator na camada de aplicacao
 
 ---
 
-## 4. Solicitar retificacao de nota
+## 4. Notificar responsavel sobre desempenho academico
+
+**Regra de negocio:**
+Depois de lancamento de nota ou aprovacao de retificacao, o sistema recalcula media, situacao e risco. Se houver risco academico, recuperacao ou destaque no Top 10, o responsavel vinculado recebe notificacao automatica.
+
+**Por que nao e CRUD:**
+A notificacao e uma consequencia de eventos de desempenho e usa Observer. Ela nao e uma funcionalidade independente: evolui os fluxos de notas e analise academica.
+
+**Validacoes:**
+- O aluno precisa ter responsavel vinculado e vinculo ativo
+- O responsavel precisa receber a mensagem persistida
+- A notificacao deve refletir risco, recuperacao ou destaque no ranking
+
+---
+
+## 5. Solicitar retificacao de nota
 
 **Regra de negocio:**
 O aluno pode solicitar a revisao de uma nota lancada, desde que informe uma justificativa para o pedido.
@@ -58,21 +74,6 @@ Alem de criar o registro, o sistema define automaticamente o estado inicial da s
 - A nota informada deve existir
 - A justificativa e obrigatoria
 - A solicitacao e criada com status inicial `PENDENTE`
-
----
-
-## 5. Definir peso de disciplina no simulado
-
-**Regra de negocio:**
-Cada disciplina associada a um simulado pode receber um peso especifico, que sera usado no calculo da media ponderada.
-
-**Por que nao e CRUD:**
-Nao e apenas associar uma disciplina ao simulado. O sistema precisa garantir que o peso informado seja valido e coerente com a regra do calculo posterior.
-
-**Validacoes:**
-- O peso deve ser maior que zero
-- A disciplina deve estar vinculada ao simulado
-- O peso sera considerado nos calculos de desempenho
 
 ---
 

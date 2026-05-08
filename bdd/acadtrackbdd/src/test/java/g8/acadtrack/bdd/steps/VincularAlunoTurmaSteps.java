@@ -19,6 +19,7 @@ public class VincularAlunoTurmaSteps {
 
     private Aluno aluno;
     private Turma turma;
+    private Exception erroTurma;
 
     public VincularAlunoTurmaSteps(
             TestContext context,
@@ -66,5 +67,29 @@ public class VincularAlunoTurmaSteps {
     public void entaoErro() {
         assertFalse(context.isOperacaoExecutada());
         assertEquals("O aluno já está vinculado a uma turma", context.getMensagem());
+    }
+    @Dado("que já existe uma turma chamada {string}")
+    public void dadoQueJaExisteUmaTurmaChamada(String nomeTurma) {
+        turma = criarTurmaUseCase.executar(nomeTurma);
+        erroTurma = null;
+    }
+
+    @Quando("o coordenador tenta criar outra turma chamada {string}")
+    public void quandoTentaCriarOutraTurmaChamada(String nomeTurma) {
+        try {
+            criarTurmaUseCase.executar(nomeTurma);
+            context.setOperacaoExecutada(true);
+        } catch (Exception e) {
+            erroTurma = e;
+            context.setMensagem(e.getMessage());
+            context.setOperacaoExecutada(false);
+        }
+    }
+
+    @Então("o sistema informa que a turma já está cadastrada")
+    public void entaoSistemaInformaTurmaJaCadastrada() {
+        assertNotNull(erroTurma);
+        assertFalse(context.isOperacaoExecutada());
+        assertEquals("Ja existe uma turma cadastrada com esse nome.", context.getMensagem());
     }
 }

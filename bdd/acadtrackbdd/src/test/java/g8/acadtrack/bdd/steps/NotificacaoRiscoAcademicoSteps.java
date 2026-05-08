@@ -172,11 +172,16 @@ public class NotificacaoRiscoAcademicoSteps {
         assertEquals(status, notificacaoEncontrada.getStatus().name());
     }
 
-    @Entao("o responsavel nao deve receber notificacao de risco academico")
-    public void oResponsavelNaoDeveReceberNotificacaoDeRiscoAcademico() {
+    @Entao("o responsavel deve receber notificacao de destaque no ranking academico")
+    public void oResponsavelDeveReceberNotificacaoDeDestaqueNoRankingAcademico() {
         assertTrue(context.isOperacaoExecutada());
         notificacoes = listarNotificacoesResponsavelUseCase.executar(responsavel.getId());
-        assertTrue(notificacoes.isEmpty());
+        notificacaoEncontrada = notificacoes.stream()
+                .filter(notificacao -> "BAIXO".equals(notificacao.getNivelRisco()))
+                .filter(notificacao -> notificacao.getMensagem().contains("Top 10"))
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("Notificacao de destaque no ranking nao encontrada"));
+        assertEquals(aluno.getId(), notificacaoEncontrada.getAlunoId());
     }
 
     @Entao("o lancamento de notas em risco academico deve ser concluido sem falha")

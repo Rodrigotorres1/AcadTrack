@@ -13,7 +13,13 @@ public record AnaliseDesempenhoResponse(
         boolean riscoAcademico,
         String nivelRisco,
         String alerta,
-        List<MediaSimuladoResponse> historicoSimulados
+        String situacaoAcademica,
+        Integer posicaoRanking,
+        int totalAlunosRanking,
+        boolean alunoNoTop10,
+        String mensagemRanking,
+        List<MediaSimuladoResponse> historicoSimulados,
+        List<MediaDisciplinaResponse> notasPorDisciplina
 ) {
     public static AnaliseDesempenhoResponse fromApplication(AnaliseDesempenhoAcademicoResultado resultado) {
         return new AnaliseDesempenhoResponse(
@@ -25,22 +31,52 @@ public record AnaliseDesempenhoResponse(
                 resultado.riscoAcademico(),
                 resultado.nivelRisco(),
                 resultado.alerta(),
+                resultado.situacaoAcademica(),
+                resultado.posicaoRanking(),
+                resultado.totalAlunosRanking(),
+                resultado.alunoNoTop10(),
+                resultado.mensagemRanking(),
                 resultado.historicoSimulados().stream()
                         .map(MediaSimuladoResponse::fromApplication)
+                        .toList(),
+                resultado.notasPorDisciplina().stream()
+                        .map(MediaDisciplinaResponse::fromApplication)
                         .toList()
         );
     }
 
     public record MediaSimuladoResponse(
             Long simuladoId,
+            String nomeSimulado,
+            int quantidadeNotas,
             double mediaPonderada,
             boolean baixoDesempenho
     ) {
         public static MediaSimuladoResponse fromApplication(AnaliseDesempenhoAcademicoResultado.MediaSimulado media) {
             return new MediaSimuladoResponse(
                     media.simuladoId(),
+                    media.nomeSimulado(),
+                    media.quantidadeNotas(),
                     media.mediaPonderada(),
                     media.baixoDesempenho()
+            );
+        }
+    }
+
+    public record MediaDisciplinaResponse(
+            Long disciplinaId,
+            String nomeDisciplina,
+            double media,
+            String status,
+            String nivelRisco
+    ) {
+        public static MediaDisciplinaResponse fromApplication(AnaliseDesempenhoAcademicoResultado.MediaDisciplina media) {
+            return new MediaDisciplinaResponse(
+                    media.disciplinaId(),
+                    media.nomeDisciplina(),
+                    media.media(),
+                    media.status(),
+                    media.nivelRisco()
             );
         }
     }

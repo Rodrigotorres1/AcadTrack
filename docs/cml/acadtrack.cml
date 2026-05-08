@@ -50,7 +50,7 @@ BoundedContext GestaoAcademicaContext implements GestaoAcademica {
 
   Entity DisciplinaSimulado {
     Long disciplinaId
-    double peso
+    double pesoPadrao
   }
 
   Service GestaoAcademicaService {
@@ -59,7 +59,6 @@ BoundedContext GestaoAcademicaContext implements GestaoAcademica {
     void ativarDisciplina(Long disciplinaId)
     void vincularAlunoATurma(Aluno aluno, Turma turma)
     void criarSimuladoComDisciplinas(Simulado simulado)
-    void definirPesoEDisciplinaNoSimulado(Simulado simulado)
     void finalizarSimulado(Simulado simulado)
   }
 
@@ -133,15 +132,6 @@ BoundedContext AvaliacaoDesempenhoContext implements AvaliacaoDesempenho {
 
 BoundedContext UsuariosContext implements Usuarios {
 
-  Aggregate Professor {
-    Entity Professor
-    aggregateRoot
-
-    Long id
-    String nome
-    String email
-  }
-
   Aggregate Responsavel {
     Entity Responsavel
     aggregateRoot
@@ -158,11 +148,6 @@ BoundedContext UsuariosContext implements Usuarios {
   Service UsuariosService {
     void vincularResponsavel(Long alunoId, Responsavel responsavel)
     void desvincularResponsavel(Long alunoId, Responsavel responsavel)
-  }
-
-  Repository ProfessorRepository {
-    Professor findById(Long id)
-    List<Professor> findAll()
   }
 
   Repository ResponsavelRepository {
