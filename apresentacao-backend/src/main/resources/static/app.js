@@ -5,6 +5,8 @@
     alunos: [],
     turmas: [],
     disciplinas: [],
+    disciplinaNomePorId: {},
+    simuladoDescricaoPorId: {},
     notaAlunos: [],
     notaSimulados: [],
     notaDisciplinas: [],
@@ -1394,11 +1396,11 @@ function renderStudentNotesList(notas) {
         return;
     }
 
-    list.innerHTML = notas.map((nota) => `
+    list.innerHTML = notas.map((nota, index) => `
         <div class="compact-row">
             <div>
-                <span class="row-title">Nota ${escapeHtml(nota.id)}</span>
-                <span class="row-subtitle">Disciplina ${escapeHtml(nota.disciplinaId)} | Simulado ${escapeHtml(nota.simuladoId)}</span>
+                <span class="row-title">Nota ${escapeHtml(index + 1)}</span>
+                <span class="row-subtitle">${escapeHtml(state.disciplinaNomePorId?.[nota.disciplinaId] || `ID ${nota.disciplinaId}`)} | ${escapeHtml(state.simuladoDescricaoPorId?.[nota.simuladoId] || `ID ${nota.simuladoId}`)}</span>
             </div>
             <strong>${formatNumber(nota.valor)}</strong>
         </div>
@@ -1549,6 +1551,24 @@ async function handleStudentNotesSubmit(event) {
     list.innerHTML = "";
 
     try {
+        if (!state.disciplinaNomePorId || Object.keys(state.disciplinaNomePorId).length === 0) {
+            const disciplinas = await requestJson("/disciplinas");
+            state.disciplinaNomePorId = Array.isArray(disciplinas)
+                ? disciplinas.reduce((acc, disciplina) => {
+                    acc[String(disciplina.id)] = disciplina.nome || `ID ${disciplina.id}`;
+                    return acc;
+                }, {})
+                : {};
+        }
+        if (!state.simuladoDescricaoPorId || Object.keys(state.simuladoDescricaoPorId).length === 0) {
+            const simulados = await requestJson("/simulados");
+            state.simuladoDescricaoPorId = Array.isArray(simulados)
+                ? simulados.reduce((acc, simulado) => {
+                    acc[String(simulado.id)] = simulado.descricao || `ID ${simulado.id}`;
+                    return acc;
+                }, {})
+                : {};
+        }
         const notas = await requestJson(`/notas/aluno/${encodeURIComponent(alunoId)}`);
         renderStudentNotesList(notas);
         feedback.innerHTML = "";
@@ -1937,8 +1957,8 @@ function renderCorrectionNoteOptions(emptyMessage = "Nenhuma nota encontrada par
     }
 
     select.disabled = false;
-    select.innerHTML = `<option value="">Escolha uma nota</option>${state.retificacaoNotas.map((nota) => `
-        <option value="${escapeHtml(nota.id)}">Nota ${escapeHtml(nota.id)} - ${formatNumber(nota.valor)} | Disciplina ${escapeHtml(nota.disciplinaId)} | Simulado ${escapeHtml(nota.simuladoId)}</option>
+    select.innerHTML = `<option value="">Escolha uma nota</option>${state.retificacaoNotas.map((nota, index) => `
+        <option value="${escapeHtml(nota.id)}">Nota ${escapeHtml(index + 1)} - ${formatNumber(nota.valor)} | ${escapeHtml(state.disciplinaNomePorId?.[nota.disciplinaId] || `ID ${nota.disciplinaId}`)} | ${escapeHtml(state.simuladoDescricaoPorId?.[nota.simuladoId] || `ID ${nota.simuladoId}`)}</option>
     `).join("")}`;
 }
 
@@ -2017,6 +2037,24 @@ async function loadCorrectionNotesForStudent(alunoId) {
     feedback.innerHTML = message("Carregando notas do aluno...");
 
     try {
+        if (!state.disciplinaNomePorId || Object.keys(state.disciplinaNomePorId).length === 0) {
+            const disciplinas = await requestJson("/disciplinas");
+            state.disciplinaNomePorId = Array.isArray(disciplinas)
+                ? disciplinas.reduce((acc, disciplina) => {
+                    acc[String(disciplina.id)] = disciplina.nome || `ID ${disciplina.id}`;
+                    return acc;
+                }, {})
+                : {};
+        }
+        if (!state.simuladoDescricaoPorId || Object.keys(state.simuladoDescricaoPorId).length === 0) {
+            const simulados = await requestJson("/simulados");
+            state.simuladoDescricaoPorId = Array.isArray(simulados)
+                ? simulados.reduce((acc, simulado) => {
+                    acc[String(simulado.id)] = simulado.descricao || `ID ${simulado.id}`;
+                    return acc;
+                }, {})
+                : {};
+        }
         state.retificacaoNotas = await requestJson(`/notas/aluno/${encodeURIComponent(alunoId)}`);
         renderCorrectionNoteOptions();
         feedback.innerHTML = "";
