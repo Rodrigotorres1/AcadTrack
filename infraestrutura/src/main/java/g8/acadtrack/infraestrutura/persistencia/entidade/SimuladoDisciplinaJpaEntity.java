@@ -10,7 +10,10 @@ public class SimuladoDisciplinaJpaEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "simulado_id")
     private Long simuladoId;
+
+    @Column(name = "disciplina_id")
     private Long disciplinaId;
     private double peso;
 

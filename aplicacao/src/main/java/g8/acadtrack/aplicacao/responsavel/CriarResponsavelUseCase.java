@@ -1,8 +1,10 @@
 package g8.acadtrack.aplicacao.responsavel;
 
+import g8.acadtrack.dominiocompartilhado.excecao.ConflitoDeEstadoException;
 import g8.acadtrack.dominiousuarios.responsavel.Responsavel;
 import g8.acadtrack.dominiousuarios.responsavel.ResponsavelRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class CriarResponsavelUseCase {
@@ -13,7 +15,11 @@ public class CriarResponsavelUseCase {
         this.responsavelRepository = responsavelRepository;
     }
 
+    @Transactional
     public Responsavel executar(String nome, String email) {
+        if (responsavelRepository.existeResponsavelComEmailIgnorandoMaiusculas(email)) {
+            throw new ConflitoDeEstadoException("Já existe responsável cadastrado com este e-mail.");
+        }
         Responsavel responsavel = new Responsavel(null, nome, email);
         return responsavelRepository.salvar(responsavel);
     }

@@ -4,6 +4,7 @@ import g8.acadtrack.dominioacademico.disciplina.Disciplina;
 import g8.acadtrack.dominioacademico.disciplina.DisciplinaRepository;
 import g8.acadtrack.dominiocompartilhado.excecao.EntidadeNaoEncontradaException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class AtivarDisciplinaUseCase {
@@ -14,6 +15,7 @@ public class AtivarDisciplinaUseCase {
         this.disciplinaRepository = disciplinaRepository;
     }
 
+    @Transactional
     public Disciplina executar(Long disciplinaId) {
         Disciplina disciplina = disciplinaRepository.buscarPorId(disciplinaId)
                 .orElseThrow(() -> new EntidadeNaoEncontradaException("Disciplina não encontrada"));

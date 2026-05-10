@@ -172,7 +172,7 @@ public class VincularResponsavelSteps {
         assertNull(excecao);
     }
 
-    @Então("o sistema informa que não há responsável vinculado ao aluno")
+    @Então("o sistema informa que não há vínculo ativo de responsável para o aluno")
     public void oSistemaInformaQueNaoHaResponsavelVinculadoAoAluno() {
         assertFalse(context.isOperacaoExecutada());
         assertNotNull(excecao);

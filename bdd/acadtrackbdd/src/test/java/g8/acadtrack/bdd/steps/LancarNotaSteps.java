@@ -59,11 +59,12 @@ public class LancarNotaSteps {
         notaLancada = null;
 
         aluno = criarAlunoUseCase.executar(nomeAluno, nomeAluno + "@email.com");
-        disciplina = criarDisciplinaUseCase.executar("Matemática");
+        disciplina = criarDisciplinaUseCase.executar("Matemática " + nomeAluno);
+        Disciplina fillerDisciplina = criarDisciplinaUseCase.executar("História " + nomeAluno);
 
         simulado = criarSimuladoUseCase.executar(
-                "Simulado de lançamento de nota",
-                List.of(disciplina.getId())
+                "Simulado de lançamento de nota " + nomeAluno,
+                List.of(disciplina.getId(), fillerDisciplina.getId())
         );
     }
 
@@ -78,9 +79,10 @@ public class LancarNotaSteps {
         );
 
         segundaDisciplina = criarDisciplinaUseCase.executar("Português " + nomeAluno);
+        Disciplina fillerSegundoDisciplina = criarDisciplinaUseCase.executar("Biologia " + nomeAluno);
         segundoSimulado = criarSimuladoUseCase.executar(
                 "Simulado complementar " + nomeAluno,
-                List.of(segundaDisciplina.getId())
+                List.of(segundaDisciplina.getId(), fillerSegundoDisciplina.getId())
         );
     }
 

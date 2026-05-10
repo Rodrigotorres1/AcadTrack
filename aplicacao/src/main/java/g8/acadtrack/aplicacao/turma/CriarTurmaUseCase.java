@@ -4,6 +4,7 @@ import g8.acadtrack.dominioacademico.turma.Turma;
 import g8.acadtrack.dominioacademico.turma.TurmaRepository;
 import g8.acadtrack.dominiocompartilhado.excecao.RegraDeNegocioException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class CriarTurmaUseCase {
@@ -14,6 +15,7 @@ public class CriarTurmaUseCase {
         this.turmaRepository = turmaRepository;
     }
 
+    @Transactional
     public Turma executar(String nome) {
         Turma turma = new Turma(null, nome);
         if (turmaRepository.existeComNomeNormalizado(turma.getNomeNormalizado())) {

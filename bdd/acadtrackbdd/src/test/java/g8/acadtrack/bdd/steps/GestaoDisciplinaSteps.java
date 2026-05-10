@@ -93,7 +93,8 @@ public class GestaoDisciplinaSteps {
     public void oProfessorTentaLancarNotaParaEssaDisciplinaInativa() {
         try {
             Disciplina disciplinaBase = criarDisciplinaUseCase.executar("Base Nota");
-            Simulado simulado = criarSimuladoUseCase.executar("Simulado de Nota", List.of(disciplinaBase.getId()));
+            Disciplina fillerBase = criarDisciplinaUseCase.executar("Filler Base Nota");
+            Simulado simulado = criarSimuladoUseCase.executar("Simulado de Nota", List.of(disciplinaBase.getId(), fillerBase.getId()));
             Aluno aluno = criarAlunoUseCase.executar("Aluno Nota", "aluno.nota@email.com");
 
             lancarNotaUseCase.executar(aluno.getId(), simulado.getId(), disciplina.getId(), 7.0);
@@ -115,7 +116,8 @@ public class GestaoDisciplinaSteps {
     @Quando("o coordenador tenta criar simulado com essa disciplina inativa")
     public void oCoordenadorTentaCriarSimuladoComEssaDisciplinaInativa() {
         try {
-            criarSimuladoUseCase.executar("Simulado Inválido", List.of(disciplina.getId()));
+            Disciplina fillerAtiva = criarDisciplinaUseCase.executar("Filler Ativo Simulado");
+            criarSimuladoUseCase.executar("Simulado Inválido", List.of(disciplina.getId(), fillerAtiva.getId()));
             context.setOperacaoExecutada(true);
         } catch (Exception e) {
             excecao = e;

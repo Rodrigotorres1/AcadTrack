@@ -4,6 +4,7 @@ import g8.acadtrack.dominioavaliacao.retificacao.SolicitacaoRetificacao;
 import g8.acadtrack.dominioavaliacao.retificacao.SolicitacaoRetificacaoRepository;
 import g8.acadtrack.dominiocompartilhado.excecao.EntidadeNaoEncontradaException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class ReprovarRetificacaoUseCase {
@@ -14,6 +15,7 @@ public class ReprovarRetificacaoUseCase {
         this.solicitacaoRetificacaoRepository = solicitacaoRetificacaoRepository;
     }
 
+    @Transactional
     public SolicitacaoRetificacao executar(Long solicitacaoId, String justificativaDecisao) {
         SolicitacaoRetificacao solicitacao = solicitacaoRetificacaoRepository.buscarPorId(solicitacaoId)
                 .orElseThrow(() -> new EntidadeNaoEncontradaException("Solicitação de retificação não encontrada"));

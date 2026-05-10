@@ -21,15 +21,15 @@ public class ValidacaoLancamentoNotaService {
     ) {
         this.cadeiaValidacao = new ValidadorValorNotaDecorator(
                 new ValidadorEntidadesLancamentoNotaDecorator(
-                        new ValidadorDisciplinaVinculadaSimuladoDecorator(
-                                new ValidadorDisciplinaAtivaDecorator(
+                        new ValidadorDisciplinaAtivaDecorator(
+                                new ValidadorDisciplinaVinculadaSimuladoDecorator(
                                         new ValidadorNotaDuplicadaDecorator(
                                                 new ValidadorLancamentoNotaBase(),
                                                 notaRepository
                                         ),
-                                        disciplinaRepository
+                                        simuladoDisciplinaRepository
                                 ),
-                                simuladoDisciplinaRepository
+                                disciplinaRepository
                         ),
                         alunoRepository,
                         simuladoRepository,

@@ -1,5 +1,6 @@
 package g8.acadtrack.infraestrutura.persistencia.entidade;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -14,6 +15,7 @@ public class SolicitacaoRetificacaoJpaEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "nota_id")
     private Long notaId;
     private String justificativa;
     private String justificativaDecisao;

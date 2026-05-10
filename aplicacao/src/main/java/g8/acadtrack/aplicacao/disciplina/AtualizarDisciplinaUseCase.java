@@ -20,12 +20,11 @@ public class AtualizarDisciplinaUseCase {
                 .orElseThrow(() -> new EntidadeNaoEncontradaException("Disciplina não encontrada"));
 
         String nomeNormalizado = Disciplina.normalizarNome(novoNome);
-        if (!nomeNormalizado.equalsIgnoreCase(disciplina.getNome())) {
-            disciplinaRepository.buscarPorNomeNormalizado(nomeNormalizado)
-                    .ifPresent(outra -> {
-                        throw new ConflitoDeEstadoException("Já existe uma disciplina com este nome");
-                    });
-        }
+        disciplinaRepository.buscarPorNomeNormalizado(nomeNormalizado)
+                .filter(outra -> !outra.getId().equals(disciplinaId))
+                .ifPresent(outra -> {
+                    throw new ConflitoDeEstadoException("Já existe uma disciplina com este nome");
+                });
 
         disciplina.renomear(novoNome);
         return disciplinaRepository.salvar(disciplina);

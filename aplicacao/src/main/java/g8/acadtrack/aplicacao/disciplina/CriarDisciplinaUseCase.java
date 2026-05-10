@@ -4,6 +4,7 @@ import g8.acadtrack.dominioacademico.disciplina.Disciplina;
 import g8.acadtrack.dominioacademico.disciplina.DisciplinaRepository;
 import g8.acadtrack.dominiocompartilhado.excecao.ConflitoDeEstadoException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class CriarDisciplinaUseCase {
@@ -14,6 +15,7 @@ public class CriarDisciplinaUseCase {
         this.disciplinaRepository = disciplinaRepository;
     }
 
+    @Transactional
     public Disciplina executar(String nome) {
         String nomeNormalizado = Disciplina.normalizarNome(nome);
         disciplinaRepository.buscarPorNomeNormalizado(nomeNormalizado)

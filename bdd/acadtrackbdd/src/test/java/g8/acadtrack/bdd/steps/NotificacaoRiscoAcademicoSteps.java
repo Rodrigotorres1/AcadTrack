@@ -105,7 +105,7 @@ public class NotificacaoRiscoAcademicoSteps {
 
             var simuladoFraco = criarSimuladoUseCase.executar(
                     "Simulado notificacao moderado fraco " + aluno.getNome(),
-                    List.of(matematica.getId())
+                    List.of(matematica.getId(), historia.getId())
             );
             var simuladoBom = criarSimuladoUseCase.executar(
                     "Simulado notificacao moderado bom " + aluno.getNome(),

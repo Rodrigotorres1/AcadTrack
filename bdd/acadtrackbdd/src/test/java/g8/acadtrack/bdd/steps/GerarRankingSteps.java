@@ -59,7 +59,8 @@ public class GerarRankingSteps {
         excecao = null;
 
         disciplina = criarDisciplinaUseCase.executar("Matemática");
-        simulado = criarSimuladoUseCase.executar("Simulado Ranking", List.of(disciplina.getId()));
+        Disciplina fillerRanking = criarDisciplinaUseCase.executar("História Ranking");
+        simulado = criarSimuladoUseCase.executar("Simulado Ranking", List.of(disciplina.getId(), fillerRanking.getId()));
 
         aluno1 = criarAlunoUseCase.executar("João Silva", "joao@email.com");
         aluno2 = criarAlunoUseCase.executar("Maria Souza", "maria@email.com");
@@ -77,7 +78,8 @@ public class GerarRankingSteps {
         excecao = null;
 
         disciplina = criarDisciplinaUseCase.executar("Matemática");
-        simulado = criarSimuladoUseCase.executar("Simulado Vazio", List.of(disciplina.getId()));
+        Disciplina fillerVazio = criarDisciplinaUseCase.executar("História Vazio");
+        simulado = criarSimuladoUseCase.executar("Simulado Vazio", List.of(disciplina.getId(), fillerVazio.getId()));
     }
 
     @Quando("o sistema gera o ranking")

@@ -7,6 +7,7 @@ import g8.acadtrack.dominiocompartilhado.excecao.ConflitoDeEstadoException;
 import g8.acadtrack.dominiocompartilhado.excecao.EntidadeNaoEncontradaException;
 import g8.acadtrack.dominiocompartilhado.excecao.RegraDeNegocioException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class SolicitarRetificacaoUseCase {
@@ -22,6 +23,7 @@ public class SolicitarRetificacaoUseCase {
         this.solicitacaoRetificacaoRepository = solicitacaoRetificacaoRepository;
     }
 
+    @Transactional
     public SolicitacaoRetificacao executar(Long notaId, String justificativa) {
         if (notaId == null) {
             throw new RegraDeNegocioException("Nota é obrigatória");

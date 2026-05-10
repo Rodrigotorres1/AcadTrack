@@ -11,7 +11,7 @@ public class ValidadorValorNotaDecorator extends ValidadorLancamentoNotaDecorato
     @Override
     public void validar(DadosLancamentoNota dados) {
         if (dados.valor() < 0.0 || dados.valor() > 10.0) {
-            throw new RegraDeNegocioException("Nota deve estar entre 0 e 10");
+            throw new RegraDeNegocioException("A nota deve estar entre 0 e 10");
         }
 
         super.validar(dados);

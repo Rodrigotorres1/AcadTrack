@@ -20,7 +20,7 @@ public abstract class FluxoAnaliseAcademicaTemplate {
 
     protected void validarNotas(List<Nota> notas) {
         if (notas.isEmpty()) {
-            throw new ConflitoDeEstadoException("Aluno sem notas para analise de desempenho");
+            throw new ConflitoDeEstadoException("Aluno sem notas para análise de desempenho");
         }
     }
 

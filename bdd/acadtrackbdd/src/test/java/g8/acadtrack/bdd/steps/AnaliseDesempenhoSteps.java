@@ -57,8 +57,9 @@ public class AnaliseDesempenhoSteps {
         Disciplina portugues = criarDisciplinaUseCase.executar("Português " + nomeAluno);
         Disciplina historia = criarDisciplinaUseCase.executar("História " + nomeAluno);
 
+        Disciplina extra2 = criarDisciplinaUseCase.executar("Extra 2 " + nomeAluno);
         var simulado1 = criarSimuladoUseCase.executar("Simulado 1 " + nomeAluno, List.of(matematica.getId(), portugues.getId()));
-        var simulado2 = criarSimuladoUseCase.executar("Simulado 2 " + nomeAluno, List.of(historia.getId()));
+        var simulado2 = criarSimuladoUseCase.executar("Simulado 2 " + nomeAluno, List.of(historia.getId(), extra2.getId()));
 
         lancarNotaUseCase.executar(aluno.getId(), simulado1.getId(), matematica.getId(), 8.0);
         lancarNotaUseCase.executar(aluno.getId(), simulado1.getId(), portugues.getId(), 7.5);
@@ -86,7 +87,8 @@ public class AnaliseDesempenhoSteps {
         Disciplina portugues = criarDisciplinaUseCase.executar("Português " + nomeAluno);
         Disciplina historia = criarDisciplinaUseCase.executar("História " + nomeAluno);
 
-        var simuladoFraco = criarSimuladoUseCase.executar("Simulado fraco " + nomeAluno, List.of(matematica.getId()));
+        Disciplina extraFraco = criarDisciplinaUseCase.executar("Extra fraco " + nomeAluno);
+        var simuladoFraco = criarSimuladoUseCase.executar("Simulado fraco " + nomeAluno, List.of(matematica.getId(), extraFraco.getId()));
         var simuladoBom = criarSimuladoUseCase.executar("Simulado bom " + nomeAluno, List.of(portugues.getId(), historia.getId()));
 
         lancarNotaUseCase.executar(aluno.getId(), simuladoFraco.getId(), matematica.getId(), 4.0);
@@ -104,7 +106,8 @@ public class AnaliseDesempenhoSteps {
         prepararAluno(nomeAluno);
 
         Disciplina disciplina = criarDisciplinaUseCase.executar("Ranking disciplina " + nomeAluno);
-        var simulado = criarSimuladoUseCase.executar("Simulado ranking " + nomeAluno, List.of(disciplina.getId()));
+        Disciplina extraRanking = criarDisciplinaUseCase.executar("Extra ranking " + nomeAluno);
+        var simulado = criarSimuladoUseCase.executar("Simulado ranking " + nomeAluno, List.of(disciplina.getId(), extraRanking.getId()));
 
         Aluno primeiroLugar = criarAlunoUseCase.executar("Primeiro Ranking " + nomeAluno, "primeiro." + emailSeguro(nomeAluno));
         Aluno terceiroLugar = criarAlunoUseCase.executar("Terceiro Ranking " + nomeAluno, "terceiro." + emailSeguro(nomeAluno));

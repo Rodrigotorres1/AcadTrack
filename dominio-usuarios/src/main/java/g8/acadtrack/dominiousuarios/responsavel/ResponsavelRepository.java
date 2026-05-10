@@ -11,5 +11,7 @@ public interface ResponsavelRepository {
 
     Optional<Responsavel> buscarPorId(Long id);
 
+    boolean existeResponsavelComEmailIgnorandoMaiusculas(String email);
+
     void excluirPorId(Long id);
 }

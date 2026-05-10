@@ -18,7 +18,7 @@ public class ValidadorNotaDuplicadaDecorator extends ValidadorLancamentoNotaDeco
     @Override
     public void validar(DadosLancamentoNota dados) {
         if (notaRepository.existePorAlunoSimuladoDisciplina(dados.alunoId(), dados.simuladoId(), dados.disciplinaId())) {
-            throw new ConflitoDeEstadoException("Ja existe nota lancada para este aluno, simulado e disciplina");
+            throw new ConflitoDeEstadoException("Já existe nota lançada para este aluno, simulado e disciplina");
         }
 
         super.validar(dados);

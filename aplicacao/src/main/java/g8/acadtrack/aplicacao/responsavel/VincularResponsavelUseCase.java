@@ -6,6 +6,7 @@ import g8.acadtrack.dominiocompartilhado.excecao.EntidadeNaoEncontradaException;
 import g8.acadtrack.dominiousuarios.responsavel.Responsavel;
 import g8.acadtrack.dominiousuarios.responsavel.ResponsavelRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class VincularResponsavelUseCase {
@@ -19,6 +20,7 @@ public class VincularResponsavelUseCase {
         this.responsavelRepository = responsavelRepository;
     }
 
+    @Transactional
     public Aluno executar(
             Long alunoId,
             Long responsavelId,

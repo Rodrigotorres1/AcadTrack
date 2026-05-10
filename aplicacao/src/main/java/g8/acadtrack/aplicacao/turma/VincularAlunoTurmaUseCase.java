@@ -5,6 +5,7 @@ import g8.acadtrack.dominioacademico.aluno.AlunoRepository;
 import g8.acadtrack.dominioacademico.turma.TurmaRepository;
 import g8.acadtrack.dominiocompartilhado.excecao.EntidadeNaoEncontradaException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class VincularAlunoTurmaUseCase {
@@ -20,6 +21,7 @@ public class VincularAlunoTurmaUseCase {
         this.turmaRepository = turmaRepository;
     }
 
+    @Transactional
     public Aluno executar(Long alunoId, Long turmaId) {
 
         Aluno aluno = alunoRepository.buscarPorId(alunoId)

@@ -1,5 +1,6 @@
 package g8.acadtrack.infraestrutura.persistencia.entidade;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -16,7 +17,10 @@ public class NotificacaoResponsavelJpaEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "aluno_id")
     private Long alunoId;
+
+    @Column(name = "responsavel_id")
     private Long responsavelId;
     private String nivelRisco;
     private String prioridade;

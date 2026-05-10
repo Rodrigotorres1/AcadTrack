@@ -22,7 +22,7 @@ public class ValidadorDisciplinaAtivaDecorator extends ValidadorLancamentoNotaDe
                 .orElse(false);
 
         if (!disciplinaAtiva) {
-            throw new RegraDeNegocioException("Disciplina inativa nao pode receber lancamento de nota");
+            throw new RegraDeNegocioException("Disciplina inativa não pode receber lançamento de nota");
         }
 
         super.validar(dados);

@@ -59,6 +59,11 @@ public class ResponsavelRepositoryJpa implements ResponsavelRepository {
     }
 
     @Override
+    public boolean existeResponsavelComEmailIgnorandoMaiusculas(String email) {
+        return repository.existsByEmailIgnoreCase(email);
+    }
+
+    @Override
     public void excluirPorId(Long id) {
         repository.deleteById(Objects.requireNonNull(id));
     }

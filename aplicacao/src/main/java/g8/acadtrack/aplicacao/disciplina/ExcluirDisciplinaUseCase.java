@@ -4,6 +4,7 @@ import g8.acadtrack.dominioacademico.disciplina.DisciplinaRepository;
 import g8.acadtrack.dominiocompartilhado.excecao.ConflitoDeEstadoException;
 import g8.acadtrack.dominiocompartilhado.excecao.EntidadeNaoEncontradaException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class ExcluirDisciplinaUseCase {
@@ -14,6 +15,7 @@ public class ExcluirDisciplinaUseCase {
         this.disciplinaRepository = disciplinaRepository;
     }
 
+    @Transactional
     public void executar(Long disciplinaId) {
         disciplinaRepository.buscarPorId(disciplinaId)
                 .orElseThrow(() -> new EntidadeNaoEncontradaException("Disciplina não encontrada"));
