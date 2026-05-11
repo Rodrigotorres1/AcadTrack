@@ -12,7 +12,7 @@ public class ValidarComposicaoSimuladoService {
 
     public void validarDisciplinasParaCriacao(List<Long> disciplinasIds) {
         if (disciplinasIds == null || disciplinasIds.isEmpty()) {
-            throw new RegraDeNegocioException("O simulado deve possuir pelo menos uma disciplina");
+            throw new RegraDeNegocioException("O simulado deve possuir pelo menos duas disciplinas");
         }
 
         long disciplinasDistintas = disciplinasIds.stream().distinct().count();

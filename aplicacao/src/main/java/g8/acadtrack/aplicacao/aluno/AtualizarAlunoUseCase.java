@@ -2,6 +2,7 @@ package g8.acadtrack.aplicacao.aluno;
 
 import g8.acadtrack.dominioacademico.aluno.Aluno;
 import g8.acadtrack.dominioacademico.aluno.AlunoRepository;
+import g8.acadtrack.dominioacademico.turma.TurmaRepository;
 import g8.acadtrack.dominiocompartilhado.excecao.ConflitoDeEstadoException;
 import g8.acadtrack.dominiocompartilhado.excecao.EntidadeNaoEncontradaException;
 import org.springframework.stereotype.Service;
@@ -11,9 +12,11 @@ import org.springframework.transaction.annotation.Transactional;
 public class AtualizarAlunoUseCase {
 
     private final AlunoRepository alunoRepository;
+    private final TurmaRepository turmaRepository;
 
-    public AtualizarAlunoUseCase(AlunoRepository alunoRepository) {
+    public AtualizarAlunoUseCase(AlunoRepository alunoRepository, TurmaRepository turmaRepository) {
         this.alunoRepository = alunoRepository;
+        this.turmaRepository = turmaRepository;
     }
 
     @Transactional
@@ -32,6 +35,8 @@ public class AtualizarAlunoUseCase {
 
         aluno.atualizar(nome, email);
         if (turmaId != null) {
+            turmaRepository.buscarPorId(turmaId)
+                    .orElseThrow(() -> new EntidadeNaoEncontradaException("Turma não encontrada"));
             aluno.substituirTurma(turmaId);
         }
         return alunoRepository.salvar(aluno);

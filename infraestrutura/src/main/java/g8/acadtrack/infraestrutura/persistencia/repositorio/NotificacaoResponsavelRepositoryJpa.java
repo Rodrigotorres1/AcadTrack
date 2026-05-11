@@ -37,6 +37,12 @@ public class NotificacaoResponsavelRepositoryJpa implements NotificacaoResponsav
     }
 
     @Override
+    public boolean existeNotificacaoNaoLidaPara(Long alunoId, Long responsavelId, String nivelRisco) {
+        return repository.existsByAlunoIdAndResponsavelIdAndNivelRiscoAndStatus(
+                alunoId, responsavelId, nivelRisco, StatusNotificacao.NAO_LIDA.name());
+    }
+
+    @Override
     public List<NotificacaoResponsavel> buscarPorResponsavelId(Long responsavelId) {
         Long responsavelIdObrigatorio = Objects.requireNonNull(responsavelId, "responsavelId e obrigatorio");
         return repository.findByResponsavelIdOrderByDataCriacaoDesc(responsavelIdObrigatorio)

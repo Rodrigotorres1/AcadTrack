@@ -4,7 +4,6 @@ import g8.acadtrack.aplicacao.disciplina.ListarDisciplinasUseCase;
 import g8.acadtrack.aplicacao.nota.BuscarNotasPorAlunoUseCase;
 import g8.acadtrack.aplicacao.nota.CalcularMediaPonderadaUseCase;
 import g8.acadtrack.aplicacao.nota.LancarNotaUseCase;
-import g8.acadtrack.aplicacao.nota.RankingAlunosUseCase;
 import g8.acadtrack.aplicacao.simulado.ListarSimuladosUseCase;
 import g8.acadtrack.apresentacao.dto.request.LancarNotaRequest;
 import g8.acadtrack.apresentacao.dto.response.ErroApiResponse;
@@ -32,29 +31,25 @@ import java.util.stream.Collectors;
 
 @Tag(name = "Notas",
         description = "Lançamento e consultas. Muitos fluxos assumem dados já criados (aluno, simulado, vínculos) — "
-                + "ver `docs/script_demonstracao.md`. Os GET /notas/ranking legados não recebem id de aluno no URL.")
+                + "ver `docs/script_demonstracao.md`. Para ranking, use GET /rankings.")
 @RestController
 @RequestMapping("/notas")
-@SuppressWarnings("deprecation")
 public class NotaController {
 
     private final LancarNotaUseCase lancarNotaUseCase;
     private final BuscarNotasPorAlunoUseCase buscarNotasPorAlunoUseCase;
     private final CalcularMediaPonderadaUseCase calcularMediaPonderadaUseCase;
-    private final RankingAlunosUseCase rankingAlunosUseCase;
     private final ListarDisciplinasUseCase listarDisciplinasUseCase;
     private final ListarSimuladosUseCase listarSimuladosUseCase;
 
     public NotaController(LancarNotaUseCase lancarNotaUseCase,
                           BuscarNotasPorAlunoUseCase buscarNotasPorAlunoUseCase,
                           CalcularMediaPonderadaUseCase calcularMediaPonderadaUseCase,
-                          RankingAlunosUseCase rankingAlunosUseCase,
                           ListarDisciplinasUseCase listarDisciplinasUseCase,
                           ListarSimuladosUseCase listarSimuladosUseCase) {
         this.lancarNotaUseCase = lancarNotaUseCase;
         this.buscarNotasPorAlunoUseCase = buscarNotasPorAlunoUseCase;
         this.calcularMediaPonderadaUseCase = calcularMediaPonderadaUseCase;
-        this.rankingAlunosUseCase = rankingAlunosUseCase;
         this.listarDisciplinasUseCase = listarDisciplinasUseCase;
         this.listarSimuladosUseCase = listarSimuladosUseCase;
     }
@@ -146,34 +141,4 @@ public class NotaController {
         return ResponseEntity.ok(media);
     }
 
-    @Deprecated(since = "1.0", forRemoval = false)
-    @Operation(summary = "[Legado] ranking em mapas", deprecated = true,
-            description = """
-                    Não há query nem path com id de aluno; é um ranking agregado em mapas.
-                    Com base vazia de notas, a lista pode vir vazia. Preferir GET /rankings/{simuladoId}.""")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Lista heterogênea (map)")
-    })
-    @GetMapping("/ranking")
-    public ResponseEntity<List<Map<String, Object>>> ranking() {
-        return ResponseEntity.ok(rankingAlunosUseCase.executar());
-    }
-
-    @Deprecated(since = "1.0", forRemoval = false)
-    @Operation(summary = "[Legado] primeiro colocado como mapa único", deprecated = true,
-            description = """
-                    Também sem parâmetros de aluno/simulado no URL.
-                    Se ninguém no ranking → HTTP 204. Preferir GET /rankings/{simuladoId}.""")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Map com dados do topo"),
-            @ApiResponse(responseCode = "204", description = "Ranking vazio")
-    })
-    @GetMapping("/ranking/top")
-    public ResponseEntity<Map<String, Object>> top() {
-        List<Map<String, Object>> ranking = rankingAlunosUseCase.executar();
-        if (ranking.isEmpty()) {
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.ok(ranking.get(0));
-    }
 }

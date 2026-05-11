@@ -29,3 +29,8 @@ Feature: Criar simulado com disciplinas vinculadas
     Dado que já existe um simulado com descrição "Simulado Principal"
     Quando ele tenta criar outro simulado com descrição "simulado principal"
     Então o sistema informa que já existe simulado cadastrado com esta descrição
+
+  Scenario: Não permitir alterar disciplinas de simulado com notas lançadas
+    Dado que existe um simulado com nota lancada
+    Quando ele tenta alterar as disciplinas do simulado
+    Então o sistema informa que simulado com notas nao pode ter disciplinas alteradas

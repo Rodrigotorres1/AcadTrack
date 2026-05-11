@@ -1,8 +1,12 @@
 package g8.acadtrack.bdd.steps;
 
+import g8.acadtrack.aplicacao.aluno.CriarAlunoUseCase;
 import g8.acadtrack.aplicacao.disciplina.CriarDisciplinaUseCase;
+import g8.acadtrack.aplicacao.nota.LancarNotaUseCase;
+import g8.acadtrack.aplicacao.simulado.AtualizarSimuladoUseCase;
 import g8.acadtrack.aplicacao.simulado.CriarSimuladoUseCase;
 import g8.acadtrack.bdd.support.TestContext;
+import g8.acadtrack.dominioacademico.aluno.Aluno;
 import g8.acadtrack.dominioacademico.disciplina.Disciplina;
 import g8.acadtrack.dominioavaliacao.simulado.Simulado;
 import io.cucumber.java.pt.Dado;
@@ -19,7 +23,10 @@ public class CriarSimuladoSteps {
 
     private final TestContext context;
     private final CriarSimuladoUseCase criarSimuladoUseCase;
+    private final AtualizarSimuladoUseCase atualizarSimuladoUseCase;
     private final CriarDisciplinaUseCase criarDisciplinaUseCase;
+    private final CriarAlunoUseCase criarAlunoUseCase;
+    private final LancarNotaUseCase lancarNotaUseCase;
 
     private final List<Long> disciplinasIds = new ArrayList<>();
     private Simulado simulado;
@@ -29,11 +36,17 @@ public class CriarSimuladoSteps {
     public CriarSimuladoSteps(
             TestContext context,
             CriarSimuladoUseCase criarSimuladoUseCase,
-            CriarDisciplinaUseCase criarDisciplinaUseCase
+            AtualizarSimuladoUseCase atualizarSimuladoUseCase,
+            CriarDisciplinaUseCase criarDisciplinaUseCase,
+            CriarAlunoUseCase criarAlunoUseCase,
+            LancarNotaUseCase lancarNotaUseCase
     ) {
         this.context = context;
         this.criarSimuladoUseCase = criarSimuladoUseCase;
+        this.atualizarSimuladoUseCase = atualizarSimuladoUseCase;
         this.criarDisciplinaUseCase = criarDisciplinaUseCase;
+        this.criarAlunoUseCase = criarAlunoUseCase;
+        this.lancarNotaUseCase = lancarNotaUseCase;
     }
 
     @Dado("que o coordenador deseja criar um simulado")
@@ -127,12 +140,48 @@ public class CriarSimuladoSteps {
         descricaoSimulado = descricao;
     }
 
+    @Dado("que existe um simulado com nota lancada")
+    public void queExisteUmSimuladoComNotaLancada() {
+        queOCoordenadorDesejaCriarUmSimulado();
+        String sufixo = UUID.randomUUID().toString();
+        Aluno aluno = criarAlunoUseCase.executar(
+                "Aluno Simulado Bloqueado " + sufixo,
+                "aluno.simulado.bloqueado." + sufixo + "@email.com"
+        );
+        Disciplina disciplina1 = criarDisciplinaUseCase.executar("Disciplina Bloqueada A " + sufixo);
+        Disciplina disciplina2 = criarDisciplinaUseCase.executar("Disciplina Bloqueada B " + sufixo);
+        simulado = criarSimuladoUseCase.executar(
+                "Simulado Bloqueado " + sufixo,
+                List.of(disciplina1.getId(), disciplina2.getId())
+        );
+        lancarNotaUseCase.executar(aluno.getId(), simulado.getId(), disciplina1.getId(), 8.0);
+    }
+
     @Quando("ele tenta criar outro simulado com descrição {string}")
     public void eleTentaCriarOutroSimuladoComDescricao(String descricao) {
         try {
             Disciplina disciplina1 = criarDisciplinaUseCase.executar("Geografia");
             Disciplina disciplina2 = criarDisciplinaUseCase.executar("História");
             simulado = criarSimuladoUseCase.executar(descricao, List.of(disciplina1.getId(), disciplina2.getId()));
+            context.setOperacaoExecutada(true);
+        } catch (Exception e) {
+            excecao = e;
+            context.setMensagem(e.getMessage());
+            context.setOperacaoExecutada(false);
+        }
+    }
+
+    @Quando("ele tenta alterar as disciplinas do simulado")
+    public void eleTentaAlterarAsDisciplinasDoSimulado() {
+        try {
+            String sufixo = UUID.randomUUID().toString();
+            Disciplina novaDisciplina1 = criarDisciplinaUseCase.executar("Nova Disciplina A " + sufixo);
+            Disciplina novaDisciplina2 = criarDisciplinaUseCase.executar("Nova Disciplina B " + sufixo);
+            simulado = atualizarSimuladoUseCase.executar(
+                    simulado.getId(),
+                    simulado.getDescricao(),
+                    List.of(novaDisciplina1.getId(), novaDisciplina2.getId())
+            );
             context.setOperacaoExecutada(true);
         } catch (Exception e) {
             excecao = e;
@@ -181,5 +230,12 @@ public class CriarSimuladoSteps {
         assertFalse(context.isOperacaoExecutada());
         assertNotNull(excecao);
         assertEquals("Já existe simulado cadastrado com esta descrição", context.getMensagem());
+    }
+
+    @Então("o sistema informa que simulado com notas nao pode ter disciplinas alteradas")
+    public void oSistemaInformaQueSimuladoComNotasNaoPodeTerDisciplinasAlteradas() {
+        assertFalse(context.isOperacaoExecutada());
+        assertNotNull(excecao);
+        assertEquals("Simulado com notas lançadas não pode ter suas disciplinas alteradas", context.getMensagem());
     }
 }

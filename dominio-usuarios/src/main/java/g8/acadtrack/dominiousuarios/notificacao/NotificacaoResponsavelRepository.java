@@ -7,4 +7,6 @@ public interface NotificacaoResponsavelRepository {
     NotificacaoResponsavel salvar(NotificacaoResponsavel notificacao);
 
     List<NotificacaoResponsavel> buscarPorResponsavelId(Long responsavelId);
+
+    boolean existeNotificacaoNaoLidaPara(Long alunoId, Long responsavelId, String nivelRisco);
 }

@@ -29,7 +29,13 @@ public class NotificarResponsavelRiscoAcademicoObserver implements ObservadorRis
         alunoRepository.buscarPorId(event.alunoId())
                 .filter(aluno -> aluno.getResponsavelId() != null)
                 .filter(Aluno::isVinculoResponsavelAtivo)
-                .ifPresent(aluno -> notificacaoResponsavelRepository.salvar(criarNotificacao(event, aluno.getResponsavelId())));
+                .ifPresent(aluno -> {
+                    boolean jaNotificado = notificacaoResponsavelRepository.existeNotificacaoNaoLidaPara(
+                            event.alunoId(), aluno.getResponsavelId(), event.nivelRisco());
+                    if (!jaNotificado) {
+                        notificacaoResponsavelRepository.salvar(criarNotificacao(event, aluno.getResponsavelId()));
+                    }
+                });
     }
 
     private NotificacaoResponsavel criarNotificacao(RiscoAcademicoEvent event, Long responsavelId) {

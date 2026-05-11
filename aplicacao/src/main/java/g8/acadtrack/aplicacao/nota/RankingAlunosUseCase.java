@@ -2,14 +2,12 @@ package g8.acadtrack.aplicacao.nota;
 
 import g8.acadtrack.dominioavaliacao.nota.Nota;
 import g8.acadtrack.dominioavaliacao.nota.NotaRepository;
-import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Service
 @Deprecated(since = "1.0", forRemoval = false)
 public class RankingAlunosUseCase {
 

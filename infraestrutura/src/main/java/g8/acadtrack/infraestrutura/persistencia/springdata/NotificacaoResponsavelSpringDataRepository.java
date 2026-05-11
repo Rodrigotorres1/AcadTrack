@@ -8,4 +8,7 @@ import java.util.List;
 public interface NotificacaoResponsavelSpringDataRepository extends JpaRepository<NotificacaoResponsavelJpaEntity, Long> {
 
     List<NotificacaoResponsavelJpaEntity> findByResponsavelIdOrderByDataCriacaoDesc(Long responsavelId);
+
+    boolean existsByAlunoIdAndResponsavelIdAndNivelRiscoAndStatus(
+            Long alunoId, Long responsavelId, String nivelRisco, String status);
 }
