@@ -4,7 +4,6 @@ import g8.acadtrack.aplicacao.nota.validacao.ValidacaoLancamentoNotaService;
 import g8.acadtrack.aplicacao.riscoacademico.PublicadorRiscoAcademico;
 import g8.acadtrack.dominioacademico.aluno.Aluno;
 import g8.acadtrack.dominioacademico.aluno.AlunoRepository;
-import g8.acadtrack.dominiocompartilhado.excecao.EntidadeNaoEncontradaException;
 import g8.acadtrack.dominioavaliacao.nota.Nota;
 import g8.acadtrack.dominioavaliacao.nota.NotaRepository;
 import org.springframework.stereotype.Service;
@@ -38,10 +37,7 @@ public class LancarNotaUseCase {
 
     @Transactional
     public Nota executar(Long alunoId, Long simuladoId, Long disciplinaId, double valor) {
-        validacaoLancamentoNotaService.validar(alunoId, simuladoId, disciplinaId, valor);
-
-        Aluno aluno = alunoRepository.buscarPorId(alunoId)
-                .orElseThrow(() -> new EntidadeNaoEncontradaException("Aluno nao encontrado"));
+        Aluno aluno = validacaoLancamentoNotaService.validar(alunoId, simuladoId, disciplinaId, valor);
 
         Nota nota = new Nota(null, alunoId, simuladoId, disciplinaId, valor);
         Nota notaSalva = notaRepository.salvar(nota);

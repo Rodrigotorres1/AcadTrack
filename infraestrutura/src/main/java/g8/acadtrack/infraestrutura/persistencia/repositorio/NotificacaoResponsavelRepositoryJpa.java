@@ -2,8 +2,8 @@ package g8.acadtrack.infraestrutura.persistencia.repositorio;
 
 import g8.acadtrack.dominiousuarios.notificacao.NotificacaoResponsavel;
 import g8.acadtrack.dominiousuarios.notificacao.NotificacaoResponsavelRepository;
-import g8.acadtrack.dominiousuarios.notificacao.PrioridadeNotificacao;
 import g8.acadtrack.dominiousuarios.notificacao.StatusNotificacao;
+import g8.acadtrack.dominiocompartilhado.risco.NivelRiscoAcademico;
 import g8.acadtrack.infraestrutura.persistencia.entidade.NotificacaoResponsavelJpaEntity;
 import g8.acadtrack.infraestrutura.persistencia.springdata.NotificacaoResponsavelSpringDataRepository;
 import org.springframework.stereotype.Repository;
@@ -27,24 +27,24 @@ public class NotificacaoResponsavelRepositoryJpa implements NotificacaoResponsav
                 notificacao.getAlunoId(),
                 notificacao.getResponsavelId(),
                 notificacao.getNivelRisco(),
-                notificacao.getPrioridade().name(),
+                notificacao.getPrioridade(),
                 notificacao.getMensagem(),
                 notificacao.getDataCriacao(),
-                notificacao.getStatus().name()
+                notificacao.getStatus()
         );
 
         return mapear(repository.save(entity));
     }
 
     @Override
-    public boolean existeNotificacaoNaoLidaPara(Long alunoId, Long responsavelId, String nivelRisco) {
+    public boolean existeNotificacaoNaoLidaPara(Long alunoId, Long responsavelId, NivelRiscoAcademico nivelRisco) {
         return repository.existsByAlunoIdAndResponsavelIdAndNivelRiscoAndStatus(
-                alunoId, responsavelId, nivelRisco, StatusNotificacao.NAO_LIDA.name());
+                alunoId, responsavelId, nivelRisco, StatusNotificacao.NAO_LIDA);
     }
 
     @Override
     public List<NotificacaoResponsavel> buscarPorResponsavelId(Long responsavelId) {
-        Long responsavelIdObrigatorio = Objects.requireNonNull(responsavelId, "responsavelId e obrigatorio");
+        Long responsavelIdObrigatorio = Objects.requireNonNull(responsavelId, "responsavelId é obrigatório");
         return repository.findByResponsavelIdOrderByDataCriacaoDesc(responsavelIdObrigatorio)
                 .stream()
                 .map(this::mapear)
@@ -57,10 +57,10 @@ public class NotificacaoResponsavelRepositoryJpa implements NotificacaoResponsav
                 entity.getAlunoId(),
                 entity.getResponsavelId(),
                 entity.getNivelRisco(),
-                PrioridadeNotificacao.valueOf(entity.getPrioridade()),
+                entity.getPrioridade(),
                 entity.getMensagem(),
                 entity.getDataCriacao(),
-                StatusNotificacao.valueOf(entity.getStatus())
+                entity.getStatus()
         );
     }
 }

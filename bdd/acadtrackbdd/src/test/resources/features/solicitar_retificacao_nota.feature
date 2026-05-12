@@ -10,17 +10,29 @@ Feature: Solicitar retificação de nota
     Quando ele solicita retificação sem justificativa
     Então o sistema informa que a justificativa é obrigatória
 
+  Scenario: Não permitir solicitar retificação para nota inexistente
+    Quando ele solicita retificação para uma nota inexistente
+    Então o sistema informa que a nota não foi encontrada
+
   Scenario: Não permitir múltiplas solicitações de retificação em aberto para a mesma nota
     Dado que o aluno "João Silva" possui uma nota lançada
     E ele já possui uma solicitação de retificação em aberto para essa nota
     Quando ele tenta solicitar nova retificação para a mesma nota
     Então o sistema informa que já existe solicitação de retificação em aberto para esta nota
 
+  Scenario: Não permitir iniciar análise de retificação inexistente
+    Quando o responsável inicia análise de uma solicitação de retificação inexistente
+    Então o sistema informa que a solicitação de retificação não foi encontrada
+
   Scenario: Permitir transição de estado de PENDENTE para EM_ANALISE
     Dado que o aluno "João Silva" possui uma nota lançada
     E ele solicita retificação informando a justificativa "Revisar lançamento"
     Quando o responsável inicia a análise da solicitação de retificação
     Então o sistema atualiza a solicitação de retificação para status "EM_ANALISE"
+
+  Scenario: Não permitir aprovar retificação inexistente
+    Quando o responsável aprova uma solicitação de retificação inexistente
+    Então o sistema informa que a solicitação de retificação não foi encontrada
 
   Scenario: Aprovar retificação atualiza nota e situação acadêmica
     Dado que o aluno "João Silva" possui uma nota lançada
@@ -38,6 +50,10 @@ Feature: Solicitar retificação de nota
     Quando o responsável reprova a solicitação de retificação com justificativa "Não foi identificado erro"
     Então o sistema atualiza a solicitação de retificação para status "REPROVADA"
     E a nota do aluno permanece com o valor original
+
+  Scenario: Não permitir reprovar retificação inexistente
+    Quando o responsável reprova uma solicitação de retificação inexistente
+    Então o sistema informa que a solicitação de retificação não foi encontrada
 
   Scenario: Não permitir aprovar retificação sem justificativa de decisão
     Dado que o aluno "Maria Oliveira" possui uma nota lançada

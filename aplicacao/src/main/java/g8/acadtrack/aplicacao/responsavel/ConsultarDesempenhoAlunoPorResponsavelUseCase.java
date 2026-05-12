@@ -21,6 +21,8 @@ public class ConsultarDesempenhoAlunoPorResponsavelUseCase {
 
     public AnaliseDesempenhoAcademicoResultado executar(Long responsavelId, Long alunoId) {
         acessoResponsavelAlunoProxy.executar(alunoId, responsavelId, PermissaoResponsavel.VISUALIZAR_DESEMPENHO);
+        // Consulta explícita: inclui posição no ranking para o responsável.
+        // Fluxos de escrita usam executarSemRanking para evitar trabalho colateral no lançamento/aprovação.
         return analisarDesempenhoAcademicoUseCase.executar(alunoId);
     }
 }

@@ -1,5 +1,8 @@
 package g8.acadtrack.dominiousuarios.responsavel;
 
+import g8.acadtrack.dominiocompartilhado.email.Email;
+import g8.acadtrack.dominiocompartilhado.excecao.RegraDeNegocioException;
+
 public class Responsavel {
 
     private Long id;
@@ -8,11 +11,11 @@ public class Responsavel {
 
     public Responsavel(Long id, String nome, String email) {
         if (nome == null || nome.isBlank()) {
-            throw new IllegalArgumentException("Nome do responsável é obrigatório");
+            throw new RegraDeNegocioException("Nome do responsável é obrigatório");
         }
         this.id = id;
         this.nome = nome;
-        this.email = email;
+        this.email = Email.normalizar(email);
     }
 
     public Long getId() {

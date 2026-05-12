@@ -1,5 +1,7 @@
 package g8.acadtrack.dominioavaliacao.nota;
 
+import g8.acadtrack.dominiocompartilhado.excecao.RegraDeNegocioException;
+
 public class Nota {
 
     private Long id;
@@ -10,16 +12,16 @@ public class Nota {
 
     public Nota(Long id, Long alunoId, Long simuladoId, Long disciplinaId, double valor) {
         if (alunoId == null) {
-            throw new IllegalArgumentException("Aluno é obrigatório");
+            throw new RegraDeNegocioException("Aluno é obrigatório");
         }
         if (simuladoId == null) {
-            throw new IllegalArgumentException("Simulado é obrigatório");
+            throw new RegraDeNegocioException("Simulado é obrigatório");
         }
         if (disciplinaId == null) {
-            throw new IllegalArgumentException("Disciplina é obrigatória");
+            throw new RegraDeNegocioException("Disciplina é obrigatória");
         }
         if (valor < 0 || valor > 10) {
-            throw new IllegalArgumentException("A nota deve estar entre 0 e 10");
+            throw new RegraDeNegocioException("A nota deve estar entre 0 e 10");
         }
 
         this.id = id;

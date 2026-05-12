@@ -1,5 +1,11 @@
 package g8.acadtrack.aplicacao.nota.risco;
 
+import g8.acadtrack.dominiocompartilhado.risco.NivelRiscoAcademico;
+import org.springframework.core.annotation.Order;
+import org.springframework.stereotype.Component;
+
+@Component
+@Order(1)
 public class RiscoAltoStrategy implements EstrategiaClassificacaoRiscoAcademico {
 
     private static final double LIMIAR_RISCO_ALTO_MEDIA = 5.0;
@@ -10,7 +16,7 @@ public class RiscoAltoStrategy implements EstrategiaClassificacaoRiscoAcademico 
     }
 
     @Override
-    public String nivel() {
-        return "ALTO";
+    public NivelRiscoAcademico nivel() {
+        return NivelRiscoAcademico.ALTO;
     }
 }

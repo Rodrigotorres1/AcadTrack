@@ -10,6 +10,11 @@ Feature: Lançar nota individual
     Quando o professor lança a nota 15 para o aluno "João Silva"
     Então o sistema informa a nota deve estar entre 0 e 10
 
+  Scenario: Não permitir lançamento de nota para aluno inativo
+    Dado que o aluno "João Silva" está inativo e realizou o simulado
+    Quando o professor lança a nota 8.5 para o aluno "João Silva"
+    Então o sistema informa que aluno inativo não pode receber nota
+
   Scenario: Não permitir nota duplicada para mesmo aluno, simulado e disciplina
     Dado que o aluno "João Silva" realizou o simulado
     E o professor já lançou a nota 7.0 para o aluno "João Silva"

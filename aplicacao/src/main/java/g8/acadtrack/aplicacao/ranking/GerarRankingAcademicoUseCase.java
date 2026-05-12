@@ -3,7 +3,7 @@ package g8.acadtrack.aplicacao.ranking;
 import g8.acadtrack.dominioacademico.aluno.Aluno;
 import g8.acadtrack.dominioacademico.aluno.AlunoRepository;
 import g8.acadtrack.dominioacademico.aluno.SituacaoAcademica;
-import g8.acadtrack.dominioavaliacao.nota.NotaRepository;
+import g8.acadtrack.dominiocompartilhado.risco.NivelRiscoAcademico;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -14,16 +14,13 @@ import java.util.Optional;
 public class GerarRankingAcademicoUseCase {
 
     private final AlunoRepository alunoRepository;
-    private final NotaRepository notaRepository;
     private final OrdenarRankingAcademicoService ordenarRankingAcademicoService;
 
     public GerarRankingAcademicoUseCase(
             AlunoRepository alunoRepository,
-            NotaRepository notaRepository,
             OrdenarRankingAcademicoService ordenarRankingAcademicoService
     ) {
         this.alunoRepository = alunoRepository;
-        this.notaRepository = notaRepository;
         this.ordenarRankingAcademicoService = ordenarRankingAcademicoService;
     }
 
@@ -51,9 +48,8 @@ public class GerarRankingAcademicoUseCase {
     }
 
     private List<RankingAcademicoItem> montarItens() {
-        return alunoRepository.buscarTodos()
+        return alunoRepository.buscarAlunosComNotas()
                 .stream()
-                .filter(aluno -> !notaRepository.buscarPorAlunoId(aluno.getId()).isEmpty())
                 .map(this::mapearAluno)
                 .toList();
     }
@@ -70,11 +66,11 @@ public class GerarRankingAcademicoUseCase {
         );
     }
 
-    private String nivelRiscoPorSituacao(SituacaoAcademica situacao) {
+    private NivelRiscoAcademico nivelRiscoPorSituacao(SituacaoAcademica situacao) {
         return switch (situacao) {
-            case REPROVADO -> "ALTO";
-            case RECUPERACAO -> "MODERADO";
-            case APROVADO -> "BAIXO";
+            case REPROVADO -> NivelRiscoAcademico.ALTO;
+            case RECUPERACAO -> NivelRiscoAcademico.MODERADO;
+            case APROVADO -> NivelRiscoAcademico.BAIXO;
         };
     }
 }

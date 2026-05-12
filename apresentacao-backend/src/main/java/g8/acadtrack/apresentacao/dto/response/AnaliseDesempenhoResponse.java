@@ -29,7 +29,7 @@ public record AnaliseDesempenhoResponse(
                 resultado.totalSimulados(),
                 resultado.simuladosComBaixoDesempenho(),
                 resultado.riscoAcademico(),
-                resultado.nivelRisco(),
+                resultado.nivelRisco().name(),
                 resultado.alerta(),
                 resultado.situacaoAcademica(),
                 resultado.posicaoRanking(),
@@ -76,7 +76,7 @@ public record AnaliseDesempenhoResponse(
                     media.nomeDisciplina(),
                     media.media(),
                     media.status(),
-                    media.nivelRisco()
+                    media.nivelRisco().name()
             );
         }
     }

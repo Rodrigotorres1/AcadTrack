@@ -1,5 +1,7 @@
 package g8.acadtrack.infraestrutura.persistencia.springdata;
 
+import g8.acadtrack.dominiousuarios.notificacao.StatusNotificacao;
+import g8.acadtrack.dominiocompartilhado.risco.NivelRiscoAcademico;
 import g8.acadtrack.infraestrutura.persistencia.entidade.NotificacaoResponsavelJpaEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -10,5 +12,5 @@ public interface NotificacaoResponsavelSpringDataRepository extends JpaRepositor
     List<NotificacaoResponsavelJpaEntity> findByResponsavelIdOrderByDataCriacaoDesc(Long responsavelId);
 
     boolean existsByAlunoIdAndResponsavelIdAndNivelRiscoAndStatus(
-            Long alunoId, Long responsavelId, String nivelRisco, String status);
+            Long alunoId, Long responsavelId, NivelRiscoAcademico nivelRisco, StatusNotificacao status);
 }

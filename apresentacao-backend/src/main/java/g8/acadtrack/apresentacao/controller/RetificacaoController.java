@@ -88,6 +88,10 @@ public class RetificacaoController {
             @ApiResponse(responseCode = "201", description = "Solicitação criada",
                     content = @Content(schema = @Schema(implementation = SolicitacaoRetificacaoResponse.class))),
             @ApiResponse(responseCode = "400", description = "Validação ou regra de negócio",
+                    content = @Content(schema = @Schema(implementation = ErroApiResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Nota não encontrada",
+                    content = @Content(schema = @Schema(implementation = ErroApiResponse.class))),
+            @ApiResponse(responseCode = "409", description = "Solicitação de retificação duplicada",
                     content = @Content(schema = @Schema(implementation = ErroApiResponse.class)))
     })
     @PostMapping
@@ -108,8 +112,6 @@ public class RetificacaoController {
             @ApiResponse(responseCode = "404", description = "Solicitação não encontrada",
                     content = @Content(schema = @Schema(implementation = ErroApiResponse.class))),
             @ApiResponse(responseCode = "409", description = "Transição não permitida",
-                    content = @Content(schema = @Schema(implementation = ErroApiResponse.class))),
-            @ApiResponse(responseCode = "400", description = "Regra",
                     content = @Content(schema = @Schema(implementation = ErroApiResponse.class)))
     })
     @PatchMapping("/{solicitacaoId}/em-analise")

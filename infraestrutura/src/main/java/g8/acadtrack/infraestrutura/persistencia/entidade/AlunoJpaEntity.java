@@ -1,7 +1,10 @@
 package g8.acadtrack.infraestrutura.persistencia.entidade;
 
+import g8.acadtrack.dominioacademico.aluno.SituacaoAcademica;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -42,9 +45,13 @@ public class AlunoJpaEntity {
     private boolean permissaoVisualizarSimulados;
     private boolean permissaoVisualizarDesempenho;
     private Boolean ativo = true;
+
+    // Coluna legada do schema H2; no domínio, este valor é a média aritmética atual.
     @Column(name = "media_atual")
     private double mediaAritmetica;
-    private String situacaoAcademica;
+
+    @Enumerated(EnumType.STRING)
+    private SituacaoAcademica situacaoAcademica;
 
     public AlunoJpaEntity() {
     }
@@ -61,7 +68,7 @@ public class AlunoJpaEntity {
             boolean permissaoVisualizarDesempenho,
             boolean ativo,
             double mediaAritmetica,
-            String situacaoAcademica
+            SituacaoAcademica situacaoAcademica
     ) {
         this.id = id;
         this.nome = nome;
@@ -121,8 +128,8 @@ public class AlunoJpaEntity {
         return mediaAritmetica;
     }
 
-    public String getSituacaoAcademica() {
-        return situacaoAcademica;
+    public SituacaoAcademica getSituacaoAcademica() {
+        return situacaoAcademica == null ? SituacaoAcademica.REPROVADO : situacaoAcademica;
     }
 
     public void setId(Long id) {
@@ -169,7 +176,7 @@ public class AlunoJpaEntity {
         this.mediaAritmetica = mediaAritmetica;
     }
 
-    public void setSituacaoAcademica(String situacaoAcademica) {
+    public void setSituacaoAcademica(SituacaoAcademica situacaoAcademica) {
         this.situacaoAcademica = situacaoAcademica;
     }
 }

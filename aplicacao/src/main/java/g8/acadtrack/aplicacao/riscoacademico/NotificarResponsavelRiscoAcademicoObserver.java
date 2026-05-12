@@ -6,6 +6,7 @@ import g8.acadtrack.dominiousuarios.notificacao.NotificacaoResponsavel;
 import g8.acadtrack.dominiousuarios.notificacao.NotificacaoResponsavelRepository;
 import g8.acadtrack.dominiousuarios.notificacao.PrioridadeNotificacao;
 import g8.acadtrack.dominiousuarios.notificacao.StatusNotificacao;
+import g8.acadtrack.dominiocompartilhado.risco.NivelRiscoAcademico;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -51,20 +52,14 @@ public class NotificarResponsavelRiscoAcademicoObserver implements ObservadorRis
         );
     }
 
-    private PrioridadeNotificacao determinarPrioridade(String nivelRisco) {
-        if ("ALTO".equals(nivelRisco)) {
-            return PrioridadeNotificacao.ALTA;
-        }
-        return PrioridadeNotificacao.MEDIA;
+    private PrioridadeNotificacao determinarPrioridade(NivelRiscoAcademico nivelRisco) {
+        return switch (nivelRisco) {
+            case ALTO -> PrioridadeNotificacao.ALTA;
+            case MODERADO, BAIXO -> PrioridadeNotificacao.MEDIA;
+        };
     }
 
     private String montarMensagem(RiscoAcademicoEvent event) {
-        if ("BAIXO".equals(event.nivelRisco()) && event.alunoNoTop10()) {
-            return "Parabens! Aluno " + event.alunoId()
-                    + " entrou no Top 10 academico na posicao " + event.posicaoRanking()
-                    + " com media geral " + event.mediaGeral() + ".";
-        }
-
         if ("RECUPERACAO".equals(event.situacaoAcademica())) {
             return "Aluno " + event.alunoId()
                     + " ficou em recuperacao, com risco academico " + event.nivelRisco()

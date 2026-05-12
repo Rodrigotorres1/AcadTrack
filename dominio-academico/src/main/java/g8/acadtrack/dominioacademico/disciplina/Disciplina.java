@@ -1,5 +1,7 @@
 package g8.acadtrack.dominioacademico.disciplina;
 
+import g8.acadtrack.dominiocompartilhado.excecao.RegraDeNegocioException;
+
 public class Disciplina {
 
     private Long id;
@@ -12,7 +14,7 @@ public class Disciplina {
 
     public Disciplina(Long id, String nome, StatusDisciplina status) {
         if (nome == null || nome.isBlank()) {
-            throw new IllegalArgumentException("Nome da disciplina é obrigatório");
+            throw new RegraDeNegocioException("Nome da disciplina é obrigatório");
         }
 
         this.id = id;

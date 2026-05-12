@@ -1,5 +1,6 @@
 package g8.acadtrack.aplicacao.nota.validacao;
 
+import g8.acadtrack.dominioacademico.aluno.Aluno;
 import g8.acadtrack.dominioacademico.aluno.AlunoRepository;
 import g8.acadtrack.dominioacademico.disciplina.DisciplinaRepository;
 import g8.acadtrack.dominioavaliacao.nota.NotaRepository;
@@ -31,8 +32,7 @@ public class ValidacaoLancamentoNotaService {
                                                 simuladoDisciplinaRepository
                                         ),
                                         disciplinaRepository
-                                ),
-                                alunoRepository
+                                )
                         ),
                         alunoRepository,
                         simuladoRepository,
@@ -41,7 +41,9 @@ public class ValidacaoLancamentoNotaService {
         );
     }
 
-    public void validar(Long alunoId, Long simuladoId, Long disciplinaId, double valor) {
-        cadeiaValidacao.validar(new DadosLancamentoNota(alunoId, simuladoId, disciplinaId, valor));
+    public Aluno validar(Long alunoId, Long simuladoId, Long disciplinaId, double valor) {
+        DadosLancamentoNota dados = new DadosLancamentoNota(alunoId, simuladoId, disciplinaId, valor);
+        cadeiaValidacao.validar(dados);
+        return dados.aluno();
     }
 }

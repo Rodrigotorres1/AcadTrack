@@ -2,9 +2,9 @@ package g8.acadtrack.infraestrutura.persistencia.repositorio;
 
 import g8.acadtrack.dominioacademico.aluno.Aluno;
 import g8.acadtrack.dominioacademico.aluno.AlunoRepository;
-import g8.acadtrack.dominioacademico.aluno.SituacaoAcademica;
 import g8.acadtrack.infraestrutura.persistencia.entidade.AlunoJpaEntity;
 import g8.acadtrack.infraestrutura.persistencia.springdata.AlunoSpringDataRepository;
+import g8.acadtrack.infraestrutura.persistencia.springdata.NotaSpringDataRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -15,9 +15,14 @@ import java.util.Optional;
 public class AlunoRepositoryJpa implements AlunoRepository {
 
     private final AlunoSpringDataRepository repository;
+    private final NotaSpringDataRepository notaRepository;
 
-    public AlunoRepositoryJpa(AlunoSpringDataRepository repository) {
+    public AlunoRepositoryJpa(
+            AlunoSpringDataRepository repository,
+            NotaSpringDataRepository notaRepository
+    ) {
         this.repository = repository;
+        this.notaRepository = notaRepository;
     }
 
     @Override
@@ -34,7 +39,7 @@ public class AlunoRepositoryJpa implements AlunoRepository {
                 aluno.isPermissaoVisualizarDesempenho(),
                 aluno.isAtivo(),
                 aluno.getMediaAritmetica(),
-                aluno.getSituacaoAcademica().name()
+                aluno.getSituacaoAcademica()
         );
 
         AlunoJpaEntity salvo = repository.save(entity);
@@ -51,7 +56,7 @@ public class AlunoRepositoryJpa implements AlunoRepository {
                 salvo.isPermissaoVisualizarDesempenho(),
                 salvo.isAtivo(),
                 salvo.getMediaAritmetica(),
-                mapearSituacaoAcademica(salvo.getSituacaoAcademica())
+                salvo.getSituacaoAcademica()
         );
     }
 
@@ -79,7 +84,7 @@ public class AlunoRepositoryJpa implements AlunoRepository {
                         entity.isPermissaoVisualizarDesempenho(),
                         entity.isAtivo(),
                         entity.getMediaAritmetica(),
-                        mapearSituacaoAcademica(entity.getSituacaoAcademica())
+                        entity.getSituacaoAcademica()
                 ));
     }
 
@@ -99,15 +104,51 @@ public class AlunoRepositoryJpa implements AlunoRepository {
                         entity.isPermissaoVisualizarDesempenho(),
                         entity.isAtivo(),
                         entity.getMediaAritmetica(),
-                        mapearSituacaoAcademica(entity.getSituacaoAcademica())
+                        entity.getSituacaoAcademica()
                 ))
                 .toList();
     }
 
-    private SituacaoAcademica mapearSituacaoAcademica(String situacao) {
-        if (situacao == null || situacao.isBlank()) {
-            return SituacaoAcademica.REPROVADO;
-        }
-        return SituacaoAcademica.valueOf(situacao);
+    @Override
+    public List<Aluno> buscarPorResponsavelId(Long responsavelId) {
+        Long responsavelIdObrigatorio = Objects.requireNonNull(responsavelId, "responsavelId é obrigatório");
+        return repository.findByResponsavelId(responsavelIdObrigatorio)
+                .stream()
+                .map(entity -> new Aluno(
+                        entity.getId(),
+                        entity.getNome(),
+                        entity.getEmail(),
+                        entity.getTurmaId(),
+                        entity.getResponsavelId(),
+                        entity.isVinculoResponsavelAtivo(),
+                        entity.isPermissaoVisualizarNotas(),
+                        entity.isPermissaoVisualizarSimulados(),
+                        entity.isPermissaoVisualizarDesempenho(),
+                        entity.isAtivo(),
+                        entity.getMediaAritmetica(),
+                        entity.getSituacaoAcademica()
+                ))
+                .toList();
+    }
+
+    @Override
+    public List<Aluno> buscarAlunosComNotas() {
+        return notaRepository.findAlunosComNotas()
+                .stream()
+                .map(entity -> new Aluno(
+                        entity.getId(),
+                        entity.getNome(),
+                        entity.getEmail(),
+                        entity.getTurmaId(),
+                        entity.getResponsavelId(),
+                        entity.isVinculoResponsavelAtivo(),
+                        entity.isPermissaoVisualizarNotas(),
+                        entity.isPermissaoVisualizarSimulados(),
+                        entity.isPermissaoVisualizarDesempenho(),
+                        entity.isAtivo(),
+                        entity.getMediaAritmetica(),
+                        entity.getSituacaoAcademica()
+                ))
+                .toList();
     }
 }

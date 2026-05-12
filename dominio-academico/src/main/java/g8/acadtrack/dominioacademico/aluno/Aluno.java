@@ -1,5 +1,8 @@
 package g8.acadtrack.dominioacademico.aluno;
 
+import g8.acadtrack.dominiocompartilhado.email.Email;
+import g8.acadtrack.dominiocompartilhado.excecao.RegraDeNegocioException;
+
 public class Aluno {
 
     private Long id;
@@ -101,11 +104,11 @@ public class Aluno {
             SituacaoAcademica situacaoAcademica
     ) {
         if (nome == null || nome.isBlank()) {
-            throw new IllegalArgumentException("Nome do aluno é obrigatório");
+            throw new RegraDeNegocioException("Nome do aluno é obrigatório");
         }
         this.id = id;
         this.nome = nome;
-        this.email = email;
+        this.email = Email.normalizar(email);
         this.turmaId = turmaId;
         this.responsavelId = responsavelId;
         this.vinculoResponsavelAtivo = vinculoResponsavelAtivo;
@@ -145,7 +148,7 @@ public class Aluno {
         }
 
         if (!podeVisualizarNotas && !podeVisualizarSimulados && !podeVisualizarDesempenho) {
-            throw new IllegalArgumentException("É necessário conceder ao menos uma permissão ao responsável");
+            throw new RegraDeNegocioException("É necessário conceder ao menos uma permissão ao responsável");
         }
 
         if (this.responsavelId != null && this.vinculoResponsavelAtivo && this.responsavelId.equals(responsavelId)) {
@@ -204,10 +207,10 @@ public class Aluno {
 
     public void atualizar(String nome, String email) {
         if (nome == null || nome.isBlank()) {
-            throw new IllegalArgumentException("Nome do aluno é obrigatório");
+            throw new RegraDeNegocioException("Nome do aluno é obrigatório");
         }
         this.nome = nome.trim();
-        this.email = email;
+        this.email = Email.normalizar(email);
     }
 
     public void inativar() {

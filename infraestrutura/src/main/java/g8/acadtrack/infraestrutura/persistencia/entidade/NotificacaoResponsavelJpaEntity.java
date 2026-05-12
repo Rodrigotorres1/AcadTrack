@@ -1,7 +1,12 @@
 package g8.acadtrack.infraestrutura.persistencia.entidade;
 
+import g8.acadtrack.dominiousuarios.notificacao.PrioridadeNotificacao;
+import g8.acadtrack.dominiousuarios.notificacao.StatusNotificacao;
+import g8.acadtrack.dominiocompartilhado.risco.NivelRiscoAcademico;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -22,11 +27,18 @@ public class NotificacaoResponsavelJpaEntity {
 
     @Column(name = "responsavel_id")
     private Long responsavelId;
-    private String nivelRisco;
-    private String prioridade;
+
+    @Enumerated(EnumType.STRING)
+    private NivelRiscoAcademico nivelRisco;
+
+    @Enumerated(EnumType.STRING)
+    private PrioridadeNotificacao prioridade;
+
     private String mensagem;
     private LocalDateTime dataCriacao;
-    private String status;
+
+    @Enumerated(EnumType.STRING)
+    private StatusNotificacao status;
 
     public NotificacaoResponsavelJpaEntity() {
     }
@@ -35,11 +47,11 @@ public class NotificacaoResponsavelJpaEntity {
             Long id,
             Long alunoId,
             Long responsavelId,
-            String nivelRisco,
-            String prioridade,
+            NivelRiscoAcademico nivelRisco,
+            PrioridadeNotificacao prioridade,
             String mensagem,
             LocalDateTime dataCriacao,
-            String status
+            StatusNotificacao status
     ) {
         this.id = id;
         this.alunoId = alunoId;
@@ -63,11 +75,11 @@ public class NotificacaoResponsavelJpaEntity {
         return responsavelId;
     }
 
-    public String getNivelRisco() {
+    public NivelRiscoAcademico getNivelRisco() {
         return nivelRisco;
     }
 
-    public String getPrioridade() {
+    public PrioridadeNotificacao getPrioridade() {
         return prioridade;
     }
 
@@ -79,7 +91,7 @@ public class NotificacaoResponsavelJpaEntity {
         return dataCriacao;
     }
 
-    public String getStatus() {
+    public StatusNotificacao getStatus() {
         return status;
     }
 
@@ -95,11 +107,11 @@ public class NotificacaoResponsavelJpaEntity {
         this.responsavelId = responsavelId;
     }
 
-    public void setNivelRisco(String nivelRisco) {
+    public void setNivelRisco(NivelRiscoAcademico nivelRisco) {
         this.nivelRisco = nivelRisco;
     }
 
-    public void setPrioridade(String prioridade) {
+    public void setPrioridade(PrioridadeNotificacao prioridade) {
         this.prioridade = prioridade;
     }
 
@@ -111,7 +123,7 @@ public class NotificacaoResponsavelJpaEntity {
         this.dataCriacao = dataCriacao;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(StatusNotificacao status) {
         this.status = status;
     }
 }

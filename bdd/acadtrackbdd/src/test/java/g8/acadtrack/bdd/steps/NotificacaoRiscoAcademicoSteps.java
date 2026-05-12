@@ -155,7 +155,7 @@ public class NotificacaoRiscoAcademicoSteps {
 
         notificacoes = listarNotificacoesResponsavelUseCase.executar(responsavel.getId());
         notificacaoEncontrada = notificacoes.stream()
-                .filter(notificacao -> nivelRisco.equals(notificacao.getNivelRisco()))
+                .filter(notificacao -> nivelRisco.equals(notificacao.getNivelRisco().name()))
                 .filter(notificacao -> prioridade.equals(notificacao.getPrioridade().name()))
                 .findFirst()
                 .orElseThrow(() -> new AssertionError("Notificacao esperada nao encontrada"));

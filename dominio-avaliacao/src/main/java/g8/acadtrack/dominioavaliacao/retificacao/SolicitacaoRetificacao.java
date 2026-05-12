@@ -40,7 +40,7 @@ public class SolicitacaoRetificacao {
 
         this.id = id;
         this.notaId = notaId;
-        this.justificativa = justificativa;
+        this.justificativa = normalizarJustificativa(justificativa);
         this.justificativaDecisao = normalizarJustificativaDecisao(justificativaDecisao);
         this.status = StatusSolicitacaoRetificacao.normalizar(status);
     }
@@ -77,7 +77,7 @@ public class SolicitacaoRetificacao {
             throw new IllegalStateException("A solicitação deve estar em análise para aprovação");
         }
         if (justificativaDecisao == null || justificativaDecisao.isBlank()) {
-            throw new RegraDeNegocioException("Justificativa é obrigatória");
+            throw new RegraDeNegocioException("Justificativa da decisão é obrigatória");
         }
         this.justificativaDecisao = justificativaDecisao.trim();
         this.status = StatusSolicitacaoRetificacao.APROVADA;
@@ -88,7 +88,7 @@ public class SolicitacaoRetificacao {
             throw new IllegalStateException("A solicitação deve estar em análise para reprovação");
         }
         if (justificativaDecisao == null || justificativaDecisao.isBlank()) {
-            throw new RegraDeNegocioException("Justificativa é obrigatória");
+            throw new RegraDeNegocioException("Justificativa da decisão é obrigatória");
         }
         this.justificativaDecisao = justificativaDecisao.trim();
         this.status = StatusSolicitacaoRetificacao.REPROVADA;
@@ -97,6 +97,13 @@ public class SolicitacaoRetificacao {
     public boolean estaEmAberto() {
         return Objects.equals(status, StatusSolicitacaoRetificacao.PENDENTE)
                 || Objects.equals(status, StatusSolicitacaoRetificacao.EM_ANALISE);
+    }
+
+    private String normalizarJustificativa(String justificativa) {
+        if (justificativa == null || justificativa.isBlank()) {
+            throw new RegraDeNegocioException("Justificativa é obrigatória");
+        }
+        return justificativa.trim();
     }
 
     private String normalizarJustificativaDecisao(String justificativaDecisao) {

@@ -28,3 +28,8 @@ Feature: Análise consolidada de desempenho acadêmico
     Dado que o aluno "Diego Alves" não possui notas lançadas
     Quando o sistema gerar a análise consolidada de desempenho do aluno
     Então o sistema informa que o aluno está sem notas para análise
+
+  Scenario: Retornar erro 400 na API para aluno sem notas
+    Dado que o aluno "Diego Alves" não possui notas lançadas
+    Quando o cliente consulta a análise consolidada de desempenho do aluno pela API
+    Então a API retorna erro 400 informando que o aluno está sem notas para análise

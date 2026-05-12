@@ -10,6 +10,7 @@ import g8.acadtrack.dominioavaliacao.nota.Nota;
 import g8.acadtrack.dominioavaliacao.nota.NotaRepository;
 import g8.acadtrack.dominioavaliacao.simulado.Simulado;
 import g8.acadtrack.dominioavaliacao.simulado.SimuladoRepository;
+import g8.acadtrack.dominiocompartilhado.risco.NivelRiscoAcademico;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -100,8 +101,8 @@ public class AnalisarDesempenhoAcademicoUseCase extends FluxoAnaliseAcademicaTem
                 .filter(AnaliseDesempenhoAcademicoResultado.MediaSimulado::baixoDesempenho)
                 .count();
 
-        String nivelRisco = classificadorRiscoAcademicoService.classificar(mediaGeral, simuladosComBaixoDesempenho);
-        boolean riscoAcademico = !"BAIXO".equals(nivelRisco);
+        NivelRiscoAcademico nivelRisco = classificadorRiscoAcademicoService.classificar(mediaGeral, simuladosComBaixoDesempenho);
+        boolean riscoAcademico = nivelRisco != NivelRiscoAcademico.BAIXO;
 
         List<AnaliseDesempenhoAcademicoResultado.MediaDisciplina> notasPorDisciplina = notas.stream()
                 .collect(Collectors.groupingBy(Nota::getDisciplinaId))
@@ -172,11 +173,11 @@ public class AnalisarDesempenhoAcademicoUseCase extends FluxoAnaliseAcademicaTem
         );
     }
 
-    private String mensagemAlerta(String nivelRisco) {
+    private String mensagemAlerta(NivelRiscoAcademico nivelRisco) {
         return switch (nivelRisco) {
-            case "ALTO" -> "Necessita intervencao pedagogica imediata.";
-            case "MODERADO" -> "Necessita atencao. Acompanhamento recomendado.";
-            default -> "Desempenho estavel e satisfatorio.";
+            case ALTO -> "Necessita intervencao pedagogica imediata.";
+            case MODERADO -> "Necessita atencao. Acompanhamento recomendado.";
+            case BAIXO -> "Desempenho estavel e satisfatorio.";
         };
     }
 
@@ -202,11 +203,11 @@ public class AnalisarDesempenhoAcademicoUseCase extends FluxoAnaliseAcademicaTem
                 .orElse("Disciplina " + disciplinaId);
     }
 
-    private String nivelRiscoDisciplina(SituacaoAcademica status) {
+    private NivelRiscoAcademico nivelRiscoDisciplina(SituacaoAcademica status) {
         return switch (status) {
-            case APROVADO -> "BAIXO";
-            case RECUPERACAO -> "MODERADO";
-            case REPROVADO -> "ALTO";
+            case APROVADO -> NivelRiscoAcademico.BAIXO;
+            case RECUPERACAO -> NivelRiscoAcademico.MODERADO;
+            case REPROVADO -> NivelRiscoAcademico.ALTO;
         };
     }
 }

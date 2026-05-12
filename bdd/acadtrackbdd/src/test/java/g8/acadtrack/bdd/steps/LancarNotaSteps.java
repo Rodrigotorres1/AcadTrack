@@ -1,6 +1,7 @@
 package g8.acadtrack.bdd.steps;
 
 import g8.acadtrack.aplicacao.aluno.CriarAlunoUseCase;
+import g8.acadtrack.aplicacao.aluno.InativarAlunoUseCase;
 import g8.acadtrack.aplicacao.disciplina.CriarDisciplinaUseCase;
 import g8.acadtrack.aplicacao.nota.LancarNotaUseCase;
 import g8.acadtrack.aplicacao.simulado.CriarSimuladoUseCase;
@@ -23,6 +24,7 @@ public class LancarNotaSteps {
 
     private final TestContext context;
     private final CriarAlunoUseCase criarAlunoUseCase;
+    private final InativarAlunoUseCase inativarAlunoUseCase;
     private final CriarDisciplinaUseCase criarDisciplinaUseCase;
     private final CriarSimuladoUseCase criarSimuladoUseCase;
     private final LancarNotaUseCase lancarNotaUseCase;
@@ -39,6 +41,7 @@ public class LancarNotaSteps {
     public LancarNotaSteps(
             TestContext context,
             CriarAlunoUseCase criarAlunoUseCase,
+            InativarAlunoUseCase inativarAlunoUseCase,
             CriarDisciplinaUseCase criarDisciplinaUseCase,
             CriarSimuladoUseCase criarSimuladoUseCase,
             LancarNotaUseCase lancarNotaUseCase,
@@ -46,6 +49,7 @@ public class LancarNotaSteps {
     ) {
         this.context = context;
         this.criarAlunoUseCase = criarAlunoUseCase;
+        this.inativarAlunoUseCase = inativarAlunoUseCase;
         this.criarDisciplinaUseCase = criarDisciplinaUseCase;
         this.criarSimuladoUseCase = criarSimuladoUseCase;
         this.lancarNotaUseCase = lancarNotaUseCase;
@@ -58,7 +62,7 @@ public class LancarNotaSteps {
         excecao = null;
         notaLancada = null;
 
-        aluno = criarAlunoUseCase.executar(nomeAluno, nomeAluno + "@email.com");
+        aluno = criarAlunoUseCase.executar(nomeAluno, emailSeguro(nomeAluno) + "@email.com");
         disciplina = criarDisciplinaUseCase.executar("Matemática " + nomeAluno);
         Disciplina fillerDisciplina = criarDisciplinaUseCase.executar("História " + nomeAluno);
 
@@ -66,6 +70,12 @@ public class LancarNotaSteps {
                 "Simulado de lançamento de nota " + nomeAluno,
                 List.of(disciplina.getId(), fillerDisciplina.getId())
         );
+    }
+
+    @Dado("que o aluno {string} está inativo e realizou o simulado")
+    public void queOAlunoEstaInativoERealizouOSimulado(String nomeAluno) {
+        queOAlunoRealizouOSimulado(nomeAluno);
+        aluno = inativarAlunoUseCase.executar(aluno.getId());
     }
 
     @Dado("que o aluno {string} possui nota {double} já lançada")
@@ -158,6 +168,13 @@ public class LancarNotaSteps {
         assertEquals("A nota deve estar entre 0 e 10", context.getMensagem());
     }
 
+    @Então("o sistema informa que aluno inativo não pode receber nota")
+    public void oSistemaInformaQueAlunoInativoNaoPodeReceberNota() {
+        assertFalse(context.isOperacaoExecutada());
+        assertNotNull(excecao);
+        assertEquals("Aluno inativo não pode receber lançamento de nota", context.getMensagem());
+    }
+
     @Então("o sistema informa que já existe nota lançada para este aluno, simulado e disciplina")
     public void oSistemaInformaDuplicidadeDeNota() {
         assertFalse(context.isOperacaoExecutada());
@@ -183,5 +200,9 @@ public class LancarNotaSteps {
         assertTrue(context.isOperacaoExecutada());
         assertNull(excecao);
         assertEquals(SituacaoAcademica.valueOf(situacaoEsperada), alunoAtualizado.getSituacaoAcademica());
+    }
+
+    private String emailSeguro(String nomeAluno) {
+        return nomeAluno.toLowerCase().replace(" ", ".");
     }
 }

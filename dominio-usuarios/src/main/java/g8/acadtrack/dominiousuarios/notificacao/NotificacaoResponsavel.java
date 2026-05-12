@@ -1,5 +1,8 @@
 package g8.acadtrack.dominiousuarios.notificacao;
 
+import g8.acadtrack.dominiocompartilhado.excecao.RegraDeNegocioException;
+import g8.acadtrack.dominiocompartilhado.risco.NivelRiscoAcademico;
+
 import java.time.LocalDateTime;
 
 public class NotificacaoResponsavel {
@@ -7,7 +10,7 @@ public class NotificacaoResponsavel {
     private Long id;
     private Long alunoId;
     private Long responsavelId;
-    private String nivelRisco;
+    private NivelRiscoAcademico nivelRisco;
     private PrioridadeNotificacao prioridade;
     private String mensagem;
     private LocalDateTime dataCriacao;
@@ -17,26 +20,26 @@ public class NotificacaoResponsavel {
             Long id,
             Long alunoId,
             Long responsavelId,
-            String nivelRisco,
+            NivelRiscoAcademico nivelRisco,
             PrioridadeNotificacao prioridade,
             String mensagem,
             LocalDateTime dataCriacao,
             StatusNotificacao status
     ) {
         if (alunoId == null) {
-            throw new IllegalArgumentException("Aluno e obrigatorio para notificacao");
+            throw new RegraDeNegocioException("Aluno é obrigatório para notificação");
         }
         if (responsavelId == null) {
-            throw new IllegalArgumentException("Responsavel e obrigatorio para notificacao");
+            throw new RegraDeNegocioException("Responsável é obrigatório para notificação");
         }
-        if (nivelRisco == null || nivelRisco.isBlank()) {
-            throw new IllegalArgumentException("Nivel de risco e obrigatorio para notificacao");
+        if (nivelRisco == null) {
+            throw new RegraDeNegocioException("Nível de risco é obrigatório para notificação");
         }
         if (prioridade == null) {
-            throw new IllegalArgumentException("Prioridade e obrigatoria para notificacao");
+            throw new RegraDeNegocioException("Prioridade é obrigatória para notificação");
         }
         if (mensagem == null || mensagem.isBlank()) {
-            throw new IllegalArgumentException("Mensagem e obrigatoria para notificacao");
+            throw new RegraDeNegocioException("Mensagem é obrigatória para notificação");
         }
 
         this.id = id;
@@ -61,7 +64,7 @@ public class NotificacaoResponsavel {
         return responsavelId;
     }
 
-    public String getNivelRisco() {
+    public NivelRiscoAcademico getNivelRisco() {
         return nivelRisco;
     }
 

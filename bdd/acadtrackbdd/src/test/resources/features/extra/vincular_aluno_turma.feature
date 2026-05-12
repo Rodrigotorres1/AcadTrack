@@ -14,3 +14,9 @@ Feature: Vincular aluno à turma
     Dado que já existe uma turma chamada "Turma Duplicada"
     Quando o coordenador tenta criar outra turma chamada "TurmaDuplicada"
     Então o sistema informa que a turma já está cadastrada
+
+  Scenario: Limpar turmas duplicadas migrando alunos
+    Dado que existem turmas duplicadas "3º Ano A" e "3ºAnoA" com alunos vinculados
+    Quando o coordenador limpa as turmas duplicadas
+    Então o sistema remove 1 turma duplicada
+    E os alunos da turma duplicada ficam vinculados à turma mantida

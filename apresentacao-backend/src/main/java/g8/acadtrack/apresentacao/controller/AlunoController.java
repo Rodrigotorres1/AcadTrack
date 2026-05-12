@@ -263,7 +263,7 @@ public class AlunoController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Analise de desempenho",
                     content = @Content(schema = @Schema(implementation = AnaliseDesempenhoResponse.class))),
-            @ApiResponse(responseCode = "409", description = "Aluno sem notas para analise",
+            @ApiResponse(responseCode = "400", description = "Aluno sem notas para analise",
                     content = @Content(schema = @Schema(implementation = ErroApiResponse.class)))
     })
     @GetMapping("/{alunoId}/desempenho")

@@ -9,16 +9,21 @@ import g8.acadtrack.aplicacao.simulado.CriarSimuladoUseCase;
 import g8.acadtrack.bdd.support.TestContext;
 import g8.acadtrack.dominioacademico.aluno.Aluno;
 import g8.acadtrack.dominioacademico.disciplina.Disciplina;
+import g8.acadtrack.dominiocompartilhado.excecao.RegraDeNegocioException;
 import io.cucumber.java.pt.Dado;
 import io.cucumber.java.pt.Quando;
 import io.cucumber.java.pt.Então;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
 public class AnaliseDesempenhoSteps {
 
@@ -28,10 +33,12 @@ public class AnaliseDesempenhoSteps {
     private final CriarSimuladoUseCase criarSimuladoUseCase;
     private final LancarNotaUseCase lancarNotaUseCase;
     private final AnalisarDesempenhoAcademicoUseCase analisarDesempenhoAcademicoUseCase;
+    private final MockMvc mockMvc;
 
     private Aluno aluno;
     private Exception excecao;
     private AnaliseDesempenhoAcademicoResultado analise;
+    private MvcResult respostaApi;
 
     public AnaliseDesempenhoSteps(
             TestContext context,
@@ -39,7 +46,8 @@ public class AnaliseDesempenhoSteps {
             CriarDisciplinaUseCase criarDisciplinaUseCase,
             CriarSimuladoUseCase criarSimuladoUseCase,
             LancarNotaUseCase lancarNotaUseCase,
-            AnalisarDesempenhoAcademicoUseCase analisarDesempenhoAcademicoUseCase
+            AnalisarDesempenhoAcademicoUseCase analisarDesempenhoAcademicoUseCase,
+            MockMvc mockMvc
     ) {
         this.context = context;
         this.criarAlunoUseCase = criarAlunoUseCase;
@@ -47,6 +55,7 @@ public class AnaliseDesempenhoSteps {
         this.criarSimuladoUseCase = criarSimuladoUseCase;
         this.lancarNotaUseCase = lancarNotaUseCase;
         this.analisarDesempenhoAcademicoUseCase = analisarDesempenhoAcademicoUseCase;
+        this.mockMvc = mockMvc;
     }
 
     @Dado("que o aluno {string} possui histórico acadêmico consistente")
@@ -131,6 +140,12 @@ public class AnaliseDesempenhoSteps {
         }
     }
 
+    @Quando("o cliente consulta a análise consolidada de desempenho do aluno pela API")
+    public void oClienteConsultaAAnaliseConsolidadaDeDesempenhoDoAlunoPelaApi() throws Exception {
+        respostaApi = mockMvc.perform(get("/alunos/{alunoId}/desempenho", aluno.getId()))
+                .andReturn();
+    }
+
     @Então("o sistema deve indicar risco acadêmico {string}")
     public void oSistemaDeveIndicarRiscoAcademico(String riscoEsperado) {
         assertTrue(context.isOperacaoExecutada());
@@ -142,7 +157,7 @@ public class AnaliseDesempenhoSteps {
     public void oNivelDeRiscoDeveSer(String nivelEsperado) {
         assertTrue(context.isOperacaoExecutada());
         assertNotNull(analise);
-        assertEquals(nivelEsperado, analise.nivelRisco());
+        assertEquals(nivelEsperado, analise.nivelRisco().name());
     }
 
     @Então("a análise deve informar posicao academica {string}")
@@ -163,13 +178,23 @@ public class AnaliseDesempenhoSteps {
     public void oSistemaInformaQueOAlunoEstaSemNotasParaAnalise() {
         assertFalse(context.isOperacaoExecutada());
         assertNotNull(excecao);
+        assertInstanceOf(RegraDeNegocioException.class, excecao);
         assertEquals("Aluno sem notas para análise de desempenho", context.getMensagem());
+    }
+
+    @Então("a API retorna erro 400 informando que o aluno está sem notas para análise")
+    public void aApiRetornaErro400InformandoQueOAlunoEstaSemNotasParaAnalise() throws Exception {
+        assertNotNull(respostaApi);
+        assertEquals(400, respostaApi.getResponse().getStatus());
+        assertTrue(respostaApi.getResponse().getContentAsString()
+                .contains("\"message\":\"Aluno sem notas para análise de desempenho\""));
     }
 
     private void prepararAluno(String nomeAluno) {
         context.resetMensagens();
         excecao = null;
         analise = null;
+        respostaApi = null;
         aluno = criarAlunoUseCase.executar(nomeAluno, emailSeguro(nomeAluno));
     }
 

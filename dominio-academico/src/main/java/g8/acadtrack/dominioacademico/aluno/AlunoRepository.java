@@ -11,5 +11,9 @@ public interface AlunoRepository {
 
     List<Aluno> buscarTodos();
 
+    List<Aluno> buscarPorResponsavelId(Long responsavelId);
+
+    List<Aluno> buscarAlunosComNotas();
+
     boolean existeAlunoComEmailIgnorandoMaiusculas(String email);
 }

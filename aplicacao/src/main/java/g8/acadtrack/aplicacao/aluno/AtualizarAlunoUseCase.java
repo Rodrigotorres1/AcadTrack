@@ -3,6 +3,7 @@ package g8.acadtrack.aplicacao.aluno;
 import g8.acadtrack.dominioacademico.aluno.Aluno;
 import g8.acadtrack.dominioacademico.aluno.AlunoRepository;
 import g8.acadtrack.dominioacademico.turma.TurmaRepository;
+import g8.acadtrack.dominiocompartilhado.email.Email;
 import g8.acadtrack.dominiocompartilhado.excecao.ConflitoDeEstadoException;
 import g8.acadtrack.dominiocompartilhado.excecao.EntidadeNaoEncontradaException;
 import org.springframework.stereotype.Service;
@@ -24,16 +25,16 @@ public class AtualizarAlunoUseCase {
         Aluno aluno = alunoRepository.buscarPorId(alunoId)
                 .orElseThrow(() -> new EntidadeNaoEncontradaException("Aluno não encontrado"));
 
-        String emailNovo = email != null ? email.trim() : null;
-        String emailAtual = aluno.getEmail() != null ? aluno.getEmail().trim() : null;
+        String emailNovo = Email.normalizar(email);
+        String emailAtual = aluno.getEmail();
 
-        if (emailNovo != null && !emailNovo.equalsIgnoreCase(emailAtual)) {
+        if (!emailNovo.equalsIgnoreCase(emailAtual)) {
             if (alunoRepository.existeAlunoComEmailIgnorandoMaiusculas(emailNovo)) {
                 throw new ConflitoDeEstadoException("Já existe outro aluno com este e-mail");
             }
         }
 
-        aluno.atualizar(nome, email);
+        aluno.atualizar(nome, emailNovo);
         if (turmaId != null) {
             turmaRepository.buscarPorId(turmaId)
                     .orElseThrow(() -> new EntidadeNaoEncontradaException("Turma não encontrada"));

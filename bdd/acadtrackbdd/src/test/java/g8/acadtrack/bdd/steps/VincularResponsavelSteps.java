@@ -1,7 +1,9 @@
 package g8.acadtrack.bdd.steps;
 
 import g8.acadtrack.aplicacao.aluno.CriarAlunoUseCase;
+import g8.acadtrack.aplicacao.responsavel.ConsultarDesempenhoAlunoPorResponsavelUseCase;
 import g8.acadtrack.aplicacao.responsavel.ConsultarNotasAlunoPorResponsavelUseCase;
+import g8.acadtrack.aplicacao.responsavel.ConsultarSimuladosAlunoPorResponsavelUseCase;
 import g8.acadtrack.aplicacao.responsavel.CriarResponsavelUseCase;
 import g8.acadtrack.aplicacao.responsavel.VincularResponsavelUseCase;
 import g8.acadtrack.aplicacao.responsavel.DesvincularResponsavelUseCase;
@@ -22,6 +24,8 @@ public class VincularResponsavelSteps {
     private final VincularResponsavelUseCase vincularResponsavelUseCase;
     private final DesvincularResponsavelUseCase desvincularResponsavelUseCase;
     private final ConsultarNotasAlunoPorResponsavelUseCase consultarNotasAlunoPorResponsavelUseCase;
+    private final ConsultarSimuladosAlunoPorResponsavelUseCase consultarSimuladosAlunoPorResponsavelUseCase;
+    private final ConsultarDesempenhoAlunoPorResponsavelUseCase consultarDesempenhoAlunoPorResponsavelUseCase;
 
     private Aluno aluno;
     private Responsavel responsavel;
@@ -33,7 +37,9 @@ public class VincularResponsavelSteps {
             CriarResponsavelUseCase criarResponsavelUseCase,
             VincularResponsavelUseCase vincularResponsavelUseCase,
             DesvincularResponsavelUseCase desvincularResponsavelUseCase,
-            ConsultarNotasAlunoPorResponsavelUseCase consultarNotasAlunoPorResponsavelUseCase
+            ConsultarNotasAlunoPorResponsavelUseCase consultarNotasAlunoPorResponsavelUseCase,
+            ConsultarSimuladosAlunoPorResponsavelUseCase consultarSimuladosAlunoPorResponsavelUseCase,
+            ConsultarDesempenhoAlunoPorResponsavelUseCase consultarDesempenhoAlunoPorResponsavelUseCase
     ) {
         this.context = context;
         this.criarAlunoUseCase = criarAlunoUseCase;
@@ -41,6 +47,8 @@ public class VincularResponsavelSteps {
         this.vincularResponsavelUseCase = vincularResponsavelUseCase;
         this.desvincularResponsavelUseCase = desvincularResponsavelUseCase;
         this.consultarNotasAlunoPorResponsavelUseCase = consultarNotasAlunoPorResponsavelUseCase;
+        this.consultarSimuladosAlunoPorResponsavelUseCase = consultarSimuladosAlunoPorResponsavelUseCase;
+        this.consultarDesempenhoAlunoPorResponsavelUseCase = consultarDesempenhoAlunoPorResponsavelUseCase;
     }
 
     @Dado("que o aluno {string} não possui responsável vinculado")
@@ -48,8 +56,8 @@ public class VincularResponsavelSteps {
         context.resetMensagens();
         excecao = null;
 
-        aluno = criarAlunoUseCase.executar(nomeAluno, nomeAluno + "@email.com");
-        responsavel = criarResponsavelUseCase.executar("Responsável " + nomeAluno, nomeAluno + "@resp.com");
+        aluno = criarAlunoUseCase.executar(nomeAluno, emailSeguro(nomeAluno) + "@email.com");
+        responsavel = criarResponsavelUseCase.executar("Responsável " + nomeAluno, emailSeguro(nomeAluno) + "@resp.com");
     }
 
     @Quando("o coordenador vincula o responsável {string} ao aluno {string}")
@@ -73,7 +81,7 @@ public class VincularResponsavelSteps {
     @Quando("o coordenador tenta desvincular um responsável do aluno {string}")
     public void oCoordenadorTentaDesvincularUmResponsavelDoAluno(String nomeAluno) {
         try {
-            desvincularResponsavelUseCase.executar(aluno.getId());
+            aluno = desvincularResponsavelUseCase.executar(aluno.getId());
             context.setOperacaoExecutada(true);
         } catch (Exception e) {
             excecao = e;
@@ -82,13 +90,28 @@ public class VincularResponsavelSteps {
         }
     }
 
+    @Dado("o coordenador desvincula o responsável do aluno")
+    public void oCoordenadorDesvinculaOResponsavelDoAluno() {
+        try {
+            aluno = desvincularResponsavelUseCase.executar(aluno.getId());
+            context.setOperacaoExecutada(true);
+        } catch (Exception e) {
+            excecao = e;
+            context.setMensagem(e.getMessage());
+            context.setOperacaoExecutada(false);
+        }
+
+        assertTrue(context.isOperacaoExecutada());
+        assertNull(excecao);
+    }
+
     @Dado("que o aluno {string} já possui vínculo ativo com responsável")
     public void queOAlunoJaPossuiVinculoAtivoComResponsavel(String nomeAluno) {
         context.resetMensagens();
         excecao = null;
 
-        aluno = criarAlunoUseCase.executar(nomeAluno, nomeAluno + "@email.com");
-        responsavel = criarResponsavelUseCase.executar("Responsável " + nomeAluno, nomeAluno + "@resp.com");
+        aluno = criarAlunoUseCase.executar(nomeAluno, emailSeguro(nomeAluno) + "@email.com");
+        responsavel = criarResponsavelUseCase.executar("Responsável " + nomeAluno, emailSeguro(nomeAluno) + "@resp.com");
         vincularResponsavelUseCase.executar(aluno.getId(), responsavel.getId(), true, true, true);
     }
 
@@ -131,6 +154,30 @@ public class VincularResponsavelSteps {
         }
     }
 
+    @Quando("o responsável tenta consultar simulados do aluno sem vínculo ativo")
+    public void oResponsavelTentaConsultarSimuladosDoAlunoSemVinculoAtivo() {
+        try {
+            consultarSimuladosAlunoPorResponsavelUseCase.executar(responsavel.getId(), aluno.getId());
+            context.setOperacaoExecutada(true);
+        } catch (Exception e) {
+            excecao = e;
+            context.setMensagem(e.getMessage());
+            context.setOperacaoExecutada(false);
+        }
+    }
+
+    @Quando("o responsável tenta consultar desempenho do aluno sem vínculo ativo")
+    public void oResponsavelTentaConsultarDesempenhoDoAlunoSemVinculoAtivo() {
+        try {
+            consultarDesempenhoAlunoPorResponsavelUseCase.executar(responsavel.getId(), aluno.getId());
+            context.setOperacaoExecutada(true);
+        } catch (Exception e) {
+            excecao = e;
+            context.setMensagem(e.getMessage());
+            context.setOperacaoExecutada(false);
+        }
+    }
+
     @Então("o sistema bloqueia o acesso por vínculo inativo")
     public void oSistemaBloqueiaOAcessoPorVinculoInativo() {
         assertFalse(context.isOperacaoExecutada());
@@ -147,10 +194,52 @@ public class VincularResponsavelSteps {
         vincularResponsavelUseCase.executar(aluno.getId(), responsavel.getId(), false, true, true);
     }
 
+    @Dado("que o aluno possui vínculo ativo com responsável sem permissão para simulados")
+    public void queOAlunoPossuiVinculoAtivoComResponsavelSemPermissaoParaSimulados() {
+        context.resetMensagens();
+        excecao = null;
+        aluno = criarAlunoUseCase.executar("Aluno Sem Permissao Simulados", "sem.permissao.simulados@email.com");
+        responsavel = criarResponsavelUseCase.executar("Responsável Sem Permissao Simulados", "sem.permissao.simulados@resp.com");
+        vincularResponsavelUseCase.executar(aluno.getId(), responsavel.getId(), true, false, true);
+    }
+
+    @Dado("que o aluno possui vínculo ativo com responsável sem permissão para desempenho")
+    public void queOAlunoPossuiVinculoAtivoComResponsavelSemPermissaoParaDesempenho() {
+        context.resetMensagens();
+        excecao = null;
+        aluno = criarAlunoUseCase.executar("Aluno Sem Permissao Desempenho", "sem.permissao.desempenho@email.com");
+        responsavel = criarResponsavelUseCase.executar("Responsável Sem Permissao Desempenho", "sem.permissao.desempenho@resp.com");
+        vincularResponsavelUseCase.executar(aluno.getId(), responsavel.getId(), true, true, false);
+    }
+
     @Quando("o responsável tenta consultar notas do aluno sem permissão")
     public void oResponsavelTentaConsultarNotasDoAlunoSemPermissao() {
         try {
             consultarNotasAlunoPorResponsavelUseCase.executar(responsavel.getId(), aluno.getId());
+            context.setOperacaoExecutada(true);
+        } catch (Exception e) {
+            excecao = e;
+            context.setMensagem(e.getMessage());
+            context.setOperacaoExecutada(false);
+        }
+    }
+
+    @Quando("o responsável tenta consultar simulados do aluno sem permissão")
+    public void oResponsavelTentaConsultarSimuladosDoAlunoSemPermissao() {
+        try {
+            consultarSimuladosAlunoPorResponsavelUseCase.executar(responsavel.getId(), aluno.getId());
+            context.setOperacaoExecutada(true);
+        } catch (Exception e) {
+            excecao = e;
+            context.setMensagem(e.getMessage());
+            context.setOperacaoExecutada(false);
+        }
+    }
+
+    @Quando("o responsável tenta consultar desempenho do aluno sem permissão")
+    public void oResponsavelTentaConsultarDesempenhoDoAlunoSemPermissao() {
+        try {
+            consultarDesempenhoAlunoPorResponsavelUseCase.executar(responsavel.getId(), aluno.getId());
             context.setOperacaoExecutada(true);
         } catch (Exception e) {
             excecao = e;
@@ -177,5 +266,9 @@ public class VincularResponsavelSteps {
         assertFalse(context.isOperacaoExecutada());
         assertNotNull(excecao);
         assertEquals("Não há vínculo ativo de responsável para o aluno", context.getMensagem());
+    }
+
+    private String emailSeguro(String nome) {
+        return nome.toLowerCase().replace(" ", ".");
     }
 }

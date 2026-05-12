@@ -29,6 +29,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class SolicitarRetificacaoNotaSteps {
 
+    private static final Long ID_INEXISTENTE = 999_999L;
+
     private final TestContext context;
     private final CriarAlunoUseCase criarAlunoUseCase;
     private final CriarDisciplinaUseCase criarDisciplinaUseCase;
@@ -81,7 +83,7 @@ public class SolicitarRetificacaoNotaSteps {
         excecao = null;
         retificacao = null;
 
-        aluno = criarAlunoUseCase.executar(nomeAluno, nomeAluno + "@email.com");
+        aluno = criarAlunoUseCase.executar(nomeAluno, emailSeguro(nomeAluno) + "@email.com");
         disciplina = criarDisciplinaUseCase.executar("Matemática " + nomeAluno);
         Disciplina segundaDisciplina = criarDisciplinaUseCase.executar("Português " + nomeAluno);
 
@@ -120,6 +122,20 @@ public class SolicitarRetificacaoNotaSteps {
         eleSolicitaRetificacaoInformandoAJustificativa("");
     }
 
+    @Quando("ele solicita retificação para uma nota inexistente")
+    public void eleSolicitaRetificacaoParaUmaNotaInexistente() {
+        prepararTentativaSemDados();
+
+        try {
+            retificacao = solicitarRetificacaoUseCase.executar(ID_INEXISTENTE, "Revisar nota inexistente");
+            context.setOperacaoExecutada(true);
+        } catch (RegraDeNegocioException | ConflitoDeEstadoException | EntidadeNaoEncontradaException e) {
+            excecao = e;
+            context.setMensagem(e.getMessage());
+            context.setOperacaoExecutada(false);
+        }
+    }
+
     @Dado("ele já possui uma solicitação de retificação em aberto para essa nota")
     public void eleJaPossuiUmaSolicitacaoDeRetificacaoEmAbertoParaEssaNota() {
         eleSolicitaRetificacaoInformandoAJustificativa("Primeira solicitação");
@@ -136,6 +152,20 @@ public class SolicitarRetificacaoNotaSteps {
     public void oResponsavelIniciaAAnaliseDaSolicitacaoDeRetificacao() {
         try {
             retificacao = iniciarAnaliseRetificacaoUseCase.executar(retificacao.getId());
+            context.setOperacaoExecutada(true);
+        } catch (EntidadeNaoEncontradaException | IllegalStateException e) {
+            excecao = e;
+            context.setMensagem(e.getMessage());
+            context.setOperacaoExecutada(false);
+        }
+    }
+
+    @Quando("o responsável inicia análise de uma solicitação de retificação inexistente")
+    public void oResponsavelIniciaAnaliseDeUmaSolicitacaoDeRetificacaoInexistente() {
+        prepararTentativaSemDados();
+
+        try {
+            retificacao = iniciarAnaliseRetificacaoUseCase.executar(ID_INEXISTENTE);
             context.setOperacaoExecutada(true);
         } catch (EntidadeNaoEncontradaException | IllegalStateException e) {
             excecao = e;
@@ -163,10 +193,38 @@ public class SolicitarRetificacaoNotaSteps {
         }
     }
 
+    @Quando("o responsável aprova uma solicitação de retificação inexistente")
+    public void oResponsavelAprovaUmaSolicitacaoDeRetificacaoInexistente() {
+        prepararTentativaSemDados();
+
+        try {
+            retificacao = aprovarRetificacaoUseCase.executar(ID_INEXISTENTE, 9.0, "Erro confirmado");
+            context.setOperacaoExecutada(true);
+        } catch (EntidadeNaoEncontradaException | IllegalStateException | RegraDeNegocioException e) {
+            excecao = e;
+            context.setMensagem(e.getMessage());
+            context.setOperacaoExecutada(false);
+        }
+    }
+
     @Quando("o responsável reprova a solicitação de retificação com justificativa {string}")
     public void oResponsavelReprovaASolicitacaoDeRetificacao(String justificativaDecisao) {
         try {
             retificacao = reprovarRetificacaoUseCase.executar(retificacao.getId(), justificativaDecisao);
+            context.setOperacaoExecutada(true);
+        } catch (EntidadeNaoEncontradaException | IllegalStateException | RegraDeNegocioException e) {
+            excecao = e;
+            context.setMensagem(e.getMessage());
+            context.setOperacaoExecutada(false);
+        }
+    }
+
+    @Quando("o responsável reprova uma solicitação de retificação inexistente")
+    public void oResponsavelReprovaUmaSolicitacaoDeRetificacaoInexistente() {
+        prepararTentativaSemDados();
+
+        try {
+            retificacao = reprovarRetificacaoUseCase.executar(ID_INEXISTENTE, "Não foi identificado erro");
             context.setOperacaoExecutada(true);
         } catch (EntidadeNaoEncontradaException | IllegalStateException | RegraDeNegocioException e) {
             excecao = e;
@@ -190,11 +248,27 @@ public class SolicitarRetificacaoNotaSteps {
         assertEquals("Justificativa é obrigatória", context.getMensagem());
     }
 
+    @Entao("o sistema informa que a nota não foi encontrada")
+    public void oSistemaInformaQueANotaNaoFoiEncontrada() {
+        assertFalse(context.isOperacaoExecutada());
+        assertNotNull(excecao);
+        assertInstanceOf(EntidadeNaoEncontradaException.class, excecao);
+        assertEquals("Nota não encontrada", context.getMensagem());
+    }
+
     @Entao("o sistema informa que já existe solicitação de retificação em aberto para esta nota")
     public void oSistemaInformaQueJaExisteSolicitacaoDeRetificacaoEmAbertoParaEstaNota() {
         assertFalse(context.isOperacaoExecutada());
         assertNotNull(excecao);
         assertEquals("Já existe solicitação de retificação em aberto para esta nota", context.getMensagem());
+    }
+
+    @Entao("o sistema informa que a solicitação de retificação não foi encontrada")
+    public void oSistemaInformaQueASolicitacaoDeRetificacaoNaoFoiEncontrada() {
+        assertFalse(context.isOperacaoExecutada());
+        assertNotNull(excecao);
+        assertInstanceOf(EntidadeNaoEncontradaException.class, excecao);
+        assertEquals("Solicitação de retificação não encontrada", context.getMensagem());
     }
 
     @Entao("o sistema atualiza a solicitação de retificação para status {string}")
@@ -241,5 +315,15 @@ public class SolicitarRetificacaoNotaSteps {
         Nota notaAtualizada = notaRepository.buscarPorId(nota.getId())
                 .orElseThrow(() -> new AssertionError("Nota não encontrada após reprovação da retificação"));
         assertEquals(valorOriginalNota, notaAtualizada.getValor(), 0.001);
+    }
+
+    private String emailSeguro(String nomeAluno) {
+        return nomeAluno.toLowerCase().replace(" ", ".");
+    }
+
+    private void prepararTentativaSemDados() {
+        context.resetMensagens();
+        excecao = null;
+        retificacao = null;
     }
 }

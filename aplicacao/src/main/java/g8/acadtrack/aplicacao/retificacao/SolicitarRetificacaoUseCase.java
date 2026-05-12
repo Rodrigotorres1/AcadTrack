@@ -5,7 +5,6 @@ import g8.acadtrack.dominioavaliacao.retificacao.SolicitacaoRetificacao;
 import g8.acadtrack.dominioavaliacao.retificacao.SolicitacaoRetificacaoRepository;
 import g8.acadtrack.dominiocompartilhado.excecao.ConflitoDeEstadoException;
 import g8.acadtrack.dominiocompartilhado.excecao.EntidadeNaoEncontradaException;
-import g8.acadtrack.dominiocompartilhado.excecao.RegraDeNegocioException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,21 +24,6 @@ public class SolicitarRetificacaoUseCase {
 
     @Transactional
     public SolicitacaoRetificacao executar(Long notaId, String justificativa) {
-        if (notaId == null) {
-            throw new RegraDeNegocioException("Nota é obrigatória");
-        }
-
-        notaRepository.buscarPorId(notaId)
-                .orElseThrow(() -> new EntidadeNaoEncontradaException("Nota não encontrada"));
-
-        if (justificativa == null || justificativa.isBlank()) {
-            throw new RegraDeNegocioException("Justificativa é obrigatória");
-        }
-
-        if (solicitacaoRetificacaoRepository.existeEmAbertoPorNotaId(notaId)) {
-            throw new ConflitoDeEstadoException("Já existe solicitação de retificação em aberto para esta nota");
-        }
-
         SolicitacaoRetificacao solicitacao = new SolicitacaoRetificacao(
                 null,
                 notaId,
@@ -47,6 +31,13 @@ public class SolicitarRetificacaoUseCase {
                 null,
                 SolicitacaoRetificacao.STATUS_PENDENTE
         );
+
+        notaRepository.buscarPorId(notaId)
+                .orElseThrow(() -> new EntidadeNaoEncontradaException("Nota não encontrada"));
+
+        if (solicitacaoRetificacaoRepository.existeEmAbertoPorNotaId(notaId)) {
+            throw new ConflitoDeEstadoException("Já existe solicitação de retificação em aberto para esta nota");
+        }
 
         return solicitacaoRetificacaoRepository.salvar(solicitacao);
     }

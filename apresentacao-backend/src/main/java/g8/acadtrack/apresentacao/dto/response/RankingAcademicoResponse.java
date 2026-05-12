@@ -17,7 +17,7 @@ public record RankingAcademicoResponse(
                 item.media(),
                 item.posicao(),
                 item.situacaoAcademica(),
-                item.nivelRisco()
+                item.nivelRisco().name()
         );
     }
 }

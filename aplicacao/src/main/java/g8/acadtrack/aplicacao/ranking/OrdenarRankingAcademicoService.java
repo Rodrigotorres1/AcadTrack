@@ -1,5 +1,6 @@
 package g8.acadtrack.aplicacao.ranking;
 
+import g8.acadtrack.dominiocompartilhado.risco.NivelRiscoAcademico;
 import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
@@ -42,13 +43,11 @@ public class OrdenarRankingAcademicoService {
                 .thenComparing(porId);
     }
 
-    private int pesoRisco(String nivelRisco) {
-        if ("ALTO".equals(nivelRisco)) {
-            return 0;
-        }
-        if ("MODERADO".equals(nivelRisco)) {
-            return 1;
-        }
-        return 2;
+    private int pesoRisco(NivelRiscoAcademico nivelRisco) {
+        return switch (nivelRisco) {
+            case ALTO -> 0;
+            case MODERADO -> 1;
+            case BAIXO -> 2;
+        };
     }
 }

@@ -21,7 +21,7 @@ public record NotificacaoResponsavelResponse(
                 notificacao.getId(),
                 notificacao.getAlunoId(),
                 notificacao.getResponsavelId(),
-                notificacao.getNivelRisco(),
+                notificacao.getNivelRisco().name(),
                 notificacao.getPrioridade(),
                 notificacao.getMensagem(),
                 notificacao.getDataCriacao(),

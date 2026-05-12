@@ -60,7 +60,10 @@ public class ResponsavelRepositoryJpa implements ResponsavelRepository {
 
     @Override
     public boolean existeResponsavelComEmailIgnorandoMaiusculas(String email) {
-        return repository.existsByEmailIgnoreCase(email);
+        if (email == null || email.isBlank()) {
+            return false;
+        }
+        return repository.existsByEmailIgnoreCase(email.trim());
     }
 
     @Override

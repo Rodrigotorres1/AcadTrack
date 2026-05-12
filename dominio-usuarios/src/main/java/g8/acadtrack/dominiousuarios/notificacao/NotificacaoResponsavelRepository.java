@@ -1,5 +1,7 @@
 package g8.acadtrack.dominiousuarios.notificacao;
 
+import g8.acadtrack.dominiocompartilhado.risco.NivelRiscoAcademico;
+
 import java.util.List;
 
 public interface NotificacaoResponsavelRepository {
@@ -8,5 +10,5 @@ public interface NotificacaoResponsavelRepository {
 
     List<NotificacaoResponsavel> buscarPorResponsavelId(Long responsavelId);
 
-    boolean existeNotificacaoNaoLidaPara(Long alunoId, Long responsavelId, String nivelRisco);
+    boolean existeNotificacaoNaoLidaPara(Long alunoId, Long responsavelId, NivelRiscoAcademico nivelRisco);
 }

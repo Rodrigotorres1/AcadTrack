@@ -20,7 +20,29 @@ Feature: Vincular ou desvincular responsável
     Quando o responsável tenta consultar notas do aluno sem vínculo ativo
     Então o sistema bloqueia o acesso por vínculo inativo
 
+  Scenario: Impedir acesso a simulados após desvincular responsável
+    Dado que o aluno "João Silva" já possui vínculo ativo com responsável
+    E o coordenador desvincula o responsável do aluno
+    Quando o responsável tenta consultar simulados do aluno sem vínculo ativo
+    Então o sistema bloqueia o acesso por vínculo inativo
+
+  Scenario: Impedir acesso a desempenho após desvincular responsável
+    Dado que o aluno "João Silva" já possui vínculo ativo com responsável
+    E o coordenador desvincula o responsável do aluno
+    Quando o responsável tenta consultar desempenho do aluno sem vínculo ativo
+    Então o sistema bloqueia o acesso por vínculo inativo
+
   Scenario: Impedir acesso sem permissão adequada
     Dado que o aluno possui vínculo ativo com responsável sem permissão para notas
     Quando o responsável tenta consultar notas do aluno sem permissão
+    Então o sistema bloqueia o acesso por permissão insuficiente
+
+  Scenario: Impedir acesso a simulados sem permissão adequada
+    Dado que o aluno possui vínculo ativo com responsável sem permissão para simulados
+    Quando o responsável tenta consultar simulados do aluno sem permissão
+    Então o sistema bloqueia o acesso por permissão insuficiente
+
+  Scenario: Impedir acesso a desempenho sem permissão adequada
+    Dado que o aluno possui vínculo ativo com responsável sem permissão para desempenho
+    Quando o responsável tenta consultar desempenho do aluno sem permissão
     Então o sistema bloqueia o acesso por permissão insuficiente

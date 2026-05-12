@@ -57,6 +57,12 @@ public class AtualizarSimuladoUseCase {
                     });
         }
 
+        boolean temNotas = !notaRepository.buscarPorSimuladoId(simuladoId).isEmpty();
+        if (temNotas) {
+            throw new ConflitoDeEstadoException(
+                    "Simulado com notas lançadas não pode ser alterado");
+        }
+
         validarComposicaoSimuladoService.validarDisciplinasParaCriacao(disciplinasIds);
 
         List<Disciplina> disciplinas = disciplinaRepository.buscarPorIds(disciplinasIds);
@@ -67,12 +73,6 @@ public class AtualizarSimuladoUseCase {
         boolean existeDisciplinaInativa = disciplinas.stream().anyMatch(d -> !d.estaAtiva());
         if (existeDisciplinaInativa) {
             throw new RegraDeNegocioException("Disciplina inativa não pode ser vinculada a simulado");
-        }
-
-        boolean temNotas = !notaRepository.buscarPorSimuladoId(simuladoId).isEmpty();
-        if (temNotas) {
-            throw new ConflitoDeEstadoException(
-                    "Simulado com notas lançadas não pode ser alterado");
         }
 
         simulado.atualizar(descricaoTrimmed);

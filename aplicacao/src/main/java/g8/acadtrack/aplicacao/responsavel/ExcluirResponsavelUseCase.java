@@ -7,8 +7,6 @@ import g8.acadtrack.dominiousuarios.responsavel.ResponsavelRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Objects;
-
 @Service
 public class ExcluirResponsavelUseCase {
 
@@ -28,9 +26,7 @@ public class ExcluirResponsavelUseCase {
         responsavelRepository.buscarPorId(responsavelId)
                 .orElseThrow(() -> new EntidadeNaoEncontradaException("Responsavel nao encontrado"));
 
-        alunoRepository.buscarTodos()
-                .stream()
-                .filter(aluno -> Objects.equals(aluno.getResponsavelId(), responsavelId))
+        alunoRepository.buscarPorResponsavelId(responsavelId)
                 .forEach(this::removerResponsavelDoAluno);
 
         responsavelRepository.excluirPorId(responsavelId);

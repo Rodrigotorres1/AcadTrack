@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-@Tag(name = "Rankings", description = "Ranking por simulado (alternativa atual ao ranking legado em /notas).")
+@Tag(name = "Rankings", description = "Consultas de ranking acadêmico geral e ranking de alunos por simulado.")
 @RestController
 @RequestMapping("/rankings")
 public class RankingController {

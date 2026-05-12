@@ -15,4 +15,12 @@
     <artifactId>dominio-academico</artifactId>
     <packaging>jar</packaging>
 
+    <dependencies>
+        <dependency>
+            <groupId>g8</groupId>
+            <artifactId>dominio-compartilhado</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
+
 </project>
