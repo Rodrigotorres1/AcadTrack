@@ -38,3 +38,17 @@ Feature: Solicitar retificação de nota
     Quando o responsável reprova a solicitação de retificação com justificativa "Não foi identificado erro"
     Então o sistema atualiza a solicitação de retificação para status "REPROVADA"
     E a nota do aluno permanece com o valor original
+
+  Scenario: Não permitir aprovar retificação sem justificativa de decisão
+    Dado que o aluno "Maria Oliveira" possui uma nota lançada
+    E ele solicita retificação informando a justificativa "Revisão necessária"
+    E a solicitação está em análise
+    Quando o responsável tenta aprovar a retificação sem justificativa de decisão
+    Então o sistema informa que a justificativa da decisão é obrigatória
+
+  Scenario: Não permitir reprovar retificação sem justificativa de decisão
+    Dado que o aluno "Pedro Santos" possui uma nota lançada
+    E ele solicita retificação informando a justificativa "Revisão necessária"
+    E a solicitação está em análise
+    Quando o responsável tenta reprovar a retificação sem justificativa de decisão
+    Então o sistema informa que a justificativa da decisão é obrigatória

@@ -46,11 +46,11 @@ public class LancarNotaUseCase {
         Nota nota = new Nota(null, alunoId, simuladoId, disciplinaId, valor);
         Nota notaSalva = notaRepository.salvar(nota);
 
-        double mediaAtual = avaliacaoAcademicaService.calcularMedia(notaRepository.buscarPorAlunoId(alunoId));
-        aluno.atualizarDesempenhoAcademico(mediaAtual, avaliacaoAcademicaService.calcularSituacao(mediaAtual));
+        double mediaAritmetica = avaliacaoAcademicaService.calcularMediaAritmetica(notaRepository.buscarPorAlunoId(alunoId));
+        aluno.atualizarDesempenhoAcademico(mediaAritmetica, avaliacaoAcademicaService.calcularSituacao(mediaAritmetica));
         alunoRepository.salvar(aluno);
 
-        AnaliseDesempenhoAcademicoResultado analise = analisarDesempenhoAcademicoUseCase.executar(alunoId);
+        AnaliseDesempenhoAcademicoResultado analise = analisarDesempenhoAcademicoUseCase.executarSemRanking(alunoId);
         publicadorRiscoAcademico.publicarSeRiscoNotificavel(analise);
 
         return notaSalva;

@@ -62,7 +62,7 @@ public class SolicitacaoRetificacaoResponse {
                 solicitacao.getNotaId(),
                 solicitacao.getJustificativa(),
                 solicitacao.getJustificativaDecisao(),
-                solicitacao.getStatus()
+                solicitacao.getStatus().name()
         );
     }
 
@@ -79,7 +79,7 @@ public class SolicitacaoRetificacaoResponse {
                 solicitacao.notaAtual(),
                 solicitacao.justificativa(),
                 solicitacao.justificativaDecisao(),
-                solicitacao.status()
+                solicitacao.status().name()
         );
     }
 

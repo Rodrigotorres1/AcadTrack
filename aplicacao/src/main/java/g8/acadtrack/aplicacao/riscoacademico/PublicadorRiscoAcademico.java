@@ -19,10 +19,7 @@ public class PublicadorRiscoAcademico {
     }
 
     public void publicarSeRiscoNotificavel(AnaliseDesempenhoAcademicoResultado analise) {
-        boolean riscoNotificavel = "ALTO".equals(analise.nivelRisco()) || "MODERADO".equals(analise.nivelRisco());
-        boolean destaqueRanking = analise.alunoNoTop10();
-
-        if (!riscoNotificavel && !destaqueRanking) {
+        if (!analise.riscoAcademico()) {
             return;
         }
 

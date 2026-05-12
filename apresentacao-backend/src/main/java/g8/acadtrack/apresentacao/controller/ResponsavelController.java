@@ -13,6 +13,7 @@ import g8.acadtrack.apresentacao.dto.response.ErroApiResponse;
 import g8.acadtrack.apresentacao.dto.response.NotificacaoResponsavelResponse;
 import g8.acadtrack.apresentacao.dto.response.NotaResponse;
 import g8.acadtrack.apresentacao.dto.response.ResponsavelResponse;
+import g8.acadtrack.apresentacao.dto.response.SimuladoResponse;
 import g8.acadtrack.dominioavaliacao.nota.Nota;
 import g8.acadtrack.dominiousuarios.responsavel.Responsavel;
 import io.swagger.v3.oas.annotations.Operation;
@@ -143,21 +144,26 @@ public class ResponsavelController {
         return ResponseEntity.ok(notas.stream().map(NotaResponse::fromDomain).toList());
     }
 
-    @Operation(summary = "IDs de simulados em que o aluno possui nota")
+    @Operation(summary = "Listar simulados em que o aluno possui nota")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Lista pode ser vazia",
-                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = Long.class)))),
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = SimuladoResponse.class)))),
             @ApiResponse(responseCode = "400", description = "Sem permissão ou regra",
                     content = @Content(schema = @Schema(implementation = ErroApiResponse.class))),
             @ApiResponse(responseCode = "404", description = "Recursos não encontrados",
                     content = @Content(schema = @Schema(implementation = ErroApiResponse.class)))
     })
     @GetMapping("/{responsavelId}/alunos/{alunoId}/simulados")
-    public ResponseEntity<List<Long>> consultarSimulados(
+    public ResponseEntity<List<SimuladoResponse>> consultarSimulados(
             @Parameter(description = "Responsável") @PathVariable Long responsavelId,
             @Parameter(description = "Aluno") @PathVariable Long alunoId
     ) {
-        return ResponseEntity.ok(consultarSimuladosAlunoPorResponsavelUseCase.executar(responsavelId, alunoId));
+        return ResponseEntity.ok(
+                consultarSimuladosAlunoPorResponsavelUseCase.executar(responsavelId, alunoId)
+                        .stream()
+                        .map(SimuladoResponse::fromDomain)
+                        .toList()
+        );
     }
 
     @Operation(summary = "Consultar desempenho consolidado")

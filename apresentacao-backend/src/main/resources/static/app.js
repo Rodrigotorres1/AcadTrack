@@ -772,10 +772,10 @@ function renderPortalSuccess(desempenhoResult, notasResult, simuladosResult) {
                 <h3>Simulados</h3>
                 <p class="muted">${escapeHtml(simulados.length)} simulados disponíveis.</p>
                 <div class="compact-list">
-                    ${simulados.slice(0, 6).map((simuladoId) => `
+                    ${simulados.slice(0, 6).map((simulado) => `
                         <div class="compact-row">
-                            <span>Simulado</span>
-                            <strong>${escapeHtml(simuladoId)}</strong>
+                            <span>${escapeHtml(simulado?.descricao || "Simulado")}</span>
+                            <strong>ID ${escapeHtml(simulado?.id ?? simulado ?? "-")}</strong>
                         </div>
                     `).join("") || `<span class="muted">Sem simulados visíveis.</span>`}
                 </div>
@@ -1015,13 +1015,15 @@ async function handleStudentSubmit(event) {
             body: JSON.stringify({ nome, email })
         });
 
-        await requestJson(`/alunos/${encodeURIComponent(aluno.id)}/turma`, {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ turmaId: Number(turmaId) })
-        });
+        if (turmaId) {
+            await requestJson(`/alunos/${encodeURIComponent(aluno.id)}/turma`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ turmaId: Number(turmaId) })
+            });
+        }
 
         showStudentsList();
         await loadStudentsView();

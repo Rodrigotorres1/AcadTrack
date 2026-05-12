@@ -142,7 +142,7 @@ Guarde o `id` retornado como `notaMatematicaId`.
 Guarde o `id` retornado como `notaPortuguesId`.
 
 Validar no `AlunoResponse`:
-- `mediaAtual` (arredondada com 2 casas)
+- `mediaAritmetica` (arredondada com 2 casas)
 - `situacaoAcademica`
 
 ### Fluxos negativos recomendados

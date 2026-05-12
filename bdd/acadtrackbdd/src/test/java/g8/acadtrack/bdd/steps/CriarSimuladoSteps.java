@@ -2,6 +2,7 @@ package g8.acadtrack.bdd.steps;
 
 import g8.acadtrack.aplicacao.aluno.CriarAlunoUseCase;
 import g8.acadtrack.aplicacao.disciplina.CriarDisciplinaUseCase;
+import g8.acadtrack.aplicacao.disciplina.InativarDisciplinaUseCase;
 import g8.acadtrack.aplicacao.nota.LancarNotaUseCase;
 import g8.acadtrack.aplicacao.simulado.AtualizarSimuladoUseCase;
 import g8.acadtrack.aplicacao.simulado.CriarSimuladoUseCase;
@@ -25,6 +26,7 @@ public class CriarSimuladoSteps {
     private final CriarSimuladoUseCase criarSimuladoUseCase;
     private final AtualizarSimuladoUseCase atualizarSimuladoUseCase;
     private final CriarDisciplinaUseCase criarDisciplinaUseCase;
+    private final InativarDisciplinaUseCase inativarDisciplinaUseCase;
     private final CriarAlunoUseCase criarAlunoUseCase;
     private final LancarNotaUseCase lancarNotaUseCase;
 
@@ -38,6 +40,7 @@ public class CriarSimuladoSteps {
             CriarSimuladoUseCase criarSimuladoUseCase,
             AtualizarSimuladoUseCase atualizarSimuladoUseCase,
             CriarDisciplinaUseCase criarDisciplinaUseCase,
+            InativarDisciplinaUseCase inativarDisciplinaUseCase,
             CriarAlunoUseCase criarAlunoUseCase,
             LancarNotaUseCase lancarNotaUseCase
     ) {
@@ -45,6 +48,7 @@ public class CriarSimuladoSteps {
         this.criarSimuladoUseCase = criarSimuladoUseCase;
         this.atualizarSimuladoUseCase = atualizarSimuladoUseCase;
         this.criarDisciplinaUseCase = criarDisciplinaUseCase;
+        this.inativarDisciplinaUseCase = inativarDisciplinaUseCase;
         this.criarAlunoUseCase = criarAlunoUseCase;
         this.lancarNotaUseCase = lancarNotaUseCase;
     }
@@ -157,6 +161,18 @@ public class CriarSimuladoSteps {
         lancarNotaUseCase.executar(aluno.getId(), simulado.getId(), disciplina1.getId(), 8.0);
     }
 
+    @Dado("que existe um simulado cadastrado")
+    public void queExisteUmSimuladoCadastrado() {
+        queOCoordenadorDesejaCriarUmSimulado();
+        String sufixo = UUID.randomUUID().toString();
+        Disciplina disciplina1 = criarDisciplinaUseCase.executar("Disciplina Atualizacao A " + sufixo);
+        Disciplina disciplina2 = criarDisciplinaUseCase.executar("Disciplina Atualizacao B " + sufixo);
+        simulado = criarSimuladoUseCase.executar(
+                "Simulado Atualizacao " + sufixo,
+                List.of(disciplina1.getId(), disciplina2.getId())
+        );
+    }
+
     @Quando("ele tenta criar outro simulado com descrição {string}")
     public void eleTentaCriarOutroSimuladoComDescricao(String descricao) {
         try {
@@ -181,6 +197,26 @@ public class CriarSimuladoSteps {
                     simulado.getId(),
                     simulado.getDescricao(),
                     List.of(novaDisciplina1.getId(), novaDisciplina2.getId())
+            );
+            context.setOperacaoExecutada(true);
+        } catch (Exception e) {
+            excecao = e;
+            context.setMensagem(e.getMessage());
+            context.setOperacaoExecutada(false);
+        }
+    }
+
+    @Quando("ele tenta atualizar o simulado com uma disciplina inativa")
+    public void eleTentaAtualizarOSimuladoComUmaDisciplinaInativa() {
+        try {
+            String sufixo = UUID.randomUUID().toString();
+            Disciplina disciplinaInativa = criarDisciplinaUseCase.executar("Disciplina Inativa Atualizacao " + sufixo);
+            disciplinaInativa = inativarDisciplinaUseCase.executar(disciplinaInativa.getId());
+            Disciplina disciplinaAtiva = criarDisciplinaUseCase.executar("Disciplina Ativa Atualizacao " + sufixo);
+            simulado = atualizarSimuladoUseCase.executar(
+                    simulado.getId(),
+                    simulado.getDescricao(),
+                    List.of(disciplinaInativa.getId(), disciplinaAtiva.getId())
             );
             context.setOperacaoExecutada(true);
         } catch (Exception e) {
@@ -232,10 +268,17 @@ public class CriarSimuladoSteps {
         assertEquals("Já existe simulado cadastrado com esta descrição", context.getMensagem());
     }
 
-    @Então("o sistema informa que simulado com notas nao pode ter disciplinas alteradas")
+    @Então("o sistema informa que simulado com notas lançadas não pode ser alterado")
     public void oSistemaInformaQueSimuladoComNotasNaoPodeTerDisciplinasAlteradas() {
         assertFalse(context.isOperacaoExecutada());
         assertNotNull(excecao);
-        assertEquals("Simulado com notas lançadas não pode ter suas disciplinas alteradas", context.getMensagem());
+        assertEquals("Simulado com notas lançadas não pode ser alterado", context.getMensagem());
+    }
+
+    @Então("o sistema informa que simulado nao pode ser atualizado com disciplina inativa")
+    public void oSistemaInformaQueSimuladoNaoPodeSerAtualizadoComDisciplinaInativa() {
+        assertFalse(context.isOperacaoExecutada());
+        assertNotNull(excecao);
+        assertEquals("Disciplina inativa não pode ser vinculada a simulado", context.getMensagem());
     }
 }

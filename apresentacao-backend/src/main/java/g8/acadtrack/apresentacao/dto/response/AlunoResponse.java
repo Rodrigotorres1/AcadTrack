@@ -14,7 +14,7 @@ public class AlunoResponse {
     private boolean podeVisualizarNotas;
     private boolean podeVisualizarSimulados;
     private boolean podeVisualizarDesempenho;
-    private double mediaAtual;
+    private double mediaAritmetica;
     private String situacaoAcademica;
 
     public AlunoResponse(
@@ -28,7 +28,7 @@ public class AlunoResponse {
             boolean podeVisualizarNotas,
             boolean podeVisualizarSimulados,
             boolean podeVisualizarDesempenho,
-            double mediaAtual,
+            double mediaAritmetica,
             String situacaoAcademica
     ) {
         this.id = id;
@@ -41,7 +41,7 @@ public class AlunoResponse {
         this.podeVisualizarNotas = podeVisualizarNotas;
         this.podeVisualizarSimulados = podeVisualizarSimulados;
         this.podeVisualizarDesempenho = podeVisualizarDesempenho;
-        this.mediaAtual = mediaAtual;
+        this.mediaAritmetica = mediaAritmetica;
         this.situacaoAcademica = situacaoAcademica;
     }
 
@@ -57,7 +57,7 @@ public class AlunoResponse {
                 aluno.isPermissaoVisualizarNotas(),
                 aluno.isPermissaoVisualizarSimulados(),
                 aluno.isPermissaoVisualizarDesempenho(),
-                aluno.getMediaAtual(),
+                aluno.getMediaAritmetica(),
                 aluno.getSituacaoAcademica().name()
         );
     }
@@ -102,8 +102,8 @@ public class AlunoResponse {
         return podeVisualizarDesempenho;
     }
 
-    public double getMediaAtual() {
-        return mediaAtual;
+    public double getMediaAritmetica() {
+        return mediaAritmetica;
     }
 
     public String getSituacaoAcademica() {

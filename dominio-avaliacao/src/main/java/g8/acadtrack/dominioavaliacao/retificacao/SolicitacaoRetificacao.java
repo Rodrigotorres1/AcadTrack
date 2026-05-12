@@ -1,19 +1,21 @@
 package g8.acadtrack.dominioavaliacao.retificacao;
 
+import g8.acadtrack.dominiocompartilhado.excecao.RegraDeNegocioException;
+
 import java.util.Objects;
 
 public class SolicitacaoRetificacao {
 
-    public static final String STATUS_PENDENTE = "PENDENTE";
-    public static final String STATUS_EM_ANALISE = "EM_ANALISE";
-    public static final String STATUS_APROVADA = "APROVADA";
-    public static final String STATUS_REPROVADA = "REPROVADA";
+    public static final StatusSolicitacaoRetificacao STATUS_PENDENTE = StatusSolicitacaoRetificacao.PENDENTE;
+    public static final StatusSolicitacaoRetificacao STATUS_EM_ANALISE = StatusSolicitacaoRetificacao.EM_ANALISE;
+    public static final StatusSolicitacaoRetificacao STATUS_APROVADA = StatusSolicitacaoRetificacao.APROVADA;
+    public static final StatusSolicitacaoRetificacao STATUS_REPROVADA = StatusSolicitacaoRetificacao.REPROVADA;
 
     private Long id;
     private Long notaId;
     private String justificativa;
     private String justificativaDecisao;
-    private String status;
+    private StatusSolicitacaoRetificacao status;
 
     public SolicitacaoRetificacao(
             Long id,
@@ -22,19 +24,25 @@ public class SolicitacaoRetificacao {
             String justificativaDecisao,
             String status
     ) {
-        if (notaId == null) {
-            throw new IllegalArgumentException("Nota é obrigatória");
-        }
+        this(id, notaId, justificativa, justificativaDecisao, StatusSolicitacaoRetificacao.normalizar(status));
+    }
 
-        if (justificativa == null || justificativa.isBlank()) {
-            throw new IllegalArgumentException("Justificativa é obrigatória");
+    public SolicitacaoRetificacao(
+            Long id,
+            Long notaId,
+            String justificativa,
+            String justificativaDecisao,
+            StatusSolicitacaoRetificacao status
+    ) {
+        if (notaId == null) {
+            throw new RegraDeNegocioException("Nota é obrigatória");
         }
 
         this.id = id;
         this.notaId = notaId;
         this.justificativa = justificativa;
         this.justificativaDecisao = normalizarJustificativaDecisao(justificativaDecisao);
-        this.status = normalizarStatus(status);
+        this.status = StatusSolicitacaoRetificacao.normalizar(status);
     }
 
     public Long getId() {
@@ -49,7 +57,7 @@ public class SolicitacaoRetificacao {
         return justificativa;
     }
 
-    public String getStatus() {
+    public StatusSolicitacaoRetificacao getStatus() {
         return status;
     }
 
@@ -58,57 +66,37 @@ public class SolicitacaoRetificacao {
     }
 
     public void iniciarAnalise() {
-        if (!Objects.equals(status, STATUS_PENDENTE)) {
+        if (!Objects.equals(status, StatusSolicitacaoRetificacao.PENDENTE)) {
             throw new IllegalStateException("A solicitação deve estar pendente para iniciar análise");
         }
-        this.status = STATUS_EM_ANALISE;
+        this.status = StatusSolicitacaoRetificacao.EM_ANALISE;
     }
 
     public void aprovar(String justificativaDecisao) {
-        if (!Objects.equals(status, STATUS_EM_ANALISE)) {
+        if (!Objects.equals(status, StatusSolicitacaoRetificacao.EM_ANALISE)) {
             throw new IllegalStateException("A solicitação deve estar em análise para aprovação");
         }
         if (justificativaDecisao == null || justificativaDecisao.isBlank()) {
-            throw new IllegalArgumentException("Justificativa da decisão é obrigatória");
+            throw new RegraDeNegocioException("Justificativa é obrigatória");
         }
         this.justificativaDecisao = justificativaDecisao.trim();
-        this.status = STATUS_APROVADA;
+        this.status = StatusSolicitacaoRetificacao.APROVADA;
     }
 
     public void reprovar(String justificativaDecisao) {
-        if (!Objects.equals(status, STATUS_EM_ANALISE)) {
+        if (!Objects.equals(status, StatusSolicitacaoRetificacao.EM_ANALISE)) {
             throw new IllegalStateException("A solicitação deve estar em análise para reprovação");
         }
         if (justificativaDecisao == null || justificativaDecisao.isBlank()) {
-            throw new IllegalArgumentException("Justificativa da decisão é obrigatória");
+            throw new RegraDeNegocioException("Justificativa é obrigatória");
         }
         this.justificativaDecisao = justificativaDecisao.trim();
-        this.status = STATUS_REPROVADA;
+        this.status = StatusSolicitacaoRetificacao.REPROVADA;
     }
 
     public boolean estaEmAberto() {
-        return Objects.equals(status, STATUS_PENDENTE) || Objects.equals(status, STATUS_EM_ANALISE);
-    }
-
-    private String normalizarStatus(String status) {
-        if (status == null || status.isBlank()) {
-            return STATUS_PENDENTE;
-        }
-
-        String statusNormalizado = status.trim().toUpperCase();
-        if (Objects.equals(statusNormalizado, "REJEITADA")) {
-            return STATUS_REPROVADA;
-        }
-
-        if (
-                !Objects.equals(statusNormalizado, STATUS_PENDENTE)
-                        && !Objects.equals(statusNormalizado, STATUS_EM_ANALISE)
-                        && !Objects.equals(statusNormalizado, STATUS_APROVADA)
-                        && !Objects.equals(statusNormalizado, STATUS_REPROVADA)
-        ) {
-            throw new IllegalArgumentException("Status de solicitação de retificação inválido");
-        }
-        return statusNormalizado;
+        return Objects.equals(status, StatusSolicitacaoRetificacao.PENDENTE)
+                || Objects.equals(status, StatusSolicitacaoRetificacao.EM_ANALISE);
     }
 
     private String normalizarJustificativaDecisao(String justificativaDecisao) {

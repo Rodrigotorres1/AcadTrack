@@ -45,7 +45,11 @@ public class AtualizarSimuladoUseCase {
         Simulado simulado = simuladoRepository.buscarPorId(simuladoId)
                 .orElseThrow(() -> new EntidadeNaoEncontradaException("Simulado não encontrado"));
 
-        String descricaoTrimmed = descricao != null ? descricao.trim() : "";
+        if (descricao == null || descricao.isBlank()) {
+            throw new RegraDeNegocioException("Descrição é obrigatória");
+        }
+
+        String descricaoTrimmed = descricao.trim();
         if (!descricaoTrimmed.equalsIgnoreCase(simulado.getDescricao())) {
             simuladoRepository.buscarPorDescricaoNormalizada(descricaoTrimmed)
                     .ifPresent(outro -> {
@@ -65,12 +69,13 @@ public class AtualizarSimuladoUseCase {
             throw new RegraDeNegocioException("Disciplina inativa não pode ser vinculada a simulado");
         }
 
-        simulado.atualizar(descricao);
-
-        if (!notaRepository.buscarPorSimuladoId(simuladoId).isEmpty()) {
+        boolean temNotas = !notaRepository.buscarPorSimuladoId(simuladoId).isEmpty();
+        if (temNotas) {
             throw new ConflitoDeEstadoException(
-                    "Simulado com notas lançadas não pode ter suas disciplinas alteradas");
+                    "Simulado com notas lançadas não pode ser alterado");
         }
+
+        simulado.atualizar(descricaoTrimmed);
 
         simuladoDisciplinaRepository.excluirPorSimulado(simuladoId);
         for (Disciplina disciplina : disciplinas) {

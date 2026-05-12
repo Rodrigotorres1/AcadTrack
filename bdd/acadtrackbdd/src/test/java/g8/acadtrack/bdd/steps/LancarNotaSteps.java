@@ -172,7 +172,7 @@ public class LancarNotaSteps {
 
         assertTrue(context.isOperacaoExecutada());
         assertNull(excecao);
-        assertEquals(mediaEsperada, alunoAtualizado.getMediaAtual(), 0.001);
+        assertEquals(mediaEsperada, alunoAtualizado.getMediaAritmetica(), 0.001);
     }
 
     @Então("o sistema atualiza a situação acadêmica do aluno para {string}")

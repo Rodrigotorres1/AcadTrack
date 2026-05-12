@@ -11,7 +11,7 @@ import java.util.List;
 @Service
 public class AvaliacaoAcademicaService {
 
-    public double calcularMedia(List<Nota> notas) {
+    public double calcularMediaAritmetica(List<Nota> notas) {
         if (notas == null || notas.isEmpty()) {
             return 0.0;
         }

@@ -1,7 +1,10 @@
 package g8.acadtrack.infraestrutura.persistencia.entidade;
 
+import g8.acadtrack.dominioavaliacao.retificacao.StatusSolicitacaoRetificacao;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -19,7 +22,9 @@ public class SolicitacaoRetificacaoJpaEntity {
     private Long notaId;
     private String justificativa;
     private String justificativaDecisao;
-    private String status;
+
+    @Enumerated(EnumType.STRING)
+    private StatusSolicitacaoRetificacao status;
 
     public SolicitacaoRetificacaoJpaEntity() {
     }
@@ -29,7 +34,7 @@ public class SolicitacaoRetificacaoJpaEntity {
             Long notaId,
             String justificativa,
             String justificativaDecisao,
-            String status
+            StatusSolicitacaoRetificacao status
     ) {
         this.id = id;
         this.notaId = notaId;
@@ -50,7 +55,7 @@ public class SolicitacaoRetificacaoJpaEntity {
         return justificativa;
     }
 
-    public String getStatus() {
+    public StatusSolicitacaoRetificacao getStatus() {
         return status;
     }
 
@@ -74,7 +79,7 @@ public class SolicitacaoRetificacaoJpaEntity {
         this.justificativaDecisao = justificativaDecisao;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(StatusSolicitacaoRetificacao status) {
         this.status = status;
     }
 }

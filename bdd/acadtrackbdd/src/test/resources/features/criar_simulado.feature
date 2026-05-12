@@ -33,4 +33,9 @@ Feature: Criar simulado com disciplinas vinculadas
   Scenario: Não permitir alterar disciplinas de simulado com notas lançadas
     Dado que existe um simulado com nota lancada
     Quando ele tenta alterar as disciplinas do simulado
-    Então o sistema informa que simulado com notas nao pode ter disciplinas alteradas
+    Então o sistema informa que simulado com notas lançadas não pode ser alterado
+
+  Scenario: Nao permitir atualizar simulado com disciplina inativa
+    Dado que existe um simulado cadastrado
+    Quando ele tenta atualizar o simulado com uma disciplina inativa
+    Entao o sistema informa que simulado nao pode ser atualizado com disciplina inativa

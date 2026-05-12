@@ -75,15 +75,22 @@ public class SimuladoController {
         );
     }
 
+    @Operation(summary = "Listar disciplinas vinculadas ao simulado")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Lista de disciplinas (pode ser vazia)",
+                    content = @Content(schema = @Schema(implementation = SimuladoDetalheResponse.DisciplinaVinculadaResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Simulado não encontrado",
+                    content = @Content(schema = @Schema(implementation = ErroApiResponse.class)))
+    })
     @GetMapping("/{simuladoId}/disciplinas")
-public ResponseEntity<List<SimuladoDetalheResponse.DisciplinaVinculadaResponse>> listarDisciplinasDoSimulado(
-        @PathVariable Long simuladoId
-) {
-    return ResponseEntity.ok(
-            SimuladoDetalheResponse.fromApplication(detalharSimuladoUseCase.executar(simuladoId))
-                    .getDisciplinas()
-    );
-}
+    public ResponseEntity<List<SimuladoDetalheResponse.DisciplinaVinculadaResponse>> listarDisciplinasDoSimulado(
+            @PathVariable Long simuladoId
+    ) {
+        return ResponseEntity.ok(
+                SimuladoDetalheResponse.fromApplication(detalharSimuladoUseCase.executar(simuladoId))
+                        .getDisciplinas()
+        );
+    }
 
     @Operation(summary = "Editar simulado")
     @ApiResponses(value = {

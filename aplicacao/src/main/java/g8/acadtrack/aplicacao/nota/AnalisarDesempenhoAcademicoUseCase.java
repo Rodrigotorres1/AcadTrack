@@ -54,7 +54,7 @@ public class AnalisarDesempenhoAcademicoUseCase extends FluxoAnaliseAcademicaTem
 
     @Override
     protected double calcularMediaGeral(List<Nota> notas) {
-        return avaliacaoAcademicaService.calcularMedia(notas);
+        return avaliacaoAcademicaService.calcularMediaAritmetica(notas);
     }
 
     @Override
@@ -68,6 +68,24 @@ public class AnalisarDesempenhoAcademicoUseCase extends FluxoAnaliseAcademicaTem
             List<Nota> notas,
             double mediaGeral,
             SituacaoAcademica situacaoAcademica
+    ) {
+        return montarResultado(alunoId, notas, mediaGeral, situacaoAcademica, true);
+    }
+
+    public AnaliseDesempenhoAcademicoResultado executarSemRanking(Long alunoId) {
+        List<Nota> notas = buscarNotas(alunoId);
+        validarNotas(notas);
+        double mediaGeral = calcularMediaGeral(notas);
+        SituacaoAcademica situacaoAcademica = calcularSituacaoAcademica(mediaGeral);
+        return montarResultado(alunoId, notas, mediaGeral, situacaoAcademica, false);
+    }
+
+    private AnaliseDesempenhoAcademicoResultado montarResultado(
+            Long alunoId,
+            List<Nota> notas,
+            double mediaGeral,
+            SituacaoAcademica situacaoAcademica,
+            boolean incluirRanking
     ) {
         Map<Long, List<Nota>> notasPorSimulado = notas.stream()
                 .collect(Collectors.groupingBy(Nota::getSimuladoId));
@@ -92,13 +110,18 @@ public class AnalisarDesempenhoAcademicoUseCase extends FluxoAnaliseAcademicaTem
                 .sorted(Map.Entry.comparingByKey())
                 .map(entry -> mediaDisciplina(entry.getKey(), entry.getValue()))
                 .toList();
-        List<RankingAcademicoItem> rankingAcademico = gerarRankingAcademicoUseCase.executar(0);
+        List<RankingAcademicoItem> rankingAcademico = incluirRanking
+                ? gerarRankingAcademicoUseCase.executar(0)
+                : List.of();
         RankingAcademicoItem rankingAluno = rankingAcademico.stream()
                 .filter(item -> item.alunoId().equals(alunoId))
                 .findFirst()
                 .orElse(null);
         Integer posicaoRanking = rankingAluno == null ? null : rankingAluno.posicao();
         boolean alunoNoTop10 = posicaoRanking != null && posicaoRanking <= 10;
+        String mensagemRanking = incluirRanking
+                ? mensagemRanking(posicaoRanking, alunoNoTop10)
+                : "Ranking calculado sob demanda na consulta de desempenho.";
 
         return new AnaliseDesempenhoAcademicoResultado(
                 alunoId,
@@ -113,7 +136,7 @@ public class AnalisarDesempenhoAcademicoUseCase extends FluxoAnaliseAcademicaTem
                 posicaoRanking,
                 rankingAcademico.size(),
                 alunoNoTop10,
-                mensagemRanking(posicaoRanking, alunoNoTop10),
+                mensagemRanking,
                 historicoSimulados,
                 notasPorDisciplina
         );
@@ -137,7 +160,7 @@ public class AnalisarDesempenhoAcademicoUseCase extends FluxoAnaliseAcademicaTem
     }
 
     private AnaliseDesempenhoAcademicoResultado.MediaDisciplina mediaDisciplina(Long disciplinaId, List<Nota> notas) {
-        double media = avaliacaoAcademicaService.calcularMedia(notas);
+        double media = avaliacaoAcademicaService.calcularMediaAritmetica(notas);
         SituacaoAcademica status = avaliacaoAcademicaService.calcularSituacao(media);
 
         return new AnaliseDesempenhoAcademicoResultado.MediaDisciplina(

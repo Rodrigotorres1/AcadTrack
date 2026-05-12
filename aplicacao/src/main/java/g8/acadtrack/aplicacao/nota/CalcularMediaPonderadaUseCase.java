@@ -29,6 +29,7 @@ public class CalcularMediaPonderadaUseCase {
         List<Nota> notas = notaRepository.buscarPorAlunoESimulado(alunoId, simuladoId);
         List<SimuladoDisciplina> disciplinas = simuladoDisciplinaRepository.buscarPorSimulado(simuladoId);
 
+        // Media ponderada por simulado; nao alimenta Aluno.mediaAritmetica.
         double somaPonderada = 0;
         double somaPesos = 0;
 

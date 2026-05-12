@@ -42,69 +42,11 @@ public class AlunoJpaEntity {
     private boolean permissaoVisualizarSimulados;
     private boolean permissaoVisualizarDesempenho;
     private Boolean ativo = true;
-    private double mediaAtual;
+    @Column(name = "media_atual")
+    private double mediaAritmetica;
     private String situacaoAcademica;
 
     public AlunoJpaEntity() {
-    }
-
-    public AlunoJpaEntity(Long id, String nome, String email, Long turmaId, Long responsavelId) {
-        this(id, nome, email, turmaId, responsavelId, responsavelId != null, false, false, false, 0.0, "REPROVADO");
-    }
-
-    public AlunoJpaEntity(
-            Long id,
-            String nome,
-            String email,
-            Long turmaId,
-            Long responsavelId,
-            boolean vinculoResponsavelAtivo,
-            boolean permissaoVisualizarNotas,
-            boolean permissaoVisualizarSimulados,
-            boolean permissaoVisualizarDesempenho
-    ) {
-        this(
-                id,
-                nome,
-                email,
-                turmaId,
-                responsavelId,
-                vinculoResponsavelAtivo,
-                permissaoVisualizarNotas,
-                permissaoVisualizarSimulados,
-                permissaoVisualizarDesempenho,
-                0.0,
-                "REPROVADO"
-        );
-    }
-
-    public AlunoJpaEntity(
-            Long id,
-            String nome,
-            String email,
-            Long turmaId,
-            Long responsavelId,
-            boolean vinculoResponsavelAtivo,
-            boolean permissaoVisualizarNotas,
-            boolean permissaoVisualizarSimulados,
-            boolean permissaoVisualizarDesempenho,
-            double mediaAtual,
-            String situacaoAcademica
-    ) {
-        this(
-                id,
-                nome,
-                email,
-                turmaId,
-                responsavelId,
-                vinculoResponsavelAtivo,
-                permissaoVisualizarNotas,
-                permissaoVisualizarSimulados,
-                permissaoVisualizarDesempenho,
-                true,
-                mediaAtual,
-                situacaoAcademica
-        );
     }
 
     public AlunoJpaEntity(
@@ -118,7 +60,7 @@ public class AlunoJpaEntity {
             boolean permissaoVisualizarSimulados,
             boolean permissaoVisualizarDesempenho,
             boolean ativo,
-            double mediaAtual,
+            double mediaAritmetica,
             String situacaoAcademica
     ) {
         this.id = id;
@@ -131,7 +73,7 @@ public class AlunoJpaEntity {
         this.permissaoVisualizarSimulados = permissaoVisualizarSimulados;
         this.permissaoVisualizarDesempenho = permissaoVisualizarDesempenho;
         this.ativo = ativo;
-        this.mediaAtual = mediaAtual;
+        this.mediaAritmetica = mediaAritmetica;
         this.situacaoAcademica = situacaoAcademica;
     }
 
@@ -175,8 +117,8 @@ public class AlunoJpaEntity {
         return ativo == null || ativo;
     }
 
-    public double getMediaAtual() {
-        return mediaAtual;
+    public double getMediaAritmetica() {
+        return mediaAritmetica;
     }
 
     public String getSituacaoAcademica() {
@@ -223,8 +165,8 @@ public class AlunoJpaEntity {
         this.ativo = ativo;
     }
 
-    public void setMediaAtual(double mediaAtual) {
-        this.mediaAtual = mediaAtual;
+    public void setMediaAritmetica(double mediaAritmetica) {
+        this.mediaAritmetica = mediaAritmetica;
     }
 
     public void setSituacaoAcademica(String situacaoAcademica) {

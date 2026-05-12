@@ -1,5 +1,7 @@
 package g8.acadtrack.aplicacao.retificacao;
 
+import g8.acadtrack.dominioavaliacao.retificacao.StatusSolicitacaoRetificacao;
+
 public record SolicitacaoRetificacaoDetalheResultado(
         Long id,
         Long notaId,
@@ -12,6 +14,6 @@ public record SolicitacaoRetificacaoDetalheResultado(
         Double notaAtual,
         String justificativa,
         String justificativaDecisao,
-        String status
+        StatusSolicitacaoRetificacao status
 ) {
 }

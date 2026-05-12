@@ -63,7 +63,7 @@ public class GerarRankingAcademicoUseCase {
         return new RankingAcademicoItem(
                 aluno.getId(),
                 aluno.getNome(),
-                aluno.getMediaAtual(),
+                aluno.getMediaAritmetica(),
                 0,
                 situacao.name(),
                 nivelRiscoPorSituacao(situacao)

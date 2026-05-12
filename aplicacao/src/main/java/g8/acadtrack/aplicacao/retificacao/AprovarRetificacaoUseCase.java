@@ -49,19 +49,20 @@ public class AprovarRetificacaoUseCase {
                 .orElseThrow(() -> new EntidadeNaoEncontradaException("Nota não encontrada"));
 
         solicitacao.aprovar(justificativaDecisao);
+        solicitacao = solicitacaoRetificacaoRepository.salvar(solicitacao);
         nota.atualizarValor(novoValorNota);
         notaRepository.salvar(nota);
 
         Aluno aluno = alunoRepository.buscarPorId(nota.getAlunoId())
                 .orElseThrow(() -> new EntidadeNaoEncontradaException("Aluno não encontrado"));
 
-        double mediaAtual = avaliacaoAcademicaService.calcularMedia(notaRepository.buscarPorAlunoId(aluno.getId()));
-        aluno.atualizarDesempenhoAcademico(mediaAtual, avaliacaoAcademicaService.calcularSituacao(mediaAtual));
+        double mediaAritmetica = avaliacaoAcademicaService.calcularMediaAritmetica(notaRepository.buscarPorAlunoId(aluno.getId()));
+        aluno.atualizarDesempenhoAcademico(mediaAritmetica, avaliacaoAcademicaService.calcularSituacao(mediaAritmetica));
         alunoRepository.salvar(aluno);
 
-        AnaliseDesempenhoAcademicoResultado analise = analisarDesempenhoAcademicoUseCase.executar(aluno.getId());
+        AnaliseDesempenhoAcademicoResultado analise = analisarDesempenhoAcademicoUseCase.executarSemRanking(aluno.getId());
         publicadorRiscoAcademico.publicarSeRiscoNotificavel(analise);
 
-        return solicitacaoRetificacaoRepository.salvar(solicitacao);
+        return solicitacao;
     }
 }

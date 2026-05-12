@@ -12,7 +12,7 @@ public class Aluno {
     private boolean permissaoVisualizarSimulados;
     private boolean permissaoVisualizarDesempenho;
     private boolean ativo;
-    private double mediaAtual;
+    private double mediaAritmetica;
     private SituacaoAcademica situacaoAcademica;
 
     public Aluno(Long id, String nome, String email, Long turmaId, Long responsavelId) {
@@ -67,7 +67,7 @@ public class Aluno {
             boolean permissaoVisualizarNotas,
             boolean permissaoVisualizarSimulados,
             boolean permissaoVisualizarDesempenho,
-            double mediaAtual,
+            double mediaAritmetica,
             SituacaoAcademica situacaoAcademica
     ) {
         this(
@@ -81,7 +81,7 @@ public class Aluno {
                 permissaoVisualizarSimulados,
                 permissaoVisualizarDesempenho,
                 true,
-                mediaAtual,
+                mediaAritmetica,
                 situacaoAcademica
         );
     }
@@ -97,7 +97,7 @@ public class Aluno {
             boolean permissaoVisualizarSimulados,
             boolean permissaoVisualizarDesempenho,
             boolean ativo,
-            double mediaAtual,
+            double mediaAritmetica,
             SituacaoAcademica situacaoAcademica
     ) {
         if (nome == null || nome.isBlank()) {
@@ -113,7 +113,7 @@ public class Aluno {
         this.permissaoVisualizarSimulados = permissaoVisualizarSimulados;
         this.permissaoVisualizarDesempenho = permissaoVisualizarDesempenho;
         this.ativo = ativo;
-        this.mediaAtual = mediaAtual;
+        this.mediaAritmetica = mediaAritmetica;
         this.situacaoAcademica = situacaoAcademica == null ? SituacaoAcademica.REPROVADO : situacaoAcademica;
     }
 
@@ -197,8 +197,8 @@ public class Aluno {
         }
     }
 
-    public void atualizarDesempenhoAcademico(double mediaAtual, SituacaoAcademica situacaoAcademica) {
-        this.mediaAtual = mediaAtual;
+    public void atualizarDesempenhoAcademico(double mediaAritmetica, SituacaoAcademica situacaoAcademica) {
+        this.mediaAritmetica = mediaAritmetica;
         this.situacaoAcademica = situacaoAcademica == null ? SituacaoAcademica.REPROVADO : situacaoAcademica;
     }
 
@@ -258,8 +258,8 @@ public class Aluno {
         return ativo;
     }
 
-    public double getMediaAtual() {
-        return mediaAtual;
+    public double getMediaAritmetica() {
+        return mediaAritmetica;
     }
 
     public SituacaoAcademica getSituacaoAcademica() {

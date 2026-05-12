@@ -16,6 +16,9 @@ import g8.acadtrack.dominioavaliacao.nota.Nota;
 import g8.acadtrack.dominioavaliacao.nota.NotaRepository;
 import g8.acadtrack.dominioavaliacao.retificacao.SolicitacaoRetificacao;
 import g8.acadtrack.dominioavaliacao.simulado.Simulado;
+import g8.acadtrack.dominiocompartilhado.excecao.ConflitoDeEstadoException;
+import g8.acadtrack.dominiocompartilhado.excecao.EntidadeNaoEncontradaException;
+import g8.acadtrack.dominiocompartilhado.excecao.RegraDeNegocioException;
 import io.cucumber.java.pt.Dado;
 import io.cucumber.java.pt.Entao;
 import io.cucumber.java.pt.Quando;
@@ -105,7 +108,7 @@ public class SolicitarRetificacaoNotaSteps {
         try {
             retificacao = solicitarRetificacaoUseCase.executar(nota.getId(), justificativa);
             context.setOperacaoExecutada(true);
-        } catch (Exception e) {
+        } catch (RegraDeNegocioException | ConflitoDeEstadoException | EntidadeNaoEncontradaException e) {
             excecao = e;
             context.setMensagem(e.getMessage());
             context.setOperacaoExecutada(false);
@@ -134,7 +137,7 @@ public class SolicitarRetificacaoNotaSteps {
         try {
             retificacao = iniciarAnaliseRetificacaoUseCase.executar(retificacao.getId());
             context.setOperacaoExecutada(true);
-        } catch (Exception e) {
+        } catch (EntidadeNaoEncontradaException | IllegalStateException e) {
             excecao = e;
             context.setMensagem(e.getMessage());
             context.setOperacaoExecutada(false);
@@ -153,7 +156,7 @@ public class SolicitarRetificacaoNotaSteps {
         try {
             retificacao = aprovarRetificacaoUseCase.executar(retificacao.getId(), novoValor, justificativaDecisao);
             context.setOperacaoExecutada(true);
-        } catch (Exception e) {
+        } catch (EntidadeNaoEncontradaException | IllegalStateException | RegraDeNegocioException e) {
             excecao = e;
             context.setMensagem(e.getMessage());
             context.setOperacaoExecutada(false);
@@ -165,7 +168,7 @@ public class SolicitarRetificacaoNotaSteps {
         try {
             retificacao = reprovarRetificacaoUseCase.executar(retificacao.getId(), justificativaDecisao);
             context.setOperacaoExecutada(true);
-        } catch (Exception e) {
+        } catch (EntidadeNaoEncontradaException | IllegalStateException | RegraDeNegocioException e) {
             excecao = e;
             context.setMensagem(e.getMessage());
             context.setOperacaoExecutada(false);
@@ -176,13 +179,14 @@ public class SolicitarRetificacaoNotaSteps {
     public void oSistemaRegistraASolicitacaoDeRetificacaoComStatus(String statusEsperado) {
         assertTrue(context.isOperacaoExecutada());
         assertNull(excecao);
-        assertEquals(statusEsperado, retificacao.getStatus());
+        assertEquals(statusEsperado, retificacao.getStatus().name());
     }
 
     @Entao("o sistema informa que a justificativa é obrigatória")
     public void oSistemaInformaQueAJustificativaEObrigatoria() {
         assertFalse(context.isOperacaoExecutada());
         assertNotNull(excecao);
+        assertInstanceOf(RegraDeNegocioException.class, excecao);
         assertEquals("Justificativa é obrigatória", context.getMensagem());
     }
 
@@ -197,7 +201,7 @@ public class SolicitarRetificacaoNotaSteps {
     public void oSistemaAtualizaASolicitacaoDeRetificacaoParaStatus(String statusEsperado) {
         assertTrue(context.isOperacaoExecutada());
         assertNull(excecao);
-        assertEquals(statusEsperado, retificacao.getStatus());
+        assertEquals(statusEsperado, retificacao.getStatus().name());
     }
 
     @Entao("a nota do aluno é atualizada para {double}")
@@ -212,6 +216,24 @@ public class SolicitarRetificacaoNotaSteps {
         Aluno alunoAtualizado = alunoRepository.buscarPorId(aluno.getId())
                 .orElseThrow(() -> new AssertionError("Aluno não encontrado após aprovação da retificação"));
         assertNotNull(alunoAtualizado.getSituacaoAcademica());
+    }
+
+    @Quando("o responsável tenta aprovar a retificação sem justificativa de decisão")
+    public void oResponsavelTentaAprovarARetificacaoSemJustificativaDeDecisao() {
+        oResponsavelAprovaARetificacaoAlterandoANotaPara(9.0, "");
+    }
+
+    @Quando("o responsável tenta reprovar a retificação sem justificativa de decisão")
+    public void oResponsavelTentaReprovarARetificacaoSemJustificativaDeDecisao() {
+        oResponsavelReprovaASolicitacaoDeRetificacao("");
+    }
+
+    @Entao("o sistema informa que a justificativa da decisão é obrigatória")
+    public void oSistemaInformaQueAJustificativaDaDecisaoEObrigatoria() {
+        assertFalse(context.isOperacaoExecutada());
+        assertNotNull(excecao);
+        assertInstanceOf(RegraDeNegocioException.class, excecao);
+        assertEquals("Justificativa da decisão é obrigatória", context.getMensagem());
     }
 
     @Entao("a nota do aluno permanece com o valor original")
