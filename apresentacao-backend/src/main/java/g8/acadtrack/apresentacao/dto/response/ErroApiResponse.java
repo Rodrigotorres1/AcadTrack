@@ -11,6 +11,6 @@ public record ErroApiResponse(
         @Schema(example = "2026-04-29T18:45:33.561Z") String timestamp,
         @Schema(description = "Código HTTP.", example = "404") Integer status,
         @Schema(description = "Razão curta RFC 7231.", example = "Not Found") String error,
-        @Schema(description = "Mensagem contextual da exceção.", example = "Aluno não encontrado.") String message
+        @Schema(description = "Mensagem contextual da exceção", example = "Aluno não encontrado") String message
 ) {
 }

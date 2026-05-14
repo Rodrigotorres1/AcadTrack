@@ -5,10 +5,11 @@ Feature: Vincular aluno à turma
     Quando o coordenador vincula o aluno "João Silva" à turma "3º Ano A"
     Então o sistema registra o vínculo do aluno "João Silva" à turma "3º Ano A"
 
-  Scenario: Não permitir vincular aluno já vinculado a outra turma
+  Scenario: Trocar turma de aluno já matriculado
     Dado que o aluno "João Silva" já está vinculado à turma "3º Ano B"
-    Quando o coordenador tenta vincular o aluno "João Silva" à turma "3º Ano A"
-    Então o sistema informa que o aluno já está vinculado a uma turma
+    Quando o coordenador vincula o aluno "João Silva" à turma "3º Ano A"
+    Então o sistema registra o vínculo do aluno "João Silva" à turma "3º Ano A"
+    E o aluno "João Silva" não permanece vinculado à turma "3º Ano B"
 
   Scenario: Não permitir criar turma duplicada
     Dado que já existe uma turma chamada "Turma Duplicada"

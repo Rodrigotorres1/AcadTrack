@@ -24,7 +24,7 @@ public class ExcluirResponsavelUseCase {
     @Transactional
     public void executar(Long responsavelId) {
         responsavelRepository.buscarPorId(responsavelId)
-                .orElseThrow(() -> new EntidadeNaoEncontradaException("Responsavel nao encontrado"));
+                .orElseThrow(() -> new EntidadeNaoEncontradaException("Responsável não encontrado"));
 
         alunoRepository.buscarPorResponsavelId(responsavelId)
                 .forEach(this::removerResponsavelDoAluno);

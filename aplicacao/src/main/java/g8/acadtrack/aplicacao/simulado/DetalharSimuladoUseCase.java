@@ -47,7 +47,7 @@ public class DetalharSimuladoUseCase {
 
 public SimuladoDetalheResultado executar(Long simuladoId) {
     Simulado simulado = simuladoRepository.buscarPorId(simuladoId)
-            .orElseThrow(() -> new EntidadeNaoEncontradaException("Simulado nao encontrado"));
+            .orElseThrow(() -> new EntidadeNaoEncontradaException("Simulado não encontrado"));
 
     List<SimuladoDisciplina> vinculos = simuladoDisciplinaRepository.buscarPorSimulado(simulado.getId())
             .stream()

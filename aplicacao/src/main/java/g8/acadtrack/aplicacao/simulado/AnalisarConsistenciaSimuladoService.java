@@ -16,7 +16,7 @@ public class AnalisarConsistenciaSimuladoService {
             List<Disciplina> disciplinas
     ) {
         if (vinculos == null || vinculos.isEmpty()) {
-            return inconsistente("Este simulado possui problemas de consistencia. Nenhuma disciplina vinculada.");
+            return inconsistente("Este simulado possui problemas de consistência: nenhuma disciplina vinculada");
         }
 
         long disciplinasDistintas = vinculos.stream()
@@ -25,20 +25,20 @@ public class AnalisarConsistenciaSimuladoService {
                 .count();
 
         if (disciplinasDistintas != vinculos.size()) {
-            return inconsistente("Este simulado possui problemas de consistencia. Contem disciplinas repetidas.");
+            return inconsistente("Este simulado possui problemas de consistência: contém disciplinas repetidas");
         }
 
         if (disciplinasDistintas < MINIMO_DISCIPLINAS) {
-            return inconsistente("Este simulado possui problemas de consistencia. Possui menos de 2 disciplinas.");
+            return inconsistente("Este simulado possui problemas de consistência: possui menos de 2 disciplinas");
         }
 
         if (disciplinas == null || disciplinas.size() != disciplinasDistintas) {
-            return inconsistente("Este simulado possui problemas de consistencia. Contem disciplinas inexistentes.");
+            return inconsistente("Este simulado possui problemas de consistência: contém disciplinas inexistentes");
         }
 
         boolean possuiInativa = disciplinas.stream().anyMatch(disciplina -> !disciplina.estaAtiva());
         if (possuiInativa) {
-            return inconsistente("Este simulado possui problemas de consistencia. Contem disciplinas inativas.");
+            return inconsistente("Este simulado possui problemas de consistência: contém disciplinas inativas");
         }
 
         return new ConsistenciaSimuladoResultado(true, null);

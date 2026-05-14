@@ -80,6 +80,10 @@ public class NotificacaoResponsavel {
         return dataCriacao;
     }
 
+    public void marcarLida() {
+        this.status = StatusNotificacao.LIDA;
+    }
+
     public StatusNotificacao getStatus() {
         return status;
     }

@@ -35,7 +35,7 @@ public class DisciplinaRepositoryJpa implements DisciplinaRepository {
         DisciplinaJpaEntity entity = new DisciplinaJpaEntity(
                 disciplina.getId(),
                 disciplina.getNome(),
-                disciplina.getStatus().name()
+                disciplina.getStatus()
         );
 
         DisciplinaJpaEntity salva = repository.save(entity);
@@ -66,7 +66,11 @@ public class DisciplinaRepositoryJpa implements DisciplinaRepository {
     @Override
     public List<Disciplina> buscarPorIds(List<Long> ids) {
         Objects.requireNonNull(ids, "ids são obrigatórios");
-        return repository.findAllById(ids)
+        if (ids.isEmpty()) {
+            return List.of();
+        }
+
+        return repository.findByIdIn(ids)
                 .stream()
                 .map(this::toDomain)
                 .toList();
@@ -87,7 +91,7 @@ public class DisciplinaRepositoryJpa implements DisciplinaRepository {
     private Disciplina toDomain(DisciplinaJpaEntity entity) {
         StatusDisciplina status = entity.getStatus() == null
                 ? StatusDisciplina.ATIVA
-                : StatusDisciplina.valueOf(entity.getStatus());
+                : entity.getStatus();
         return new Disciplina(entity.getId(), entity.getNome(), status);
     }
 }

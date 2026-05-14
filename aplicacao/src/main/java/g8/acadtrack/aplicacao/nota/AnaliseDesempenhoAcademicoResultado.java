@@ -1,5 +1,6 @@
 package g8.acadtrack.aplicacao.nota;
 
+import g8.acadtrack.dominioacademico.aluno.SituacaoAcademica;
 import g8.acadtrack.dominiocompartilhado.risco.NivelRiscoAcademico;
 
 import java.util.List;
@@ -13,7 +14,7 @@ public record AnaliseDesempenhoAcademicoResultado(
         boolean riscoAcademico,
         NivelRiscoAcademico nivelRisco,
         String alerta,
-        String situacaoAcademica,
+        SituacaoAcademica situacaoAcademica,
         Integer posicaoRanking,
         int totalAlunosRanking,
         boolean alunoNoTop10,
@@ -34,7 +35,7 @@ public record AnaliseDesempenhoAcademicoResultado(
             Long disciplinaId,
             String nomeDisciplina,
             double media,
-            String status,
+            SituacaoAcademica situacaoAcademica,
             NivelRiscoAcademico nivelRisco
     ) {
     }

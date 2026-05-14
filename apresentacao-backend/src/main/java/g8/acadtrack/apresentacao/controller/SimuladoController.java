@@ -65,7 +65,7 @@ public class SimuladoController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Simulado encontrado",
                     content = @Content(schema = @Schema(implementation = SimuladoDetalheResponse.class))),
-            @ApiResponse(responseCode = "404", description = "Simulado nao encontrado",
+            @ApiResponse(responseCode = "404", description = "Simulado não encontrado",
                     content = @Content(schema = @Schema(implementation = ErroApiResponse.class)))
     })
     @GetMapping("/{simuladoId}")
@@ -122,11 +122,7 @@ public class SimuladoController {
                                     @ExampleObject(
                                             name = "demo_simulado_ids_explicitos",
                                             summary = "Ajuste disciplinasIds ao que foi criado antes",
-                                            value = "{\"descricao\":\"Simulado Demo Swagger\",\"disciplinasIds\":[1,2]}"),
-                                    @ExampleObject(
-                                            name = "um_curso_so",
-                                            summary = "Uma disciplina só",
-                                            value = "{\"descricao\":\"Simulado rapido Swagger\",\"disciplinasIds\":[1]}")
+                                            value = "{\"descricao\":\"Simulado Demo Swagger\",\"disciplinasIds\":[1,2]}")
                             }
                     ))
     )

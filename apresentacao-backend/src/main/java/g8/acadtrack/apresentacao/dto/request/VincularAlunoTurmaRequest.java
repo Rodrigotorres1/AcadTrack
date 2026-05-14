@@ -3,7 +3,7 @@ package g8.acadtrack.apresentacao.dto.request;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 
-@Schema(description = "Vínculo do aluno a uma turma existente.")
+@Schema(description = "Definição ou troca da turma de um aluno.")
 public class VincularAlunoTurmaRequest {
 
     @Schema(description = "ID da turma", example = "1")

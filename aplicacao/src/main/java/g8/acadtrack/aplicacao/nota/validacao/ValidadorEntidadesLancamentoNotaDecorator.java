@@ -31,9 +31,9 @@ public class ValidadorEntidadesLancamentoNotaDecorator extends ValidadorLancamen
         dados.definirAluno(aluno);
 
         simuladoRepository.buscarPorId(dados.simuladoId())
-                .orElseThrow(() -> new EntidadeNaoEncontradaException("Simulado nao encontrado"));
+                .orElseThrow(() -> new EntidadeNaoEncontradaException("Simulado não encontrado"));
         disciplinaRepository.buscarPorId(dados.disciplinaId())
-                .orElseThrow(() -> new EntidadeNaoEncontradaException("Disciplina nao encontrada"));
+                .orElseThrow(() -> new EntidadeNaoEncontradaException("Disciplina não encontrada"));
 
         super.validar(dados);
     }

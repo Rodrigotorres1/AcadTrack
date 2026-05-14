@@ -46,6 +46,22 @@ public class SimuladoRepositoryJpa implements SimuladoRepository {
     }
 
     @Override
+    public List<Simulado> buscarPorIds(List<Long> ids) {
+        Objects.requireNonNull(ids, "ids são obrigatórios");
+        if (ids.isEmpty()) {
+            return List.of();
+        }
+
+        return repository.findByIdIn(ids)
+                .stream()
+                .map(entity -> new Simulado(
+                        entity.getId(),
+                        entity.getDescricao()
+                ))
+                .toList();
+    }
+
+    @Override
     public Optional<Simulado> buscarPorId(Long id) {
         Long idObrigatorio = Objects.requireNonNull(id, "id é obrigatório");
         return repository.findById(idObrigatorio)

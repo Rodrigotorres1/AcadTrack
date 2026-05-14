@@ -21,7 +21,7 @@ public class DetalharRetificacaoUseCase {
 
     public SolicitacaoRetificacaoDetalheResultado executar(Long solicitacaoId) {
         SolicitacaoRetificacao solicitacao = solicitacaoRetificacaoRepository.buscarPorId(solicitacaoId)
-                .orElseThrow(() -> new EntidadeNaoEncontradaException("Solicitacao de retificacao nao encontrada"));
+                .orElseThrow(() -> new EntidadeNaoEncontradaException("Solicitação de retificação não encontrada"));
 
         return montarDetalheRetificacaoService.montar(solicitacao);
     }

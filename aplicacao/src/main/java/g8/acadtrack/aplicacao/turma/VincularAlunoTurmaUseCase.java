@@ -30,7 +30,7 @@ public class VincularAlunoTurmaUseCase {
         turmaRepository.buscarPorId(turmaId)
                 .orElseThrow(() -> new EntidadeNaoEncontradaException("Turma não encontrada"));
 
-        aluno.vincularTurma(turmaId);
+        aluno.substituirTurma(turmaId);
 
         return alunoRepository.salvar(aluno);
     }

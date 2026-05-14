@@ -151,4 +151,14 @@ public class AlunoRepositoryJpa implements AlunoRepository {
                 ))
                 .toList();
     }
+
+    @Override
+    public long contarAlunosComNotas() {
+        return notaRepository.countAlunosComNotas();
+    }
+
+    @Override
+    public long contarAlunosComNotasComMediaMaiorQue(double mediaAritmetica) {
+        return notaRepository.countAlunosComNotasComMediaMaiorQue(mediaAritmetica);
+    }
 }

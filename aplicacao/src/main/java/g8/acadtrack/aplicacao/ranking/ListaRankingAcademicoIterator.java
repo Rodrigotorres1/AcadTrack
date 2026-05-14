@@ -20,7 +20,7 @@ public class ListaRankingAcademicoIterator implements RankingAcademicoIterator {
     @Override
     public RankingAcademicoItem next() {
         if (!hasNext()) {
-            throw new NoSuchElementException("Ranking academico sem proximo item");
+            throw new NoSuchElementException("Ranking acadêmico sem próximo item");
         }
 
         return itens.get(indiceAtual++);

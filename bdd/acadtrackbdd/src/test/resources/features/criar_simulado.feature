@@ -12,8 +12,8 @@ Feature: Criar simulado com disciplinas vinculadas
 
   Scenario: Não permitir criar simulado com apenas uma disciplina
     Dado que o coordenador deseja criar um simulado
-    Quando ele informa apenas a disciplina "Matemática"
-    Então o sistema informa que o simulado deve possuir pelo menos duas disciplinas distintas
+    Quando ele informa via API apenas a disciplina "Matemática"
+    Então a API retorna erro 400 informando que o simulado requer pelo menos 2 disciplinas
 
   Scenario: Não permitir disciplina repetida na composição do simulado
     Dado que o coordenador deseja criar um simulado

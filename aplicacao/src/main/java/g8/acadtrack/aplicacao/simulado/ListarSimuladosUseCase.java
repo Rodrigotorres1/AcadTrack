@@ -18,4 +18,11 @@ public class ListarSimuladosUseCase {
     public List<Simulado> executar() {
         return simuladoRepository.buscarTodos();
     }
+
+    public List<Simulado> executarPorIds(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return List.of();
+        }
+        return simuladoRepository.buscarPorIds(ids);
+    }
 }

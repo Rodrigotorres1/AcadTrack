@@ -5,10 +5,10 @@ Este roteiro foi pensado para apresentacao da 1a entrega com foco nas 6 funciona
 ## 1) Preparacao rapida
 
 - Subir backend:
-  - `mvn clean install`
-  - `mvn spring-boot:run -pl apresentacao-backend` (porta **8080** por defeito; outra porta: `-Dspring-boot.run.arguments=--server.port=9001`)
+  - `mvn clean install -DskipTests`
+  - `java -jar apresentacao-backend/target/apresentacao-backend-0.0.1-SNAPSHOT.jar --server.port=8090`
 - Abrir Swagger:
-  - `http://localhost:8080/swagger-ui/index.html`
+  - `http://localhost:8090/swagger-ui/index.html`
 
 Sugestao: execute os passos na ordem abaixo para reduzir retrabalho com IDs.
 

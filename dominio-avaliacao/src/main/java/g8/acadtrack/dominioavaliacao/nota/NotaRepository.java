@@ -11,6 +11,8 @@ public interface NotaRepository {
 
     List<Nota> buscarPorAlunoId(Long alunoId);
 
+    List<Nota> buscarPorAlunoIds(List<Long> alunoIds);
+
     List<Nota> buscarPorSimuladoId(Long simuladoId);
 
     List<Nota> buscarTodas();

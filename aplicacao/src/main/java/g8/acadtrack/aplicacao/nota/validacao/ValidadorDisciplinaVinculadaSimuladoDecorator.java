@@ -25,7 +25,7 @@ public class ValidadorDisciplinaVinculadaSimuladoDecorator extends ValidadorLanc
                 .anyMatch(item -> item.getDisciplinaId().equals(dados.disciplinaId()));
 
         if (!disciplinaVinculada) {
-            throw new RegraDeNegocioException("Disciplina nao vinculada ao simulado");
+            throw new RegraDeNegocioException("Disciplina não vinculada ao simulado");
         }
 
         super.validar(dados);

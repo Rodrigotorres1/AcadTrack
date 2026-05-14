@@ -2,6 +2,7 @@ package g8.acadtrack.apresentacao.controller;
 
 import g8.acadtrack.aplicacao.aluno.AtivarAlunoUseCase;
 import g8.acadtrack.aplicacao.aluno.AtualizarAlunoUseCase;
+import g8.acadtrack.aplicacao.aluno.BuscarAlunoPorIdUseCase;
 import g8.acadtrack.aplicacao.aluno.CriarAlunoUseCase;
 import g8.acadtrack.aplicacao.aluno.InativarAlunoUseCase;
 import g8.acadtrack.aplicacao.aluno.ListarAlunosUseCase;
@@ -47,6 +48,7 @@ public class AlunoController {
 
     private final CriarAlunoUseCase criarAlunoUseCase;
     private final AtualizarAlunoUseCase atualizarAlunoUseCase;
+    private final BuscarAlunoPorIdUseCase buscarAlunoPorIdUseCase;
     private final ListarAlunosUseCase listarAlunosUseCase;
     private final InativarAlunoUseCase inativarAlunoUseCase;
     private final AtivarAlunoUseCase ativarAlunoUseCase;
@@ -58,6 +60,7 @@ public class AlunoController {
     public AlunoController(
             CriarAlunoUseCase criarAlunoUseCase,
             AtualizarAlunoUseCase atualizarAlunoUseCase,
+            BuscarAlunoPorIdUseCase buscarAlunoPorIdUseCase,
             ListarAlunosUseCase listarAlunosUseCase,
             InativarAlunoUseCase inativarAlunoUseCase,
             AtivarAlunoUseCase ativarAlunoUseCase,
@@ -68,6 +71,7 @@ public class AlunoController {
     ) {
         this.criarAlunoUseCase = criarAlunoUseCase;
         this.atualizarAlunoUseCase = atualizarAlunoUseCase;
+        this.buscarAlunoPorIdUseCase = buscarAlunoPorIdUseCase;
         this.listarAlunosUseCase = listarAlunosUseCase;
         this.inativarAlunoUseCase = inativarAlunoUseCase;
         this.ativarAlunoUseCase = ativarAlunoUseCase;
@@ -89,6 +93,19 @@ public class AlunoController {
                         .map(AlunoResponse::fromDomain)
                         .toList()
         );
+    }
+
+    @Operation(summary = "Buscar aluno por ID")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Aluno encontrado",
+                    content = @Content(schema = @Schema(implementation = AlunoResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Aluno não encontrado",
+                    content = @Content(schema = @Schema(implementation = ErroApiResponse.class)))
+    })
+    @GetMapping("/{alunoId}")
+    public ResponseEntity<AlunoResponse> buscarPorId(
+            @Parameter(description = "Aluno") @PathVariable Long alunoId) {
+        return ResponseEntity.ok(AlunoResponse.fromDomain(buscarAlunoPorIdUseCase.executar(alunoId)));
     }
 
     @Operation(
@@ -131,16 +148,18 @@ public class AlunoController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Aluno atualizado",
                     content = @Content(schema = @Schema(implementation = AlunoResponse.class))),
-            @ApiResponse(responseCode = "400", description = "Validação ou e-mail duplicado",
+            @ApiResponse(responseCode = "400", description = "Erro de validação dos dados de entrada",
                     content = @Content(schema = @Schema(implementation = ErroApiResponse.class))),
             @ApiResponse(responseCode = "404", description = "Aluno não encontrado",
+                    content = @Content(schema = @Schema(implementation = ErroApiResponse.class))),
+            @ApiResponse(responseCode = "409", description = "Conflito de estado: e-mail já cadastrado para outro aluno",
                     content = @Content(schema = @Schema(implementation = ErroApiResponse.class)))
     })
     @PatchMapping("/{alunoId}")
     public ResponseEntity<AlunoResponse> atualizar(
             @Parameter(description = "Aluno") @PathVariable Long alunoId,
             @RequestBody @Valid AtualizarAlunoRequest request) {
-        Aluno aluno = atualizarAlunoUseCase.executar(alunoId, request.getNome(), request.getEmail(), request.getTurmaId());
+        Aluno aluno = atualizarAlunoUseCase.executar(alunoId, request.getNome(), request.getEmail());
         return ResponseEntity.ok(AlunoResponse.fromDomain(aluno));
     }
 
@@ -148,7 +167,7 @@ public class AlunoController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Aluno inativado",
                     content = @Content(schema = @Schema(implementation = AlunoResponse.class))),
-            @ApiResponse(responseCode = "404", description = "Aluno nao encontrado",
+            @ApiResponse(responseCode = "404", description = "Aluno não encontrado",
                     content = @Content(schema = @Schema(implementation = ErroApiResponse.class)))
     })
     @PatchMapping("/{alunoId}/inativar")
@@ -162,7 +181,7 @@ public class AlunoController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Aluno ativado",
                     content = @Content(schema = @Schema(implementation = AlunoResponse.class))),
-            @ApiResponse(responseCode = "404", description = "Aluno nao encontrado",
+            @ApiResponse(responseCode = "404", description = "Aluno não encontrado",
                     content = @Content(schema = @Schema(implementation = ErroApiResponse.class)))
     })
     @PatchMapping("/{alunoId}/ativar")
@@ -196,7 +215,7 @@ public class AlunoController {
                     content = @Content(schema = @Schema(implementation = ErroApiResponse.class)))
     })
     @PutMapping("/{alunoId}/turma")
-    public ResponseEntity<AlunoResponse> vincularTurma(
+    public ResponseEntity<AlunoResponse> definirTurma(
             @Parameter(description = "Aluno") @PathVariable Long alunoId,
             @RequestBody @Valid VincularAlunoTurmaRequest request
     ) {

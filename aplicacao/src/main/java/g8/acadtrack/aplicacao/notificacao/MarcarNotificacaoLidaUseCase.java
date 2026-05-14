@@ -5,16 +5,15 @@ import g8.acadtrack.dominiousuarios.notificacao.NotificacaoResponsavelRepository
 import g8.acadtrack.dominiousuarios.responsavel.ResponsavelRepository;
 import g8.acadtrack.dominiocompartilhado.excecao.EntidadeNaoEncontradaException;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
-public class ListarNotificacoesResponsavelUseCase {
+public class MarcarNotificacaoLidaUseCase {
 
     private final ResponsavelRepository responsavelRepository;
     private final NotificacaoResponsavelRepository notificacaoResponsavelRepository;
 
-    public ListarNotificacoesResponsavelUseCase(
+    public MarcarNotificacaoLidaUseCase(
             ResponsavelRepository responsavelRepository,
             NotificacaoResponsavelRepository notificacaoResponsavelRepository
     ) {
@@ -22,9 +21,16 @@ public class ListarNotificacoesResponsavelUseCase {
         this.notificacaoResponsavelRepository = notificacaoResponsavelRepository;
     }
 
-    public List<NotificacaoResponsavel> executar(Long responsavelId) {
+    @Transactional
+    public NotificacaoResponsavel executar(Long responsavelId, Long notificacaoId) {
         responsavelRepository.buscarPorId(responsavelId)
                 .orElseThrow(() -> new EntidadeNaoEncontradaException("Responsável não encontrado"));
-        return notificacaoResponsavelRepository.buscarPorResponsavelId(responsavelId);
+
+        NotificacaoResponsavel notificacao = notificacaoResponsavelRepository.buscarPorId(notificacaoId)
+                .filter(item -> responsavelId.equals(item.getResponsavelId()))
+                .orElseThrow(() -> new EntidadeNaoEncontradaException("Notificação não encontrada"));
+
+        notificacao.marcarLida();
+        return notificacaoResponsavelRepository.salvar(notificacao);
     }
 }

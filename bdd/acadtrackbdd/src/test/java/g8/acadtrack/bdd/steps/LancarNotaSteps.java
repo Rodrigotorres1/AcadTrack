@@ -1,5 +1,7 @@
 package g8.acadtrack.bdd.steps;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import g8.acadtrack.aplicacao.aluno.CriarAlunoUseCase;
 import g8.acadtrack.aplicacao.aluno.InativarAlunoUseCase;
 import g8.acadtrack.aplicacao.disciplina.CriarDisciplinaUseCase;
@@ -15,10 +17,14 @@ import g8.acadtrack.dominioavaliacao.simulado.Simulado;
 import io.cucumber.java.pt.Dado;
 import io.cucumber.java.pt.Quando;
 import io.cucumber.java.pt.Então;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 public class LancarNotaSteps {
 
@@ -29,6 +35,8 @@ public class LancarNotaSteps {
     private final CriarSimuladoUseCase criarSimuladoUseCase;
     private final LancarNotaUseCase lancarNotaUseCase;
     private final AlunoRepository alunoRepository;
+    private final MockMvc mockMvc;
+    private final ObjectMapper objectMapper;
 
     private Aluno aluno;
     private Disciplina disciplina;
@@ -36,6 +44,7 @@ public class LancarNotaSteps {
     private Simulado simulado;
     private Simulado segundoSimulado;
     private Nota notaLancada;
+    private MvcResult respostaApi;
     private Exception excecao;
 
     public LancarNotaSteps(
@@ -45,7 +54,9 @@ public class LancarNotaSteps {
             CriarDisciplinaUseCase criarDisciplinaUseCase,
             CriarSimuladoUseCase criarSimuladoUseCase,
             LancarNotaUseCase lancarNotaUseCase,
-            AlunoRepository alunoRepository
+            AlunoRepository alunoRepository,
+            MockMvc mockMvc,
+            ObjectMapper objectMapper
     ) {
         this.context = context;
         this.criarAlunoUseCase = criarAlunoUseCase;
@@ -54,6 +65,8 @@ public class LancarNotaSteps {
         this.criarSimuladoUseCase = criarSimuladoUseCase;
         this.lancarNotaUseCase = lancarNotaUseCase;
         this.alunoRepository = alunoRepository;
+        this.mockMvc = mockMvc;
+        this.objectMapper = objectMapper;
     }
 
     @Dado("que o aluno {string} realizou o simulado")
@@ -61,6 +74,7 @@ public class LancarNotaSteps {
         context.resetMensagens();
         excecao = null;
         notaLancada = null;
+        respostaApi = null;
 
         aluno = criarAlunoUseCase.executar(nomeAluno, emailSeguro(nomeAluno) + "@email.com");
         disciplina = criarDisciplinaUseCase.executar("Matemática " + nomeAluno);
@@ -120,6 +134,31 @@ public class LancarNotaSteps {
         assertNotNull(notaLancada);
     }
 
+    @Quando("o professor lança via API a nota {double} para o aluno {string}")
+    public void oProfessorLancaViaApiANotaParaOAluno(Double valorNota, String nomeAluno) {
+        String body = "{\"alunoId\":" + aluno.getId()
+                + ",\"simuladoId\":" + simulado.getId()
+                + ",\"disciplinaId\":" + disciplina.getId()
+                + ",\"valor\":" + valorNota
+                + "}";
+
+        try {
+            final MediaType application_JSON2 = MediaType.APPLICATION_JSON;
+            if (application_JSON2 != null) {
+                respostaApi = mockMvc.perform(post("/notas")
+                                .contentType(application_JSON2)
+                                .content(body))
+                        .andReturn();
+            } else {
+            }
+            context.setOperacaoExecutada(true);
+        } catch (Exception e) {
+            excecao = e;
+            context.setMensagem(e.getMessage());
+            context.setOperacaoExecutada(false);
+        }
+    }
+
     @Quando("o professor tenta lançar a nota {double} novamente para o mesmo aluno e disciplina")
     public void oProfessorTentaLancarANotaNovamenteParaOMesmoAlunoEDisciplina(Double valorNota) {
         try {
@@ -159,6 +198,21 @@ public class LancarNotaSteps {
         assertTrue(context.isOperacaoExecutada());
         assertNull(excecao);
         assertNotNull(notaLancada);
+    }
+
+    @Então("a API retorna a nota criada sem nome da disciplina e descrição do simulado")
+    public void aApiRetornaANotaCriadaSemNomeDaDisciplinaEDescricaoDoSimulado() throws Exception {
+        assertTrue(context.isOperacaoExecutada());
+        assertNull(excecao);
+        assertNotNull(respostaApi);
+        assertEquals(201, respostaApi.getResponse().getStatus());
+
+        JsonNode response = objectMapper.readTree(respostaApi.getResponse().getContentAsString());
+        assertEquals(aluno.getId(), response.get("alunoId").asLong());
+        assertEquals(simulado.getId(), response.get("simuladoId").asLong());
+        assertEquals(disciplina.getId(), response.get("disciplinaId").asLong());
+        assertTrue(response.get("nomeDisciplina").isNull());
+        assertTrue(response.get("descricaoSimulado").isNull());
     }
 
     @Então("o sistema informa a nota deve estar entre 0 e 10")

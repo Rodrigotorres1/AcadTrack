@@ -32,7 +32,7 @@ Feature: Vincular ou desvincular responsável
     Quando o responsável tenta consultar desempenho do aluno sem vínculo ativo
     Então o sistema bloqueia o acesso por vínculo inativo
 
-  Scenario: Impedir acesso sem permissão adequada
+  Scenario: Impedir responsável sem permissão VISUALIZAR_NOTAS de consultar notas
     Dado que o aluno possui vínculo ativo com responsável sem permissão para notas
     Quando o responsável tenta consultar notas do aluno sem permissão
     Então o sistema bloqueia o acesso por permissão insuficiente

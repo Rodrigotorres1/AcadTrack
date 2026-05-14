@@ -20,7 +20,7 @@ public class CriarResponsavelUseCase {
     public Responsavel executar(String nome, String email) {
         String emailNormalizado = Email.normalizar(email);
         if (responsavelRepository.existeResponsavelComEmailIgnorandoMaiusculas(emailNormalizado)) {
-            throw new ConflitoDeEstadoException("Já existe responsável cadastrado com este e-mail.");
+            throw new ConflitoDeEstadoException("Já existe responsável cadastrado com este e-mail");
         }
         Responsavel responsavel = new Responsavel(null, nome, emailNormalizado);
         return responsavelRepository.salvar(responsavel);

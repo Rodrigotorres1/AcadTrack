@@ -15,5 +15,9 @@ public interface AlunoRepository {
 
     List<Aluno> buscarAlunosComNotas();
 
+    long contarAlunosComNotas();
+
+    long contarAlunosComNotasComMediaMaiorQue(double mediaAritmetica);
+
     boolean existeAlunoComEmailIgnorandoMaiusculas(String email);
 }

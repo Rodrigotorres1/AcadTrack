@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>AcadTrack</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css?v=3">
 </head>
 <body>
 <section id="loginScreen" class="login-screen" aria-label="Selecionar perfil de acesso">
@@ -60,7 +60,7 @@
     </form>
 </section>
 
-<aside class="sidebar">
+<aside class="sidebar" hidden>
     <div class="brand">
         <span class="brand-mark">AT</span>
         <div>
@@ -70,7 +70,6 @@
     </div>
 
     <nav class="nav-list" aria-label="Navegação principal">
-        <button class="nav-link active" type="button" data-section="dashboard">Dashboard</button>
         <button class="nav-link" type="button" data-section="alunos">Alunos</button>
         <button class="nav-link" type="button" data-section="turmas">Turmas</button>
         <button class="nav-link" type="button" data-section="disciplinas">Disciplinas</button>
@@ -95,59 +94,6 @@
 </aside>
 
 <main class="shell">
-    <section class="hero">
-        <div>
-            <h1>Dashboard AcadTrack</h1>
-        </div>
-        <button id="refreshDashboardButton" class="primary-button" type="button">Atualizar dashboard</button>
-    </section>
-
-    <section id="dashboard" class="content-section active">
-        <div class="section-header">
-            <div>
-                <h2>Resumo acadêmico</h2>
-                <p>Indicadores montados a partir das análises de desempenho calculadas pela API.</p>
-            </div>
-        </div>
-
-        <div class="metric-grid">
-            <article class="metric-card">
-                <span>Total analisado</span>
-                <strong id="metricTotal">-</strong>
-            </article>
-            <article class="metric-card danger">
-                <span>Risco alto</span>
-                <strong id="metricAlto">-</strong>
-            </article>
-            <article class="metric-card warning">
-                <span>Risco moderado</span>
-                <strong id="metricModerado">-</strong>
-            </article>
-            <article class="metric-card success">
-                <span>Risco baixo</span>
-                <strong id="metricBaixo">-</strong>
-            </article>
-        </div>
-
-        <div class="dashboard-grid">
-            <article class="card">
-                <div class="card-title-row">
-                    <h3>Alunos prioritários</h3>
-                    <span id="dashboardStatus" class="status-pill neutral">Aguardando consulta</span>
-                </div>
-                <div id="dashboardList" class="compact-list"></div>
-            </article>
-
-            <article class="card">
-                <div class="card-title-row">
-                    <h3>Top 10 acadêmico</h3>
-                    <span id="dashboardRankingStatus" class="status-pill neutral">Aguardando consulta</span>
-                </div>
-                <div id="dashboardRankingList" class="compact-list"></div>
-            </article>
-        </div>
-    </section>
-
     <section id="alunos" class="content-section">
         <div id="studentsListView">
             <div class="section-header">
@@ -706,7 +652,6 @@
                     <h2>Retificações de Nota</h2>
                     <p>Gerenciar solicitações de retificação</p>
                 </div>
-                <button id="newCorrectionButton" class="primary-button add-button" type="button">+ Solicitar Retificação</button>
             </div>
 
             <article class="card corrections-card">
@@ -725,46 +670,6 @@
                         <tbody id="correctionsTableBody"></tbody>
                     </table>
                 </div>
-            </article>
-        </div>
-
-        <div id="correctionRequestView" hidden>
-            <div class="section-header">
-                <div>
-                    <h2>Solicitar Retificação</h2>
-                    <p>Preencha os dados da solicitação</p>
-                </div>
-            </div>
-
-            <article class="card correction-form-card">
-                <form id="correctionRequestForm" class="student-form" novalidate>
-                    <div class="form-field">
-                        <label id="correctionStudentLabel" for="correctionStudentSelect">Selecionar Aluno</label>
-                        <select id="correctionStudentSelect" name="alunoId" required>
-                            <option value="">Escolha um aluno</option>
-                        </select>
-                        <input id="correctionStudentEnrollment" name="alunoId" type="number" min="1" placeholder="Ex.: 1" hidden disabled>
-                    </div>
-
-                    <div class="form-field">
-                        <label for="correctionNoteSelect">Selecionar Nota</label>
-                        <select id="correctionNoteSelect" name="notaId" disabled required>
-                            <option value="">Escolha uma nota</option>
-                        </select>
-                    </div>
-
-                    <div class="form-field">
-                        <label for="correctionJustification">Justificativa</label>
-                        <textarea id="correctionJustification" name="justificativa" placeholder="Descreva o motivo da solicitação de retificação..." required></textarea>
-                    </div>
-
-                    <div id="correctionRequestFeedback" class="note-feedback"></div>
-
-                    <div class="form-actions">
-                        <button class="primary-button" type="submit">Solicitar</button>
-                        <button id="cancelCorrectionRequestButton" class="cancel-button" type="button">Cancelar</button>
-                    </div>
-                </form>
             </article>
         </div>
 
@@ -923,8 +828,8 @@
                 <p>Lista persistida criada pelo Observer de risco acadêmico.</p>
             </div>
             <form id="notificationsForm" class="inline-form">
-                <label for="notificationsResponsavelId">Responsável ID</label>
-                <input id="notificationsResponsavelId" name="responsavelId" type="number" min="1" placeholder="Ex.: 1" required>
+                <label for="notificationsAlunoId">Matrícula do Aluno</label>
+                <input id="notificationsAlunoId" name="alunoId" type="number" min="1" placeholder="Ex.: 1" required>
                 <button class="primary-button" type="submit">Listar</button>
             </form>
         </div>
@@ -939,9 +844,7 @@
                 <p>Acesso validado pelo backend conforme vínculo ativo e permissões.</p>
             </div>
             <form id="portalForm" class="inline-form">
-                <label for="portalResponsavelId">Responsável ID</label>
-                <input id="portalResponsavelId" name="responsavelId" type="number" min="1" placeholder="Ex.: 1" required>
-                <label for="portalAlunoId">Aluno ID</label>
+                <label for="portalAlunoId">Matrícula do Aluno</label>
                 <input id="portalAlunoId" name="alunoId" type="number" min="1" placeholder="Ex.: 1" required>
                 <button class="primary-button" type="submit">Consultar</button>
             </form>
@@ -951,6 +854,6 @@
     </section>
 </main>
 
-<script src="app.js"></script>
+<script src="app.js?v=3"></script>
 </body>
 </html>

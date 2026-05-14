@@ -20,7 +20,7 @@ public class CriarAlunoUseCase {
     public Aluno executar(String nome, String email) {
         String emailNormalizado = Email.normalizar(email);
         if (alunoRepository.existeAlunoComEmailIgnorandoMaiusculas(emailNormalizado)) {
-            throw new ConflitoDeEstadoException("Já existe aluno cadastrado com este e-mail.");
+            throw new ConflitoDeEstadoException("Já existe aluno cadastrado com este e-mail");
         }
         Aluno aluno = new Aluno(null, nome, emailNormalizado, null, null);
         return alunoRepository.salvar(aluno);

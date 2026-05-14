@@ -110,7 +110,9 @@ public class DisciplinaController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Criada",
                     content = @Content(schema = @Schema(implementation = DisciplinaResponse.class))),
-            @ApiResponse(responseCode = "400", description = "Validação ou regra de negócio",
+            @ApiResponse(responseCode = "400", description = "Erro de validação dos dados de entrada",
+                    content = @Content(schema = @Schema(implementation = ErroApiResponse.class))),
+            @ApiResponse(responseCode = "409", description = "Conflito de estado: nome de disciplina já cadastrado",
                     content = @Content(schema = @Schema(implementation = ErroApiResponse.class)))
     })
     @PostMapping
@@ -125,9 +127,11 @@ public class DisciplinaController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Disciplina atualizada",
                     content = @Content(schema = @Schema(implementation = DisciplinaResponse.class))),
-            @ApiResponse(responseCode = "400", description = "Validação ou nome duplicado",
+            @ApiResponse(responseCode = "400", description = "Erro de validação dos dados de entrada",
                     content = @Content(schema = @Schema(implementation = ErroApiResponse.class))),
             @ApiResponse(responseCode = "404", description = "Disciplina não encontrada",
+                    content = @Content(schema = @Schema(implementation = ErroApiResponse.class))),
+            @ApiResponse(responseCode = "409", description = "Conflito de estado: nome de disciplina já cadastrado",
                     content = @Content(schema = @Schema(implementation = ErroApiResponse.class)))
     })
     @PatchMapping("/{disciplinaId}")
@@ -147,7 +151,7 @@ public class DisciplinaController {
             @ApiResponse(responseCode = "404", description = "Disciplina não encontrada",
                     content = @Content(schema = @Schema(implementation = ErroApiResponse.class)))
     })
-    @DeleteMapping("/{disciplinaId}")
+    @PatchMapping("/{disciplinaId}/inativar")
     public ResponseEntity<DisciplinaResponse> inativar(
             @Parameter(description = "Identificador da disciplina") @PathVariable Long disciplinaId) {
         Disciplina disciplina = inativarDisciplinaUseCase.executar(disciplinaId);
@@ -178,7 +182,7 @@ public class DisciplinaController {
             @ApiResponse(responseCode = "404", description = "Disciplina não encontrada",
                     content = @Content(schema = @Schema(implementation = ErroApiResponse.class)))
     })
-    @DeleteMapping("/{disciplinaId}/excluir")
+    @DeleteMapping("/{disciplinaId}")
     public ResponseEntity<Void> excluir(
             @Parameter(description = "Identificador da disciplina") @PathVariable Long disciplinaId) {
         excluirDisciplinaUseCase.executar(disciplinaId);

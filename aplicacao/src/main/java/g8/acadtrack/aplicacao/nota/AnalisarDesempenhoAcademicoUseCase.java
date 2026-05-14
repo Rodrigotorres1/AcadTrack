@@ -1,7 +1,7 @@
 package g8.acadtrack.aplicacao.nota;
 
 import g8.acadtrack.aplicacao.ranking.GerarRankingAcademicoUseCase;
-import g8.acadtrack.aplicacao.ranking.RankingAcademicoItem;
+import g8.acadtrack.aplicacao.nota.AvaliacaoAcademicaService.SimuladoDisciplinaKey;
 import g8.acadtrack.aplicacao.nota.risco.ClassificadorRiscoAcademicoService;
 import g8.acadtrack.dominioacademico.aluno.SituacaoAcademica;
 import g8.acadtrack.dominioacademico.disciplina.Disciplina;
@@ -9,6 +9,8 @@ import g8.acadtrack.dominioacademico.disciplina.DisciplinaRepository;
 import g8.acadtrack.dominioavaliacao.nota.Nota;
 import g8.acadtrack.dominioavaliacao.nota.NotaRepository;
 import g8.acadtrack.dominioavaliacao.simulado.Simulado;
+import g8.acadtrack.dominioavaliacao.simulado.SimuladoDisciplina;
+import g8.acadtrack.dominioavaliacao.simulado.SimuladoDisciplinaRepository;
 import g8.acadtrack.dominioavaliacao.simulado.SimuladoRepository;
 import g8.acadtrack.dominiocompartilhado.risco.NivelRiscoAcademico;
 import org.springframework.stereotype.Service;
@@ -23,26 +25,26 @@ public class AnalisarDesempenhoAcademicoUseCase extends FluxoAnaliseAcademicaTem
     private static final double LIMIAR_BAIXO_DESEMPENHO_SIMULADO = 5.0;
 
     private final NotaRepository notaRepository;
-    private final CalcularMediaPonderadaUseCase calcularMediaPonderadaUseCase;
     private final AvaliacaoAcademicaService avaliacaoAcademicaService;
     private final SimuladoRepository simuladoRepository;
+    private final SimuladoDisciplinaRepository simuladoDisciplinaRepository;
     private final DisciplinaRepository disciplinaRepository;
     private final GerarRankingAcademicoUseCase gerarRankingAcademicoUseCase;
     private final ClassificadorRiscoAcademicoService classificadorRiscoAcademicoService;
 
     public AnalisarDesempenhoAcademicoUseCase(
             NotaRepository notaRepository,
-            CalcularMediaPonderadaUseCase calcularMediaPonderadaUseCase,
             AvaliacaoAcademicaService avaliacaoAcademicaService,
             SimuladoRepository simuladoRepository,
+            SimuladoDisciplinaRepository simuladoDisciplinaRepository,
             DisciplinaRepository disciplinaRepository,
             GerarRankingAcademicoUseCase gerarRankingAcademicoUseCase,
             ClassificadorRiscoAcademicoService classificadorRiscoAcademicoService
     ) {
         this.notaRepository = notaRepository;
-        this.calcularMediaPonderadaUseCase = calcularMediaPonderadaUseCase;
         this.avaliacaoAcademicaService = avaliacaoAcademicaService;
         this.simuladoRepository = simuladoRepository;
+        this.simuladoDisciplinaRepository = simuladoDisciplinaRepository;
         this.disciplinaRepository = disciplinaRepository;
         this.gerarRankingAcademicoUseCase = gerarRankingAcademicoUseCase;
         this.classificadorRiscoAcademicoService = classificadorRiscoAcademicoService;
@@ -90,11 +92,22 @@ public class AnalisarDesempenhoAcademicoUseCase extends FluxoAnaliseAcademicaTem
     ) {
         Map<Long, List<Nota>> notasPorSimulado = notas.stream()
                 .collect(Collectors.groupingBy(Nota::getSimuladoId));
+        Map<Long, String> nomesSimulados = carregarNomesSimulados(
+                notasPorSimulado.keySet().stream().toList()
+        );
+        Map<SimuladoDisciplinaKey, Double> pesosPorSimuladoEDisciplina = carregarPesosPorSimuladoEDisciplina(
+                notasPorSimulado.keySet().stream().toList()
+        );
 
         List<AnaliseDesempenhoAcademicoResultado.MediaSimulado> historicoSimulados = notasPorSimulado.entrySet()
                 .stream()
                 .sorted(Map.Entry.comparingByKey())
-                .map(entry -> mediaSimulado(alunoId, entry.getKey(), entry.getValue()))
+                .map(entry -> mediaSimulado(
+                        entry.getKey(),
+                        entry.getValue(),
+                        nomesSimulados,
+                        pesosPorSimuladoEDisciplina
+                ))
                 .toList();
 
         long simuladosComBaixoDesempenho = historicoSimulados.stream()
@@ -104,25 +117,28 @@ public class AnalisarDesempenhoAcademicoUseCase extends FluxoAnaliseAcademicaTem
         NivelRiscoAcademico nivelRisco = classificadorRiscoAcademicoService.classificar(mediaGeral, simuladosComBaixoDesempenho);
         boolean riscoAcademico = nivelRisco != NivelRiscoAcademico.BAIXO;
 
-        List<AnaliseDesempenhoAcademicoResultado.MediaDisciplina> notasPorDisciplina = notas.stream()
-                .collect(Collectors.groupingBy(Nota::getDisciplinaId))
+        Map<Long, List<Nota>> notasAgrupadasPorDisciplina = notas.stream()
+                .collect(Collectors.groupingBy(Nota::getDisciplinaId));
+        Map<Long, String> nomesDisciplinas = carregarNomesDisciplinas(
+                notasAgrupadasPorDisciplina.keySet().stream().toList()
+        );
+
+        List<AnaliseDesempenhoAcademicoResultado.MediaDisciplina> notasPorDisciplina = notasAgrupadasPorDisciplina
                 .entrySet()
                 .stream()
                 .sorted(Map.Entry.comparingByKey())
-                .map(entry -> mediaDisciplina(entry.getKey(), entry.getValue()))
+                .map(entry -> mediaDisciplina(entry.getKey(), entry.getValue(), nomesDisciplinas))
                 .toList();
-        List<RankingAcademicoItem> rankingAcademico = incluirRanking
-                ? gerarRankingAcademicoUseCase.executar(0)
-                : List.of();
-        RankingAcademicoItem rankingAluno = rankingAcademico.stream()
-                .filter(item -> item.alunoId().equals(alunoId))
-                .findFirst()
-                .orElse(null);
-        Integer posicaoRanking = rankingAluno == null ? null : rankingAluno.posicao();
+        Integer posicaoRanking = incluirRanking
+                ? gerarRankingAcademicoUseCase.calcularPosicaoPorMedia(mediaGeral)
+                : null;
+        int totalAlunosRanking = incluirRanking
+                ? gerarRankingAcademicoUseCase.contarParticipantes()
+                : 0;
         boolean alunoNoTop10 = posicaoRanking != null && posicaoRanking <= 10;
         String mensagemRanking = incluirRanking
                 ? mensagemRanking(posicaoRanking, alunoNoTop10)
-                : "Ranking calculado sob demanda na consulta de desempenho.";
+                : "Ranking calculado sob demanda na consulta de desempenho";
 
         return new AnaliseDesempenhoAcademicoResultado(
                 alunoId,
@@ -133,9 +149,9 @@ public class AnalisarDesempenhoAcademicoUseCase extends FluxoAnaliseAcademicaTem
                 riscoAcademico,
                 nivelRisco,
                 mensagemAlerta(nivelRisco),
-                situacaoAcademica.name(),
+                situacaoAcademica,
                 posicaoRanking,
-                rankingAcademico.size(),
+                totalAlunosRanking,
                 alunoNoTop10,
                 mensagemRanking,
                 historicoSimulados,
@@ -144,63 +160,88 @@ public class AnalisarDesempenhoAcademicoUseCase extends FluxoAnaliseAcademicaTem
     }
 
     private AnaliseDesempenhoAcademicoResultado.MediaSimulado mediaSimulado(
-            Long alunoId,
             Long simuladoId,
-            List<Nota> notas
+            List<Nota> notas,
+            Map<Long, String> nomesSimulados,
+            Map<SimuladoDisciplinaKey, Double> pesosPorSimuladoEDisciplina
     ) {
-        double mediaPonderada = calcularMediaPonderadaUseCase.executar(alunoId, simuladoId);
+        double mediaPonderada = avaliacaoAcademicaService.calcularMediaPonderada(notas, pesosPorSimuladoEDisciplina);
         boolean baixoDesempenho = mediaPonderada < LIMIAR_BAIXO_DESEMPENHO_SIMULADO;
 
         return new AnaliseDesempenhoAcademicoResultado.MediaSimulado(
                 simuladoId,
-                nomeSimulado(simuladoId),
+                nomesSimulados.getOrDefault(simuladoId, "Simulado " + simuladoId),
                 notas.size(),
                 mediaPonderada,
                 baixoDesempenho
         );
     }
 
-    private AnaliseDesempenhoAcademicoResultado.MediaDisciplina mediaDisciplina(Long disciplinaId, List<Nota> notas) {
+    private AnaliseDesempenhoAcademicoResultado.MediaDisciplina mediaDisciplina(
+            Long disciplinaId,
+            List<Nota> notas,
+            Map<Long, String> nomesDisciplinas
+    ) {
         double media = avaliacaoAcademicaService.calcularMediaAritmetica(notas);
         SituacaoAcademica status = avaliacaoAcademicaService.calcularSituacao(media);
 
         return new AnaliseDesempenhoAcademicoResultado.MediaDisciplina(
                 disciplinaId,
-                nomeDisciplina(disciplinaId),
+                nomesDisciplinas.getOrDefault(disciplinaId, "Disciplina " + disciplinaId),
                 media,
-                status.name(),
+                status,
                 nivelRiscoDisciplina(status)
         );
     }
 
     private String mensagemAlerta(NivelRiscoAcademico nivelRisco) {
         return switch (nivelRisco) {
-            case ALTO -> "Necessita intervencao pedagogica imediata.";
-            case MODERADO -> "Necessita atencao. Acompanhamento recomendado.";
-            case BAIXO -> "Desempenho estavel e satisfatorio.";
+            case ALTO -> "Necessita intervenção pedagógica imediata";
+            case MODERADO -> "Necessita atenção; acompanhamento recomendado";
+            case BAIXO -> "Desempenho estável e satisfatório";
         };
     }
 
     private String mensagemRanking(Integer posicaoRanking, boolean alunoNoTop10) {
         if (posicaoRanking == null) {
-            return "Aluno ainda nao participa do ranking academico.";
+            return "Aluno ainda não participa do ranking acadêmico";
         }
         if (alunoNoTop10) {
-            return "Aluno em destaque no Top 10 academico.";
+            return "Aluno em destaque no Top 10 acadêmico";
         }
-        return "Aluno na posicao " + posicaoRanking + " do ranking academico.";
+        return "Aluno na posição " + posicaoRanking + " do ranking acadêmico";
     }
 
-    private String nomeSimulado(Long simuladoId) {
-        return simuladoRepository.buscarPorId(simuladoId)
-                .map(Simulado::getDescricao)
-                .orElse("Simulado " + simuladoId);
+    private Map<Long, String> carregarNomesSimulados(List<Long> simuladoIds) {
+        return simuladoRepository.buscarPorIds(simuladoIds)
+                .stream()
+                .collect(Collectors.toMap(
+                        Simulado::getId,
+                        Simulado::getDescricao,
+                        (nomeAtual, nomeDuplicado) -> nomeAtual
+                ));
     }
 
-    private String nomeDisciplina(Long disciplinaId) {
-        return disciplinaRepository.buscarPorId(disciplinaId)
-                .map(Disciplina::getNome)
-                .orElse("Disciplina " + disciplinaId);
+    private Map<Long, String> carregarNomesDisciplinas(List<Long> disciplinaIds) {
+        return disciplinaRepository.buscarPorIds(disciplinaIds)
+                .stream()
+                .collect(Collectors.toMap(
+                        Disciplina::getId,
+                        Disciplina::getNome,
+                        (nomeAtual, nomeDuplicado) -> nomeAtual
+                ));
+    }
+
+    private Map<SimuladoDisciplinaKey, Double> carregarPesosPorSimuladoEDisciplina(List<Long> simuladoIds) {
+        return simuladoDisciplinaRepository.buscarPorSimuladoIds(simuladoIds)
+                .stream()
+                .collect(Collectors.groupingBy(
+                        simuladoDisciplina -> new SimuladoDisciplinaKey(
+                                simuladoDisciplina.getSimuladoId(),
+                                simuladoDisciplina.getDisciplinaId()
+                        ),
+                        Collectors.summingDouble(SimuladoDisciplina::getPeso)
+                ));
     }
 
     private NivelRiscoAcademico nivelRiscoDisciplina(SituacaoAcademica status) {

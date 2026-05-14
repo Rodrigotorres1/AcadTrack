@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @Repository
 public class NotificacaoResponsavelRepositoryJpa implements NotificacaoResponsavelRepository {
@@ -34,6 +35,12 @@ public class NotificacaoResponsavelRepositoryJpa implements NotificacaoResponsav
         );
 
         return mapear(repository.save(entity));
+    }
+
+    @Override
+    public Optional<NotificacaoResponsavel> buscarPorId(Long id) {
+        Long idObrigatorio = Objects.requireNonNull(id, "id é obrigatório");
+        return repository.findById(idObrigatorio).map(this::mapear);
     }
 
     @Override

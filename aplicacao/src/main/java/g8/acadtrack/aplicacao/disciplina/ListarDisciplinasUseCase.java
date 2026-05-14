@@ -18,4 +18,11 @@ public class ListarDisciplinasUseCase {
     public List<Disciplina> executar() {
         return disciplinaRepository.buscarTodos();
     }
+
+    public List<Disciplina> executarPorIds(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return List.of();
+        }
+        return disciplinaRepository.buscarPorIds(ids);
+    }
 }

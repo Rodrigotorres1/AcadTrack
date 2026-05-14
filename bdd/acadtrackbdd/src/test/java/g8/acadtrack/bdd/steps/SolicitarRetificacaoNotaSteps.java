@@ -1,6 +1,7 @@
 package g8.acadtrack.bdd.steps;
 
 import g8.acadtrack.aplicacao.aluno.CriarAlunoUseCase;
+import g8.acadtrack.aplicacao.aluno.InativarAlunoUseCase;
 import g8.acadtrack.aplicacao.disciplina.CriarDisciplinaUseCase;
 import g8.acadtrack.aplicacao.nota.LancarNotaUseCase;
 import g8.acadtrack.aplicacao.retificacao.AprovarRetificacaoUseCase;
@@ -15,6 +16,8 @@ import g8.acadtrack.dominioacademico.disciplina.Disciplina;
 import g8.acadtrack.dominioavaliacao.nota.Nota;
 import g8.acadtrack.dominioavaliacao.nota.NotaRepository;
 import g8.acadtrack.dominioavaliacao.retificacao.SolicitacaoRetificacao;
+import g8.acadtrack.dominioavaliacao.retificacao.SolicitacaoRetificacaoRepository;
+import g8.acadtrack.dominioavaliacao.retificacao.StatusSolicitacaoRetificacao;
 import g8.acadtrack.dominioavaliacao.simulado.Simulado;
 import g8.acadtrack.dominiocompartilhado.excecao.ConflitoDeEstadoException;
 import g8.acadtrack.dominiocompartilhado.excecao.EntidadeNaoEncontradaException;
@@ -33,6 +36,7 @@ public class SolicitarRetificacaoNotaSteps {
 
     private final TestContext context;
     private final CriarAlunoUseCase criarAlunoUseCase;
+    private final InativarAlunoUseCase inativarAlunoUseCase;
     private final CriarDisciplinaUseCase criarDisciplinaUseCase;
     private final CriarSimuladoUseCase criarSimuladoUseCase;
     private final LancarNotaUseCase lancarNotaUseCase;
@@ -40,6 +44,7 @@ public class SolicitarRetificacaoNotaSteps {
     private final IniciarAnaliseRetificacaoUseCase iniciarAnaliseRetificacaoUseCase;
     private final AprovarRetificacaoUseCase aprovarRetificacaoUseCase;
     private final ReprovarRetificacaoUseCase reprovarRetificacaoUseCase;
+    private final SolicitacaoRetificacaoRepository solicitacaoRetificacaoRepository;
     private final NotaRepository notaRepository;
     private final AlunoRepository alunoRepository;
 
@@ -54,6 +59,7 @@ public class SolicitarRetificacaoNotaSteps {
     public SolicitarRetificacaoNotaSteps(
             TestContext context,
             CriarAlunoUseCase criarAlunoUseCase,
+            InativarAlunoUseCase inativarAlunoUseCase,
             CriarDisciplinaUseCase criarDisciplinaUseCase,
             CriarSimuladoUseCase criarSimuladoUseCase,
             LancarNotaUseCase lancarNotaUseCase,
@@ -61,11 +67,13 @@ public class SolicitarRetificacaoNotaSteps {
             IniciarAnaliseRetificacaoUseCase iniciarAnaliseRetificacaoUseCase,
             AprovarRetificacaoUseCase aprovarRetificacaoUseCase,
             ReprovarRetificacaoUseCase reprovarRetificacaoUseCase,
+            SolicitacaoRetificacaoRepository solicitacaoRetificacaoRepository,
             NotaRepository notaRepository,
             AlunoRepository alunoRepository
     ) {
         this.context = context;
         this.criarAlunoUseCase = criarAlunoUseCase;
+        this.inativarAlunoUseCase = inativarAlunoUseCase;
         this.criarDisciplinaUseCase = criarDisciplinaUseCase;
         this.criarSimuladoUseCase = criarSimuladoUseCase;
         this.lancarNotaUseCase = lancarNotaUseCase;
@@ -73,6 +81,7 @@ public class SolicitarRetificacaoNotaSteps {
         this.iniciarAnaliseRetificacaoUseCase = iniciarAnaliseRetificacaoUseCase;
         this.aprovarRetificacaoUseCase = aprovarRetificacaoUseCase;
         this.reprovarRetificacaoUseCase = reprovarRetificacaoUseCase;
+        this.solicitacaoRetificacaoRepository = solicitacaoRetificacaoRepository;
         this.notaRepository = notaRepository;
         this.alunoRepository = alunoRepository;
     }
@@ -99,6 +108,12 @@ public class SolicitarRetificacaoNotaSteps {
                 7.0
         );
         valorOriginalNota = nota.getValor();
+    }
+
+    @Dado("o aluno está inativo")
+    public void oAlunoEstaInativo() {
+        aluno = inativarAlunoUseCase.executar(aluno.getId());
+        assertFalse(aluno.isAtivo());
     }
 
     @Quando("ele solicita retificação informando a justificativa {string}")
@@ -153,7 +168,7 @@ public class SolicitarRetificacaoNotaSteps {
         try {
             retificacao = iniciarAnaliseRetificacaoUseCase.executar(retificacao.getId());
             context.setOperacaoExecutada(true);
-        } catch (EntidadeNaoEncontradaException | IllegalStateException e) {
+        } catch (EntidadeNaoEncontradaException | ConflitoDeEstadoException e) {
             excecao = e;
             context.setMensagem(e.getMessage());
             context.setOperacaoExecutada(false);
@@ -167,7 +182,7 @@ public class SolicitarRetificacaoNotaSteps {
         try {
             retificacao = iniciarAnaliseRetificacaoUseCase.executar(ID_INEXISTENTE);
             context.setOperacaoExecutada(true);
-        } catch (EntidadeNaoEncontradaException | IllegalStateException e) {
+        } catch (EntidadeNaoEncontradaException | ConflitoDeEstadoException e) {
             excecao = e;
             context.setMensagem(e.getMessage());
             context.setOperacaoExecutada(false);
@@ -178,7 +193,7 @@ public class SolicitarRetificacaoNotaSteps {
     public void aSolicitacaoEstaEmAnalise() {
         oResponsavelIniciaAAnaliseDaSolicitacaoDeRetificacao();
         assertTrue(context.isOperacaoExecutada());
-        assertEquals(SolicitacaoRetificacao.STATUS_EM_ANALISE, retificacao.getStatus());
+        assertEquals(StatusSolicitacaoRetificacao.EM_ANALISE, retificacao.getStatus());
     }
 
     @Quando("o responsável aprova a retificação alterando a nota para {double} com justificativa {string}")
@@ -186,7 +201,7 @@ public class SolicitarRetificacaoNotaSteps {
         try {
             retificacao = aprovarRetificacaoUseCase.executar(retificacao.getId(), novoValor, justificativaDecisao);
             context.setOperacaoExecutada(true);
-        } catch (EntidadeNaoEncontradaException | IllegalStateException | RegraDeNegocioException e) {
+        } catch (EntidadeNaoEncontradaException | ConflitoDeEstadoException | RegraDeNegocioException e) {
             excecao = e;
             context.setMensagem(e.getMessage());
             context.setOperacaoExecutada(false);
@@ -200,7 +215,7 @@ public class SolicitarRetificacaoNotaSteps {
         try {
             retificacao = aprovarRetificacaoUseCase.executar(ID_INEXISTENTE, 9.0, "Erro confirmado");
             context.setOperacaoExecutada(true);
-        } catch (EntidadeNaoEncontradaException | IllegalStateException | RegraDeNegocioException e) {
+        } catch (EntidadeNaoEncontradaException | ConflitoDeEstadoException | RegraDeNegocioException e) {
             excecao = e;
             context.setMensagem(e.getMessage());
             context.setOperacaoExecutada(false);
@@ -212,7 +227,7 @@ public class SolicitarRetificacaoNotaSteps {
         try {
             retificacao = reprovarRetificacaoUseCase.executar(retificacao.getId(), justificativaDecisao);
             context.setOperacaoExecutada(true);
-        } catch (EntidadeNaoEncontradaException | IllegalStateException | RegraDeNegocioException e) {
+        } catch (EntidadeNaoEncontradaException | ConflitoDeEstadoException | RegraDeNegocioException e) {
             excecao = e;
             context.setMensagem(e.getMessage());
             context.setOperacaoExecutada(false);
@@ -226,7 +241,7 @@ public class SolicitarRetificacaoNotaSteps {
         try {
             retificacao = reprovarRetificacaoUseCase.executar(ID_INEXISTENTE, "Não foi identificado erro");
             context.setOperacaoExecutada(true);
-        } catch (EntidadeNaoEncontradaException | IllegalStateException | RegraDeNegocioException e) {
+        } catch (EntidadeNaoEncontradaException | ConflitoDeEstadoException | RegraDeNegocioException e) {
             excecao = e;
             context.setMensagem(e.getMessage());
             context.setOperacaoExecutada(false);
@@ -271,11 +286,43 @@ public class SolicitarRetificacaoNotaSteps {
         assertEquals("Solicitação de retificação não encontrada", context.getMensagem());
     }
 
+    @Entao("o sistema informa que a solicitação deve estar em análise para aprovação")
+    public void oSistemaInformaQueASolicitacaoDeveEstarEmAnaliseParaAprovacao() {
+        assertFalse(context.isOperacaoExecutada());
+        assertNotNull(excecao);
+        assertInstanceOf(ConflitoDeEstadoException.class, excecao);
+        assertEquals("A solicitação deve estar em análise para aprovação", context.getMensagem());
+    }
+
+    @Entao("o sistema informa que a solicitação deve estar em análise para reprovação")
+    public void oSistemaInformaQueASolicitacaoDeveEstarEmAnaliseParaReprovacao() {
+        assertFalse(context.isOperacaoExecutada());
+        assertNotNull(excecao);
+        assertInstanceOf(ConflitoDeEstadoException.class, excecao);
+        assertEquals("A solicitação deve estar em análise para reprovação", context.getMensagem());
+    }
+
+    @Entao("o sistema informa que a solicitação deve estar pendente para iniciar análise")
+    public void oSistemaInformaQueASolicitacaoDeveEstarPendenteParaIniciarAnalise() {
+        assertFalse(context.isOperacaoExecutada());
+        assertNotNull(excecao);
+        assertInstanceOf(ConflitoDeEstadoException.class, excecao);
+        assertEquals("A solicitação deve estar pendente para iniciar análise", context.getMensagem());
+    }
+
     @Entao("o sistema atualiza a solicitação de retificação para status {string}")
     public void oSistemaAtualizaASolicitacaoDeRetificacaoParaStatus(String statusEsperado) {
         assertTrue(context.isOperacaoExecutada());
         assertNull(excecao);
         assertEquals(statusEsperado, retificacao.getStatus().name());
+    }
+
+    @Entao("a solicitação permanece com status {string}")
+    public void aSolicitacaoPermaneceComStatus(String statusEsperado) {
+        SolicitacaoRetificacao retificacaoPersistida = solicitacaoRetificacaoRepository.buscarPorId(retificacao.getId())
+                .orElseThrow(() -> new AssertionError("Solicitação de retificação não encontrada após validação de estado"));
+
+        assertEquals(StatusSolicitacaoRetificacao.valueOf(statusEsperado), retificacaoPersistida.getStatus());
     }
 
     @Entao("a nota do aluno é atualizada para {double}")

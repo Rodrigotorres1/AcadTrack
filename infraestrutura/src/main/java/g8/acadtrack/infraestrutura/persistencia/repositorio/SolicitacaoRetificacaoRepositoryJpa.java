@@ -2,6 +2,7 @@ package g8.acadtrack.infraestrutura.persistencia.repositorio;
 
 import g8.acadtrack.dominioavaliacao.retificacao.SolicitacaoRetificacao;
 import g8.acadtrack.dominioavaliacao.retificacao.SolicitacaoRetificacaoRepository;
+import g8.acadtrack.dominioavaliacao.retificacao.StatusSolicitacaoRetificacao;
 import g8.acadtrack.infraestrutura.persistencia.entidade.SolicitacaoRetificacaoJpaEntity;
 import g8.acadtrack.infraestrutura.persistencia.springdata.SolicitacaoRetificacaoSpringDataRepository;
 import org.springframework.stereotype.Repository;
@@ -73,8 +74,8 @@ public class SolicitacaoRetificacaoRepositoryJpa implements SolicitacaoRetificac
         return repository.existsByNotaIdAndStatusIn(
                 notaIdObrigatorio,
                 List.of(
-                        SolicitacaoRetificacao.STATUS_PENDENTE,
-                        SolicitacaoRetificacao.STATUS_EM_ANALISE
+                        StatusSolicitacaoRetificacao.PENDENTE,
+                        StatusSolicitacaoRetificacao.EM_ANALISE
                 )
         );
     }

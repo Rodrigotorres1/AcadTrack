@@ -129,7 +129,7 @@ public class AlunoJpaEntity {
     }
 
     public SituacaoAcademica getSituacaoAcademica() {
-        return situacaoAcademica == null ? SituacaoAcademica.REPROVADO : situacaoAcademica;
+        return situacaoAcademica == null ? SituacaoAcademica.APROVADO : situacaoAcademica;
     }
 
     public void setId(Long id) {

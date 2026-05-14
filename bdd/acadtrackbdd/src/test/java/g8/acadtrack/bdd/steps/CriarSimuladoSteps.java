@@ -13,12 +13,16 @@ import g8.acadtrack.dominioavaliacao.simulado.Simulado;
 import io.cucumber.java.pt.Dado;
 import io.cucumber.java.pt.Quando;
 import io.cucumber.java.pt.Então;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 public class CriarSimuladoSteps {
 
@@ -29,10 +33,12 @@ public class CriarSimuladoSteps {
     private final InativarDisciplinaUseCase inativarDisciplinaUseCase;
     private final CriarAlunoUseCase criarAlunoUseCase;
     private final LancarNotaUseCase lancarNotaUseCase;
+    private final MockMvc mockMvc;
 
     private final List<Long> disciplinasIds = new ArrayList<>();
     private Simulado simulado;
     private Exception excecao;
+    private MvcResult respostaApi;
     private String descricaoSimulado;
 
     public CriarSimuladoSteps(
@@ -42,7 +48,8 @@ public class CriarSimuladoSteps {
             CriarDisciplinaUseCase criarDisciplinaUseCase,
             InativarDisciplinaUseCase inativarDisciplinaUseCase,
             CriarAlunoUseCase criarAlunoUseCase,
-            LancarNotaUseCase lancarNotaUseCase
+            LancarNotaUseCase lancarNotaUseCase,
+            MockMvc mockMvc
     ) {
         this.context = context;
         this.criarSimuladoUseCase = criarSimuladoUseCase;
@@ -51,6 +58,7 @@ public class CriarSimuladoSteps {
         this.inativarDisciplinaUseCase = inativarDisciplinaUseCase;
         this.criarAlunoUseCase = criarAlunoUseCase;
         this.lancarNotaUseCase = lancarNotaUseCase;
+        this.mockMvc = mockMvc;
     }
 
     @Dado("que o coordenador deseja criar um simulado")
@@ -59,6 +67,7 @@ public class CriarSimuladoSteps {
         disciplinasIds.clear();
         simulado = null;
         excecao = null;
+        respostaApi = null;
         descricaoSimulado = "Simulado Principal " + UUID.randomUUID();
     }
 
@@ -226,6 +235,31 @@ public class CriarSimuladoSteps {
         }
     }
 
+    @Quando("ele informa via API apenas a disciplina {string}")
+    public void eleInformaViaApiApenasADisciplina(String disciplinaNome) {
+        try {
+            Disciplina disciplina = criarDisciplinaUseCase.executar(disciplinaNome);
+            String body = "{\"descricao\":\"" + descricaoSimulado
+                    + "\",\"disciplinasIds\":[" + disciplina.getId()
+                    + "]}";
+
+            final MediaType application_JSON2 = MediaType.APPLICATION_JSON;
+            if (application_JSON2 != null) {
+                respostaApi = mockMvc.perform(post("/simulados")
+                                .contentType(application_JSON2)
+                                .content(body))
+                        .andReturn();
+            } else {
+            }
+            context.setOperacaoExecutada(respostaApi.getResponse().getStatus() < 400);
+            context.setMensagem(respostaApi.getResponse().getContentAsString());
+        } catch (Exception e) {
+            excecao = e;
+            context.setMensagem(e.getMessage());
+            context.setOperacaoExecutada(false);
+        }
+    }
+
     @Então("o sistema cria o simulado com as disciplinas informadas")
     public void oSistemaCriaOSimuladoComAsDisciplinasInformadas() {
         assertTrue(context.isOperacaoExecutada());
@@ -245,6 +279,16 @@ public class CriarSimuladoSteps {
         assertFalse(context.isOperacaoExecutada());
         assertNotNull(excecao);
         assertEquals("O simulado deve possuir pelo menos duas disciplinas distintas", context.getMensagem());
+    }
+
+    @Então("a API retorna erro 400 informando que o simulado requer pelo menos 2 disciplinas")
+    public void aApiRetornaErro400InformandoQueOSimuladoRequerPeloMenosDuasDisciplinas() throws Exception {
+        assertFalse(context.isOperacaoExecutada());
+        assertNull(excecao);
+        assertNotNull(respostaApi);
+        assertEquals(400, respostaApi.getResponse().getStatus());
+        assertTrue(respostaApi.getResponse().getContentAsString()
+                .contains("\"message\":\"O simulado requer pelo menos 2 disciplinas\""));
     }
 
     @Então("o sistema informa que não é permitido vincular disciplina repetida no mesmo simulado")

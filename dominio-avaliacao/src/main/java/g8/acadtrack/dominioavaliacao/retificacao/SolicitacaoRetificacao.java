@@ -1,15 +1,11 @@
 package g8.acadtrack.dominioavaliacao.retificacao;
 
+import g8.acadtrack.dominiocompartilhado.excecao.ConflitoDeEstadoException;
 import g8.acadtrack.dominiocompartilhado.excecao.RegraDeNegocioException;
 
 import java.util.Objects;
 
 public class SolicitacaoRetificacao {
-
-    public static final StatusSolicitacaoRetificacao STATUS_PENDENTE = StatusSolicitacaoRetificacao.PENDENTE;
-    public static final StatusSolicitacaoRetificacao STATUS_EM_ANALISE = StatusSolicitacaoRetificacao.EM_ANALISE;
-    public static final StatusSolicitacaoRetificacao STATUS_APROVADA = StatusSolicitacaoRetificacao.APROVADA;
-    public static final StatusSolicitacaoRetificacao STATUS_REPROVADA = StatusSolicitacaoRetificacao.REPROVADA;
 
     private Long id;
     private Long notaId;
@@ -67,14 +63,14 @@ public class SolicitacaoRetificacao {
 
     public void iniciarAnalise() {
         if (!Objects.equals(status, StatusSolicitacaoRetificacao.PENDENTE)) {
-            throw new IllegalStateException("A solicitação deve estar pendente para iniciar análise");
+            throw new ConflitoDeEstadoException("A solicitação deve estar pendente para iniciar análise");
         }
         this.status = StatusSolicitacaoRetificacao.EM_ANALISE;
     }
 
     public void aprovar(String justificativaDecisao) {
         if (!Objects.equals(status, StatusSolicitacaoRetificacao.EM_ANALISE)) {
-            throw new IllegalStateException("A solicitação deve estar em análise para aprovação");
+            throw new ConflitoDeEstadoException("A solicitação deve estar em análise para aprovação");
         }
         if (justificativaDecisao == null || justificativaDecisao.isBlank()) {
             throw new RegraDeNegocioException("Justificativa da decisão é obrigatória");
@@ -85,7 +81,7 @@ public class SolicitacaoRetificacao {
 
     public void reprovar(String justificativaDecisao) {
         if (!Objects.equals(status, StatusSolicitacaoRetificacao.EM_ANALISE)) {
-            throw new IllegalStateException("A solicitação deve estar em análise para reprovação");
+            throw new ConflitoDeEstadoException("A solicitação deve estar em análise para reprovação");
         }
         if (justificativaDecisao == null || justificativaDecisao.isBlank()) {
             throw new RegraDeNegocioException("Justificativa da decisão é obrigatória");

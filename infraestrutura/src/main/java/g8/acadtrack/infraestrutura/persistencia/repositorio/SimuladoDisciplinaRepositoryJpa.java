@@ -53,4 +53,21 @@ public class SimuladoDisciplinaRepositoryJpa implements SimuladoDisciplinaReposi
                 ))
                 .toList();
     }
+
+    @Override
+    public List<SimuladoDisciplina> buscarPorSimuladoIds(List<Long> simuladoIds) {
+        if (simuladoIds == null || simuladoIds.isEmpty()) {
+            return List.of();
+        }
+
+        return repository.findBySimuladoIdIn(simuladoIds)
+                .stream()
+                .map(entity -> new SimuladoDisciplina(
+                        entity.getId(),
+                        entity.getSimuladoId(),
+                        entity.getDisciplinaId(),
+                        entity.getPeso()
+                ))
+                .toList();
+    }
 }

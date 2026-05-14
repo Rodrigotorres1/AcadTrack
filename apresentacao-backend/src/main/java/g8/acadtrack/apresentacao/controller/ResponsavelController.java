@@ -1,6 +1,7 @@
 package g8.acadtrack.apresentacao.controller;
 
 import g8.acadtrack.aplicacao.notificacao.ListarNotificacoesResponsavelUseCase;
+import g8.acadtrack.aplicacao.notificacao.MarcarNotificacaoLidaUseCase;
 import g8.acadtrack.aplicacao.responsavel.CriarResponsavelUseCase;
 import g8.acadtrack.aplicacao.responsavel.ExcluirResponsavelUseCase;
 import g8.acadtrack.aplicacao.responsavel.ListarResponsaveisUseCase;
@@ -44,6 +45,7 @@ public class ResponsavelController {
     private final ConsultarSimuladosAlunoPorResponsavelUseCase consultarSimuladosAlunoPorResponsavelUseCase;
     private final ConsultarDesempenhoAlunoPorResponsavelUseCase consultarDesempenhoAlunoPorResponsavelUseCase;
     private final ListarNotificacoesResponsavelUseCase listarNotificacoesResponsavelUseCase;
+    private final MarcarNotificacaoLidaUseCase marcarNotificacaoLidaUseCase;
 
     public ResponsavelController(
             CriarResponsavelUseCase criarResponsavelUseCase,
@@ -52,7 +54,8 @@ public class ResponsavelController {
             ConsultarNotasAlunoPorResponsavelUseCase consultarNotasAlunoPorResponsavelUseCase,
             ConsultarSimuladosAlunoPorResponsavelUseCase consultarSimuladosAlunoPorResponsavelUseCase,
             ConsultarDesempenhoAlunoPorResponsavelUseCase consultarDesempenhoAlunoPorResponsavelUseCase,
-            ListarNotificacoesResponsavelUseCase listarNotificacoesResponsavelUseCase
+            ListarNotificacoesResponsavelUseCase listarNotificacoesResponsavelUseCase,
+            MarcarNotificacaoLidaUseCase marcarNotificacaoLidaUseCase
     ) {
         this.criarResponsavelUseCase = criarResponsavelUseCase;
         this.excluirResponsavelUseCase = excluirResponsavelUseCase;
@@ -61,6 +64,7 @@ public class ResponsavelController {
         this.consultarSimuladosAlunoPorResponsavelUseCase = consultarSimuladosAlunoPorResponsavelUseCase;
         this.consultarDesempenhoAlunoPorResponsavelUseCase = consultarDesempenhoAlunoPorResponsavelUseCase;
         this.listarNotificacoesResponsavelUseCase = listarNotificacoesResponsavelUseCase;
+        this.marcarNotificacaoLidaUseCase = marcarNotificacaoLidaUseCase;
     }
 
     @Operation(summary = "Listar responsáveis cadastrados")
@@ -99,7 +103,9 @@ public class ResponsavelController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Criado",
                     content = @Content(schema = @Schema(implementation = ResponsavelResponse.class))),
-            @ApiResponse(responseCode = "400", description = "Validação ou regra de negócio",
+            @ApiResponse(responseCode = "400", description = "Erro de validação dos dados de entrada",
+                    content = @Content(schema = @Schema(implementation = ErroApiResponse.class))),
+            @ApiResponse(responseCode = "409", description = "Conflito de estado: e-mail de responsável já cadastrado",
                     content = @Content(schema = @Schema(implementation = ErroApiResponse.class)))
     })
     @PostMapping
@@ -113,10 +119,10 @@ public class ResponsavelController {
                 .body(ResponsavelResponse.fromDomain(responsavel));
     }
 
-    @Operation(summary = "Excluir responsavel definitivamente", description = "Remove o cadastro do responsavel e limpa vinculos existentes com alunos.")
+    @Operation(summary = "Excluir responsável definitivamente", description = "Remove o cadastro do responsável e limpa vínculos existentes com alunos")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "204", description = "Responsavel excluido"),
-            @ApiResponse(responseCode = "404", description = "Responsavel nao encontrado",
+            @ApiResponse(responseCode = "204", description = "Responsável excluído"),
+            @ApiResponse(responseCode = "404", description = "Responsável não encontrado",
                     content = @Content(schema = @Schema(implementation = ErroApiResponse.class)))
     })
     @DeleteMapping("/{responsavelId}")
@@ -130,7 +136,7 @@ public class ResponsavelController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Lista pode ser vazia",
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = NotaResponse.class)))),
-            @ApiResponse(responseCode = "400", description = "Sem permissão ou regra",
+            @ApiResponse(responseCode = "403", description = "Responsável sem vínculo ativo ou sem permissão",
                     content = @Content(schema = @Schema(implementation = ErroApiResponse.class))),
             @ApiResponse(responseCode = "404", description = "Recursos não encontrados",
                     content = @Content(schema = @Schema(implementation = ErroApiResponse.class)))
@@ -148,7 +154,7 @@ public class ResponsavelController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Lista pode ser vazia",
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = SimuladoResponse.class)))),
-            @ApiResponse(responseCode = "400", description = "Sem permissão ou regra",
+            @ApiResponse(responseCode = "403", description = "Responsável sem vínculo ativo ou sem permissão",
                     content = @Content(schema = @Schema(implementation = ErroApiResponse.class))),
             @ApiResponse(responseCode = "404", description = "Recursos não encontrados",
                     content = @Content(schema = @Schema(implementation = ErroApiResponse.class)))
@@ -170,7 +176,9 @@ public class ResponsavelController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Análise",
                     content = @Content(schema = @Schema(implementation = AnaliseDesempenhoResponse.class))),
-            @ApiResponse(responseCode = "400", description = "Sem permissão ou regra",
+            @ApiResponse(responseCode = "400", description = "Regra de negócio",
+                    content = @Content(schema = @Schema(implementation = ErroApiResponse.class))),
+            @ApiResponse(responseCode = "403", description = "Responsável sem vínculo ativo ou sem permissão",
                     content = @Content(schema = @Schema(implementation = ErroApiResponse.class))),
             @ApiResponse(responseCode = "404", description = "Recursos não encontrados",
                     content = @Content(schema = @Schema(implementation = ErroApiResponse.class)))
@@ -191,18 +199,37 @@ public class ResponsavelController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Lista pode ser vazia",
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = NotificacaoResponsavelResponse.class)))),
-            @ApiResponse(responseCode = "404", description = "Responsavel nao encontrado",
+            @ApiResponse(responseCode = "404", description = "Responsável não encontrado",
                     content = @Content(schema = @Schema(implementation = ErroApiResponse.class)))
     })
     @GetMapping("/{responsavelId}/notificacoes")
     public ResponseEntity<List<NotificacaoResponsavelResponse>> listarNotificacoes(
-            @Parameter(description = "Responsavel") @PathVariable Long responsavelId
+            @Parameter(description = "Responsável") @PathVariable Long responsavelId
     ) {
         return ResponseEntity.ok(
                 listarNotificacoesResponsavelUseCase.executar(responsavelId)
                         .stream()
                         .map(NotificacaoResponsavelResponse::fromDomain)
                         .toList()
+        );
+    }
+
+    @Operation(summary = "Marcar notificação como lida")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Notificação atualizada",
+                    content = @Content(schema = @Schema(implementation = NotificacaoResponsavelResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Responsável ou notificação não encontrados",
+                    content = @Content(schema = @Schema(implementation = ErroApiResponse.class)))
+    })
+    @PatchMapping("/{responsavelId}/notificacoes/{notificacaoId}/lida")
+    public ResponseEntity<NotificacaoResponsavelResponse> marcarNotificacaoLida(
+            @Parameter(description = "Responsável") @PathVariable Long responsavelId,
+            @Parameter(description = "Notificação") @PathVariable Long notificacaoId
+    ) {
+        return ResponseEntity.ok(
+                NotificacaoResponsavelResponse.fromDomain(
+                        marcarNotificacaoLidaUseCase.executar(responsavelId, notificacaoId)
+                )
         );
     }
 }

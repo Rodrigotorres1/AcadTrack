@@ -67,6 +67,8 @@ public class TurmaController {
             @ApiResponse(responseCode = "201", description = "Criada",
                     content = @Content(schema = @Schema(implementation = TurmaResponse.class))),
             @ApiResponse(responseCode = "400", description = "Validação ou regra de negócio",
+                    content = @Content(schema = @Schema(implementation = ErroApiResponse.class))),
+            @ApiResponse(responseCode = "409", description = "Nome de turma já cadastrado",
                     content = @Content(schema = @Schema(implementation = ErroApiResponse.class)))
     })
     @PostMapping

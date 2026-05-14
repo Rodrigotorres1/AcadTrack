@@ -16,7 +16,7 @@ public class AtivarAlunoUseCase {
 
     public Aluno executar(Long alunoId) {
         Aluno aluno = alunoRepository.buscarPorId(alunoId)
-                .orElseThrow(() -> new EntidadeNaoEncontradaException("Aluno nao encontrado."));
+                .orElseThrow(() -> new EntidadeNaoEncontradaException("Aluno não encontrado"));
         aluno.ativar();
         return alunoRepository.salvar(aluno);
     }

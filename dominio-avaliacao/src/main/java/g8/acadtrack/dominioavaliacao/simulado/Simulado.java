@@ -1,5 +1,7 @@
 package g8.acadtrack.dominioavaliacao.simulado;
 
+import g8.acadtrack.dominiocompartilhado.excecao.RegraDeNegocioException;
+
 public class Simulado {
 
     private Long id;
@@ -7,7 +9,7 @@ public class Simulado {
 
     public Simulado(Long id, String descricao) {
         if (descricao == null || descricao.isBlank()) {
-            throw new IllegalArgumentException("Descrição do simulado não pode ser vazia");
+            throw new RegraDeNegocioException("Descrição do simulado não pode ser vazia");
         }
 
         this.id = id;
@@ -24,7 +26,7 @@ public class Simulado {
 
     public void atualizar(String descricao) {
         if (descricao == null || descricao.isBlank()) {
-            throw new IllegalArgumentException("Descrição do simulado não pode ser vazia");
+            throw new RegraDeNegocioException("Descrição do simulado não pode ser vazia");
         }
         this.descricao = descricao.trim();
     }

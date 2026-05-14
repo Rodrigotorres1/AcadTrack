@@ -48,7 +48,7 @@ public class Disciplina {
 
     public void renomear(String nome) {
         if (nome == null || nome.isBlank()) {
-            throw new IllegalArgumentException("Nome da disciplina é obrigatório");
+            throw new RegraDeNegocioException("Nome da disciplina é obrigatório");
         }
         this.nome = normalizarNome(nome);
     }

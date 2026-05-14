@@ -34,6 +34,13 @@ Feature: Solicitar retificação de nota
     Quando o responsável aprova uma solicitação de retificação inexistente
     Então o sistema informa que a solicitação de retificação não foi encontrada
 
+  Scenario: Não permitir aprovar retificação com status PENDENTE
+    Dado que o aluno "João Silva" possui uma nota lançada
+    E ele solicita retificação informando a justificativa "Nota lançada incorretamente"
+    Quando o responsável aprova a retificação alterando a nota para 9.0 com justificativa "Erro confirmado na correção"
+    Então o sistema informa que a solicitação deve estar em análise para aprovação
+    E a solicitação permanece com status "PENDENTE"
+
   Scenario: Aprovar retificação atualiza nota e situação acadêmica
     Dado que o aluno "João Silva" possui uma nota lançada
     E ele solicita retificação informando a justificativa "Nota lançada incorretamente"
@@ -55,6 +62,15 @@ Feature: Solicitar retificação de nota
     Quando o responsável reprova uma solicitação de retificação inexistente
     Então o sistema informa que a solicitação de retificação não foi encontrada
 
+  Scenario: Não permitir reprovar retificação já aprovada
+    Dado que o aluno "João Silva" possui uma nota lançada
+    E ele solicita retificação informando a justificativa "Nota lançada incorretamente"
+    E a solicitação está em análise
+    E o responsável aprova a retificação alterando a nota para 9.0 com justificativa "Erro confirmado na correção"
+    Quando o responsável reprova a solicitação de retificação com justificativa "Tentativa fora de estado"
+    Então o sistema informa que a solicitação deve estar em análise para reprovação
+    E a solicitação permanece com status "APROVADA"
+
   Scenario: Não permitir aprovar retificação sem justificativa de decisão
     Dado que o aluno "Maria Oliveira" possui uma nota lançada
     E ele solicita retificação informando a justificativa "Revisão necessária"
@@ -68,3 +84,9 @@ Feature: Solicitar retificação de nota
     E a solicitação está em análise
     Quando o responsável tenta reprovar a retificação sem justificativa de decisão
     Então o sistema informa que a justificativa da decisão é obrigatória
+
+  Scenario: Permitir aluno inativo solicitar retificação de nota existente
+    Dado que o aluno "João Silva" possui uma nota lançada
+    E o aluno está inativo
+    Quando ele solicita retificação informando a justificativa "Revisar nota lançada antes da inativação"
+    Então o sistema registra a solicitação de retificação com status "PENDENTE"

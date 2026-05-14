@@ -1,5 +1,6 @@
 # Build
 target/
+.mvn
 *.class
 *.jar
 *.war
@@ -32,8 +33,9 @@ nbbuild/
 dist/
 nbdist/
 
-# Ferramenta Claude Code
+# Ferramenta Claude Code e Codex
 .claude/
+.codex-run
 
 # Banco de dados H2 em disco
 data/

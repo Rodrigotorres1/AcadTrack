@@ -53,7 +53,7 @@ public class Nota {
 
     public void atualizarValor(double novoValor) {
         if (novoValor < 0 || novoValor > 10) {
-            throw new IllegalArgumentException("A nota deve estar entre 0 e 10");
+            throw new RegraDeNegocioException("A nota deve estar entre 0 e 10");
         }
         this.valor = novoValor;
     }

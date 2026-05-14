@@ -1,5 +1,7 @@
 package g8.acadtrack.dominioavaliacao.retificacao;
 
+import g8.acadtrack.dominiocompartilhado.excecao.RegraDeNegocioException;
+
 public enum StatusSolicitacaoRetificacao {
     PENDENTE,
     EM_ANALISE,
@@ -10,11 +12,15 @@ public enum StatusSolicitacaoRetificacao {
         if (status == null || status.isBlank()) {
             return PENDENTE;
         }
-        try {
-            return StatusSolicitacaoRetificacao.valueOf(status.trim().toUpperCase());
-        } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Status de solicitação de retificação inválido", e);
+
+        String statusNormalizado = status.trim().toUpperCase();
+        for (StatusSolicitacaoRetificacao statusSolicitacao : values()) {
+            if (statusSolicitacao.name().equals(statusNormalizado)) {
+                return statusSolicitacao;
+            }
         }
+
+        throw new RegraDeNegocioException("Status de solicitação de retificação inválido");
     }
 
     public static StatusSolicitacaoRetificacao normalizar(StatusSolicitacaoRetificacao status) {

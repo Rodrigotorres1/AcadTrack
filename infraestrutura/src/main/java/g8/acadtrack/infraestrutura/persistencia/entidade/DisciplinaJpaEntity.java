@@ -1,6 +1,9 @@
 package g8.acadtrack.infraestrutura.persistencia.entidade;
 
+import g8.acadtrack.dominioacademico.disciplina.StatusDisciplina;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -19,7 +22,9 @@ public class DisciplinaJpaEntity {
     private Long id;
 
     private String nome;
-    private String status;
+
+    @Enumerated(EnumType.STRING)
+    private StatusDisciplina status;
 
     @OneToMany(mappedBy = "disciplina")
     private List<NotaJpaEntity> notas = new ArrayList<>();
@@ -27,7 +32,7 @@ public class DisciplinaJpaEntity {
     public DisciplinaJpaEntity() {
     }
 
-    public DisciplinaJpaEntity(Long id, String nome, String status) {
+    public DisciplinaJpaEntity(Long id, String nome, StatusDisciplina status) {
         this.id = id;
         this.nome = nome;
         this.status = status;
@@ -41,7 +46,7 @@ public class DisciplinaJpaEntity {
         return nome;
     }
 
-    public String getStatus() {
+    public StatusDisciplina getStatus() {
         return status;
     }
 
@@ -53,7 +58,7 @@ public class DisciplinaJpaEntity {
         this.nome = nome;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(StatusDisciplina status) {
         this.status = status;
     }
 }

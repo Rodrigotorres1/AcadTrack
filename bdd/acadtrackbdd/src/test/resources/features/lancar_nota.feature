@@ -5,6 +5,11 @@ Feature: Lançar nota individual
     Quando o professor lança a nota 8.5 para o aluno "João Silva"
     Então o sistema registra a nota do aluno
 
+  Scenario: Lançar nota via API sem enriquecimento de disciplina e simulado
+    Dado que o aluno "João Silva" realizou o simulado
+    Quando o professor lança via API a nota 8.5 para o aluno "João Silva"
+    Então a API retorna a nota criada sem nome da disciplina e descrição do simulado
+
   Scenario: Não permitir nota inválida
     Dado que o aluno "João Silva" realizou o simulado
     Quando o professor lança a nota 15 para o aluno "João Silva"
@@ -30,6 +35,11 @@ Feature: Lançar nota individual
     Dado que o aluno "João Silva" possui nota 4.0 já lançada
     Quando o professor lança uma nova nota 6.0 para o aluno "João Silva" em outra disciplina
     Então o sistema atualiza a situação acadêmica do aluno para "RECUPERACAO"
+
+  Scenario: Definir situação acadêmica como reprovado para média abaixo de 5.0
+    Dado que o aluno "João Silva" possui nota 4.0 já lançada
+    Quando o professor lança uma nova nota 5.0 para o aluno "João Silva" em outra disciplina
+    Então o sistema atualiza a situação acadêmica do aluno para "REPROVADO"
 
   Scenario: Definir situação acadêmica no limite de aprovação (média 7.0)
     Dado que o aluno "João Silva" possui nota 6.0 já lançada

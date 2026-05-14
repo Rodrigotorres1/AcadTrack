@@ -9,6 +9,7 @@ import g8.acadtrack.dominioacademico.aluno.Aluno;
 import g8.acadtrack.dominioacademico.aluno.AlunoRepository;
 import g8.acadtrack.dominioacademico.turma.Turma;
 import g8.acadtrack.dominioacademico.turma.TurmaRepository;
+import g8.acadtrack.dominiocompartilhado.excecao.ConflitoDeEstadoException;
 import io.cucumber.java.pt.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -26,6 +27,7 @@ public class VincularAlunoTurmaSteps {
     private Aluno aluno;
     private Aluno alunoTurmaDuplicada;
     private Turma turma;
+    private Turma turmaAnterior;
     private Turma turmaMantida;
     private Turma turmaDuplicada;
     private Exception erroTurma;
@@ -51,14 +53,18 @@ public class VincularAlunoTurmaSteps {
 
     @Dado("que o aluno {string} não está vinculado a nenhuma turma")
     public void dadoAlunoSemTurma(String nome) {
+        context.resetMensagens();
+        erroTurma = null;
         aluno = criarAlunoUseCase.executar(nome, emailSeguro(nome) + "@email.com");
-        turma = criarTurmaUseCase.executar("Turma A");
     }
 
     @Dado("que o aluno {string} já está vinculado à turma {string}")
     public void dadoAlunoJaVinculado(String nome, String nomeTurma) {
+        context.resetMensagens();
+        erroTurma = null;
         aluno = criarAlunoUseCase.executar(nome, emailSeguro(nome) + "@email.com");
         turma = criarTurmaUseCase.executar(nomeTurma);
+        turmaAnterior = turma;
 
         useCase.executar(aluno.getId(), turma.getId());
     }
@@ -66,6 +72,7 @@ public class VincularAlunoTurmaSteps {
     @Quando("o coordenador vincula o aluno {string} à turma {string}")
     public void quandoVincula(String nome, String turmaNome) {
         try {
+            turma = criarTurmaUseCase.executar(turmaNome);
             useCase.executar(aluno.getId(), turma.getId());
             context.setOperacaoExecutada(true);
         } catch (Exception e) {
@@ -77,13 +84,21 @@ public class VincularAlunoTurmaSteps {
     @Então("o sistema registra o vínculo do aluno {string} à turma {string}")
     public void entaoSucesso(String nome, String turmaNome) {
         assertTrue(context.isOperacaoExecutada());
+        assertNull(context.getMensagem());
+        Aluno alunoAtualizado = alunoRepository.buscarPorId(aluno.getId())
+                .orElseThrow(() -> new AssertionError("Aluno não encontrado após vínculo com turma"));
+        assertEquals(turma.getId(), alunoAtualizado.getTurmaId());
     }
 
-    @Então("o sistema informa que o aluno já está vinculado a uma turma")
-    public void entaoErro() {
-        assertFalse(context.isOperacaoExecutada());
-        assertEquals("O aluno já está vinculado a uma turma", context.getMensagem());
+    @Então("o aluno {string} não permanece vinculado à turma {string}")
+    public void entaoAlunoNaoPermaneceVinculadoATurma(String nome, String turmaNome) {
+        Aluno alunoAtualizado = alunoRepository.buscarPorId(aluno.getId())
+                .orElseThrow(() -> new AssertionError("Aluno não encontrado após troca de turma"));
+
+        assertNotNull(turmaAnterior);
+        assertNotEquals(turmaAnterior.getId(), alunoAtualizado.getTurmaId());
     }
+
     @Dado("que já existe uma turma chamada {string}")
     public void dadoQueJaExisteUmaTurmaChamada(String nomeTurma) {
         turma = criarTurmaUseCase.executar(nomeTurma);
@@ -106,7 +121,8 @@ public class VincularAlunoTurmaSteps {
     public void entaoSistemaInformaTurmaJaCadastrada() {
         assertNotNull(erroTurma);
         assertFalse(context.isOperacaoExecutada());
-        assertEquals("Ja existe uma turma cadastrada com esse nome.", context.getMensagem());
+        assertInstanceOf(ConflitoDeEstadoException.class, erroTurma);
+        assertEquals("Já existe uma turma cadastrada com esse nome", context.getMensagem());
     }
 
     @Dado("que existem turmas duplicadas {string} e {string} com alunos vinculados")

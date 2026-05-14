@@ -1,5 +1,6 @@
 package g8.acadtrack.aplicacao.nota;
 
+import g8.acadtrack.aplicacao.nota.AvaliacaoAcademicaService.SimuladoDisciplinaKey;
 import g8.acadtrack.dominioavaliacao.nota.Nota;
 import g8.acadtrack.dominioavaliacao.nota.NotaRepository;
 import g8.acadtrack.dominioavaliacao.simulado.SimuladoDisciplina;
@@ -7,6 +8,8 @@ import g8.acadtrack.dominioavaliacao.simulado.SimuladoDisciplinaRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class CalcularMediaPonderadaUseCase {
@@ -28,24 +31,15 @@ public class CalcularMediaPonderadaUseCase {
     public double executar(Long alunoId, Long simuladoId) {
         List<Nota> notas = notaRepository.buscarPorAlunoESimulado(alunoId, simuladoId);
         List<SimuladoDisciplina> disciplinas = simuladoDisciplinaRepository.buscarPorSimulado(simuladoId);
+        Map<SimuladoDisciplinaKey, Double> pesosPorSimuladoEDisciplina = disciplinas.stream()
+                .collect(Collectors.groupingBy(
+                        disciplina -> new SimuladoDisciplinaKey(
+                                disciplina.getSimuladoId(),
+                                disciplina.getDisciplinaId()
+                        ),
+                        Collectors.summingDouble(SimuladoDisciplina::getPeso)
+                ));
 
-        // Media ponderada por simulado; nao alimenta Aluno.mediaAritmetica.
-        double somaPonderada = 0;
-        double somaPesos = 0;
-
-        for (Nota nota : notas) {
-            for (SimuladoDisciplina sd : disciplinas) {
-                if (sd.getDisciplinaId().equals(nota.getDisciplinaId())) {
-                    somaPonderada += nota.getValor() * sd.getPeso();
-                    somaPesos += sd.getPeso();
-                }
-            }
-        }
-
-        if (somaPesos == 0) {
-            return 0;
-        }
-
-        return avaliacaoAcademicaService.arredondarMedia(somaPonderada / somaPesos);
+        return avaliacaoAcademicaService.calcularMediaPonderada(notas, pesosPorSimuladoEDisciplina);
     }
 }

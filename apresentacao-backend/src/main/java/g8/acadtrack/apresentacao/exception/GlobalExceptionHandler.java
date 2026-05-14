@@ -1,5 +1,6 @@
 package g8.acadtrack.apresentacao.exception;
 
+import g8.acadtrack.dominiocompartilhado.excecao.AcessoDenegadoException;
 import g8.acadtrack.dominiocompartilhado.excecao.ConflitoDeEstadoException;
 import g8.acadtrack.dominiocompartilhado.excecao.EntidadeNaoEncontradaException;
 import g8.acadtrack.dominiocompartilhado.excecao.RegraDeNegocioException;
@@ -32,6 +33,11 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.CONFLICT, ex.getMessage());
     }
 
+    @ExceptionHandler(AcessoDenegadoException.class)
+    public ResponseEntity<Map<String, Object>> handleForbidden(AcessoDenegadoException ex) {
+        return build(HttpStatus.FORBIDDEN, ex.getMessage());
+    }
+
     @ExceptionHandler(IllegalStateException.class)
     public ResponseEntity<Map<String, Object>> handleIllegalState(IllegalStateException ex) {
         return build(HttpStatus.CONFLICT, ex.getMessage());
@@ -45,7 +51,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> handleValidation(MethodArgumentNotValidException ex) {
         String mensagem = ex.getBindingResult().getFieldErrors().stream()
-                .map(fe -> fe.getField() + ": " + fe.getDefaultMessage())
+                .map(fe -> fe.getDefaultMessage())
                 .collect(Collectors.joining("; "));
         return build(HttpStatus.BAD_REQUEST, mensagem);
     }

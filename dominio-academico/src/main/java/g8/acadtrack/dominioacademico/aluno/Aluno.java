@@ -1,6 +1,8 @@
 package g8.acadtrack.dominioacademico.aluno;
 
 import g8.acadtrack.dominiocompartilhado.email.Email;
+import g8.acadtrack.dominiocompartilhado.excecao.AcessoDenegadoException;
+import g8.acadtrack.dominiocompartilhado.excecao.ConflitoDeEstadoException;
 import g8.acadtrack.dominiocompartilhado.excecao.RegraDeNegocioException;
 
 public class Aluno {
@@ -30,7 +32,7 @@ public class Aluno {
                 false,
                 false,
                 0.0,
-                SituacaoAcademica.REPROVADO
+                SituacaoAcademica.APROVADO
         );
     }
 
@@ -56,7 +58,7 @@ public class Aluno {
                 permissaoVisualizarSimulados,
                 permissaoVisualizarDesempenho,
                 0.0,
-                SituacaoAcademica.REPROVADO
+                SituacaoAcademica.APROVADO
         );
     }
 
@@ -117,22 +119,12 @@ public class Aluno {
         this.permissaoVisualizarDesempenho = permissaoVisualizarDesempenho;
         this.ativo = ativo;
         this.mediaAritmetica = mediaAritmetica;
-        this.situacaoAcademica = situacaoAcademica == null ? SituacaoAcademica.REPROVADO : situacaoAcademica;
-    }
-
-    public void vincularTurma(Long turmaId) {
-        if (turmaId == null) {
-            throw new IllegalArgumentException("Turma é obrigatória");
-        }
-        if (this.turmaId != null) {
-            throw new IllegalStateException("O aluno já está vinculado a uma turma");
-        }
-        this.turmaId = turmaId;
+        this.situacaoAcademica = situacaoAcademica == null ? SituacaoAcademica.APROVADO : situacaoAcademica;
     }
 
     public void substituirTurma(Long turmaId) {
         if (turmaId == null) {
-            throw new IllegalArgumentException("Turma é obrigatória");
+            throw new RegraDeNegocioException("Turma é obrigatória");
         }
         this.turmaId = turmaId;
     }
@@ -144,7 +136,7 @@ public class Aluno {
             boolean podeVisualizarDesempenho
     ) {
         if (responsavelId == null) {
-            throw new IllegalArgumentException("Responsável é obrigatório");
+            throw new RegraDeNegocioException("Responsável é obrigatório");
         }
 
         if (!podeVisualizarNotas && !podeVisualizarSimulados && !podeVisualizarDesempenho) {
@@ -152,11 +144,11 @@ public class Aluno {
         }
 
         if (this.responsavelId != null && this.vinculoResponsavelAtivo && this.responsavelId.equals(responsavelId)) {
-            throw new IllegalStateException("Já existe vínculo ativo entre aluno e responsável");
+            throw new ConflitoDeEstadoException("Já existe vínculo ativo entre aluno e responsável");
         }
 
         if (this.responsavelId != null && this.vinculoResponsavelAtivo && !this.responsavelId.equals(responsavelId)) {
-            throw new IllegalStateException("O aluno já possui vínculo ativo com outro responsável");
+            throw new ConflitoDeEstadoException("O aluno já possui vínculo ativo com outro responsável");
         }
 
         this.responsavelId = responsavelId;
@@ -168,7 +160,7 @@ public class Aluno {
 
     public void desvincularResponsavel() {
         if (this.responsavelId == null || !this.vinculoResponsavelAtivo) {
-            throw new IllegalStateException("Não há vínculo ativo de responsável para o aluno");
+            throw new ConflitoDeEstadoException("Não há vínculo ativo de responsável para o aluno");
         }
         this.vinculoResponsavelAtivo = false;
         this.permissaoVisualizarNotas = false;
@@ -186,7 +178,7 @@ public class Aluno {
 
     public void validarAcessoResponsavel(Long responsavelId, PermissaoResponsavel permissao) {
         if (responsavelId == null || this.responsavelId == null || !this.responsavelId.equals(responsavelId) || !this.vinculoResponsavelAtivo) {
-            throw new IllegalStateException("Responsável sem vínculo ativo com o aluno");
+            throw new AcessoDenegadoException("Responsável sem vínculo ativo com o aluno");
         }
 
         boolean permitido = switch (permissao) {
@@ -196,13 +188,13 @@ public class Aluno {
         };
 
         if (!permitido) {
-            throw new IllegalStateException("Responsável não possui permissão para acessar este recurso");
+            throw new AcessoDenegadoException("Responsável não possui permissão para acessar este recurso");
         }
     }
 
     public void atualizarDesempenhoAcademico(double mediaAritmetica, SituacaoAcademica situacaoAcademica) {
         this.mediaAritmetica = mediaAritmetica;
-        this.situacaoAcademica = situacaoAcademica == null ? SituacaoAcademica.REPROVADO : situacaoAcademica;
+        this.situacaoAcademica = situacaoAcademica == null ? SituacaoAcademica.APROVADO : situacaoAcademica;
     }
 
     public void atualizar(String nome, String email) {

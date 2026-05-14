@@ -9,6 +9,8 @@ public interface SimuladoRepository {
 
     List<Simulado> buscarTodos();
 
+    List<Simulado> buscarPorIds(List<Long> ids);
+
     Optional<Simulado> buscarPorId(Long id);
 
     Optional<Simulado> buscarPorDescricaoNormalizada(String descricao);

@@ -1,5 +1,7 @@
 package g8.acadtrack.dominioavaliacao.simulado;
 
+import g8.acadtrack.dominiocompartilhado.excecao.RegraDeNegocioException;
+
 public class SimuladoDisciplina {
 
     private Long id;
@@ -9,15 +11,15 @@ public class SimuladoDisciplina {
 
     public SimuladoDisciplina(Long id, Long simuladoId, Long disciplinaId, double peso) {
         if (simuladoId == null) {
-            throw new IllegalArgumentException("Simulado é obrigatório");
+            throw new RegraDeNegocioException("Simulado é obrigatório");
         }
 
         if (disciplinaId == null) {
-            throw new IllegalArgumentException("Disciplina é obrigatória");
+            throw new RegraDeNegocioException("Disciplina é obrigatória");
         }
 
         if (peso <= 0) {
-            throw new IllegalArgumentException("Peso deve ser maior que zero");
+            throw new RegraDeNegocioException("Peso deve ser maior que zero");
         }
 
         this.id = id;

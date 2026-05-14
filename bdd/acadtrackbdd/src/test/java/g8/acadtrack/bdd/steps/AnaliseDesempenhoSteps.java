@@ -160,6 +160,13 @@ public class AnaliseDesempenhoSteps {
         assertEquals(nivelEsperado, analise.nivelRisco().name());
     }
 
+    @Então("a situação acadêmica da análise deve ser {string}")
+    public void aSituacaoAcademicaDaAnaliseDeveSer(String situacaoEsperada) {
+        assertTrue(context.isOperacaoExecutada());
+        assertNotNull(analise);
+        assertEquals(situacaoEsperada, analise.situacaoAcademica().name());
+    }
+
     @Então("a análise deve informar posicao academica {string}")
     public void aAnaliseDeveInformarPosicaoAcademica(String posicaoEsperada) {
         assertTrue(context.isOperacaoExecutada());

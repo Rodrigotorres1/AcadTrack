@@ -27,3 +27,10 @@ Feature: Notificacao automatica de responsaveis sobre risco academico
     Quando o professor lanca notas que geram risco academico ALTO
     E o responsavel consulta suas notificacoes
     Então o sistema deve listar as notificacoes do responsavel
+
+  Scenario: Marcar notificacao como lida
+    Dado que o aluno "Renata Lopes" possui responsavel vinculado para notificacao
+    Quando o professor lanca notas que geram risco academico ALTO
+    Então o responsavel deve receber notificacao com nivel de risco "ALTO" e prioridade "ALTA"
+    Quando o responsavel marca a notificacao como lida
+    Então a notificacao deve estar com status "LIDA"

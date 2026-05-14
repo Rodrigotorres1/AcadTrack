@@ -2,6 +2,7 @@ package g8.acadtrack.aplicacao.riscoacademico;
 
 import g8.acadtrack.dominioacademico.aluno.Aluno;
 import g8.acadtrack.dominioacademico.aluno.AlunoRepository;
+import g8.acadtrack.dominioacademico.aluno.SituacaoAcademica;
 import g8.acadtrack.dominiousuarios.notificacao.NotificacaoResponsavel;
 import g8.acadtrack.dominiousuarios.notificacao.NotificacaoResponsavelRepository;
 import g8.acadtrack.dominiousuarios.notificacao.PrioridadeNotificacao;
@@ -34,19 +35,19 @@ public class NotificarResponsavelRiscoAcademicoObserver implements ObservadorRis
                     boolean jaNotificado = notificacaoResponsavelRepository.existeNotificacaoNaoLidaPara(
                             event.alunoId(), aluno.getResponsavelId(), event.nivelRisco());
                     if (!jaNotificado) {
-                        notificacaoResponsavelRepository.salvar(criarNotificacao(event, aluno.getResponsavelId()));
+                        notificacaoResponsavelRepository.salvar(criarNotificacao(event, aluno));
                     }
                 });
     }
 
-    private NotificacaoResponsavel criarNotificacao(RiscoAcademicoEvent event, Long responsavelId) {
+    private NotificacaoResponsavel criarNotificacao(RiscoAcademicoEvent event, Aluno aluno) {
         return new NotificacaoResponsavel(
                 null,
                 event.alunoId(),
-                responsavelId,
+                aluno.getResponsavelId(),
                 event.nivelRisco(),
                 determinarPrioridade(event.nivelRisco()),
-                montarMensagem(event),
+                montarMensagem(event, aluno.getNome()),
                 LocalDateTime.now(),
                 StatusNotificacao.NAO_LIDA
         );
@@ -59,15 +60,15 @@ public class NotificarResponsavelRiscoAcademicoObserver implements ObservadorRis
         };
     }
 
-    private String montarMensagem(RiscoAcademicoEvent event) {
-        if ("RECUPERACAO".equals(event.situacaoAcademica())) {
-            return "Aluno " + event.alunoId()
-                    + " ficou em recuperacao, com risco academico " + event.nivelRisco()
-                    + " e media geral " + event.mediaGeral() + ".";
+    private String montarMensagem(RiscoAcademicoEvent event, String nomeAluno) {
+        if (event.situacaoAcademica() == SituacaoAcademica.RECUPERACAO) {
+            return "O aluno " + nomeAluno
+                    + " ficou em recuperação, com risco acadêmico " + event.nivelRisco()
+                    + " e média geral " + event.mediaGeral();
         }
 
-        return "Aluno " + event.alunoId()
-                + " apresentou risco academico " + event.nivelRisco()
-                + " com media geral " + event.mediaGeral() + ".";
+        return "O aluno " + nomeAluno
+                + " apresentou risco acadêmico " + event.nivelRisco()
+                + " com média geral " + event.mediaGeral();
     }
 }

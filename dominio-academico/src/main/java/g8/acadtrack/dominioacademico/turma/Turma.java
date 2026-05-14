@@ -1,5 +1,7 @@
 package g8.acadtrack.dominioacademico.turma;
 
+import g8.acadtrack.dominiocompartilhado.excecao.RegraDeNegocioException;
+
 import java.util.Locale;
 
 public class Turma {
@@ -9,7 +11,7 @@ public class Turma {
 
     public Turma(Long id, String nome) {
         if (nome == null || nome.isBlank()) {
-            throw new IllegalArgumentException("Nome da turma não pode ser vazio");
+            throw new RegraDeNegocioException("Nome da turma não pode ser vazio");
         }
 
         this.id = id;

@@ -9,6 +9,8 @@ public interface SimuladoDisciplinaSpringDataRepository extends JpaRepository<Si
 
     List<SimuladoDisciplinaJpaEntity> findBySimuladoId(Long simuladoId);
 
+    List<SimuladoDisciplinaJpaEntity> findBySimuladoIdIn(List<Long> simuladoIds);
+
     boolean existsByDisciplinaId(Long disciplinaId);
 
     void deleteBySimuladoId(Long simuladoId);

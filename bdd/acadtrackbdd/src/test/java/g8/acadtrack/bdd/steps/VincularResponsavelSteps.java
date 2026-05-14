@@ -9,6 +9,7 @@ import g8.acadtrack.aplicacao.responsavel.VincularResponsavelUseCase;
 import g8.acadtrack.aplicacao.responsavel.DesvincularResponsavelUseCase;
 import g8.acadtrack.bdd.support.TestContext;
 import g8.acadtrack.dominioacademico.aluno.Aluno;
+import g8.acadtrack.dominiocompartilhado.excecao.AcessoDenegadoException;
 import g8.acadtrack.dominiousuarios.responsavel.Responsavel;
 import io.cucumber.java.pt.Dado;
 import io.cucumber.java.pt.Quando;
@@ -182,6 +183,7 @@ public class VincularResponsavelSteps {
     public void oSistemaBloqueiaOAcessoPorVinculoInativo() {
         assertFalse(context.isOperacaoExecutada());
         assertNotNull(excecao);
+        assertInstanceOf(AcessoDenegadoException.class, excecao);
         assertEquals("Responsável sem vínculo ativo com o aluno", context.getMensagem());
     }
 
@@ -252,6 +254,7 @@ public class VincularResponsavelSteps {
     public void oSistemaBloqueiaOAcessoPorPermissaoInsuficiente() {
         assertFalse(context.isOperacaoExecutada());
         assertNotNull(excecao);
+        assertInstanceOf(AcessoDenegadoException.class, excecao);
         assertEquals("Responsável não possui permissão para acessar este recurso", context.getMensagem());
     }
 

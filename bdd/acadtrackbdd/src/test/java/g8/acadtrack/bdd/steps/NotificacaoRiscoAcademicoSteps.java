@@ -4,6 +4,7 @@ import g8.acadtrack.aplicacao.aluno.CriarAlunoUseCase;
 import g8.acadtrack.aplicacao.disciplina.CriarDisciplinaUseCase;
 import g8.acadtrack.aplicacao.nota.LancarNotaUseCase;
 import g8.acadtrack.aplicacao.notificacao.ListarNotificacoesResponsavelUseCase;
+import g8.acadtrack.aplicacao.notificacao.MarcarNotificacaoLidaUseCase;
 import g8.acadtrack.aplicacao.responsavel.CriarResponsavelUseCase;
 import g8.acadtrack.aplicacao.responsavel.VincularResponsavelUseCase;
 import g8.acadtrack.aplicacao.simulado.CriarSimuladoUseCase;
@@ -34,6 +35,7 @@ public class NotificacaoRiscoAcademicoSteps {
     private final CriarSimuladoUseCase criarSimuladoUseCase;
     private final LancarNotaUseCase lancarNotaUseCase;
     private final ListarNotificacoesResponsavelUseCase listarNotificacoesResponsavelUseCase;
+    private final MarcarNotificacaoLidaUseCase marcarNotificacaoLidaUseCase;
 
     private Aluno aluno;
     private Responsavel responsavel;
@@ -49,7 +51,8 @@ public class NotificacaoRiscoAcademicoSteps {
             CriarDisciplinaUseCase criarDisciplinaUseCase,
             CriarSimuladoUseCase criarSimuladoUseCase,
             LancarNotaUseCase lancarNotaUseCase,
-            ListarNotificacoesResponsavelUseCase listarNotificacoesResponsavelUseCase
+            ListarNotificacoesResponsavelUseCase listarNotificacoesResponsavelUseCase,
+            MarcarNotificacaoLidaUseCase marcarNotificacaoLidaUseCase
     ) {
         this.context = context;
         this.criarAlunoUseCase = criarAlunoUseCase;
@@ -59,6 +62,7 @@ public class NotificacaoRiscoAcademicoSteps {
         this.criarSimuladoUseCase = criarSimuladoUseCase;
         this.lancarNotaUseCase = lancarNotaUseCase;
         this.listarNotificacoesResponsavelUseCase = listarNotificacoesResponsavelUseCase;
+        this.marcarNotificacaoLidaUseCase = marcarNotificacaoLidaUseCase;
     }
 
     @Dado("que o aluno {string} possui responsavel vinculado para notificacao")
@@ -148,6 +152,15 @@ public class NotificacaoRiscoAcademicoSteps {
         notificacoes = listarNotificacoesResponsavelUseCase.executar(responsavel.getId());
     }
 
+    @Quando("o responsavel marca a notificacao como lida")
+    public void oResponsavelMarcaANotificacaoComoLida() {
+        assertNotNull(notificacaoEncontrada);
+        notificacaoEncontrada = marcarNotificacaoLidaUseCase.executar(
+                responsavel.getId(),
+                notificacaoEncontrada.getId()
+        );
+    }
+
     @Entao("o responsavel deve receber notificacao com nivel de risco {string} e prioridade {string}")
     public void oResponsavelDeveReceberNotificacaoComNivelDeRiscoEPrioridade(String nivelRisco, String prioridade) {
         assertTrue(context.isOperacaoExecutada());
@@ -163,6 +176,8 @@ public class NotificacaoRiscoAcademicoSteps {
         assertEquals(aluno.getId(), notificacaoEncontrada.getAlunoId());
         assertEquals(responsavel.getId(), notificacaoEncontrada.getResponsavelId());
         assertNotNull(notificacaoEncontrada.getMensagem());
+        assertTrue(notificacaoEncontrada.getMensagem().contains(aluno.getNome()));
+        assertFalse(notificacaoEncontrada.getMensagem().startsWith("Aluno " + aluno.getId()));
         assertNotNull(notificacaoEncontrada.getDataCriacao());
     }
 

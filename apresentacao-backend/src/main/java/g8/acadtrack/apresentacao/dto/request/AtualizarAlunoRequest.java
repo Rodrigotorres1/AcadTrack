@@ -17,8 +17,4 @@ public class AtualizarAlunoRequest {
 
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
-
-    private Long turmaId;
-    public Long getTurmaId() { return turmaId; }
-    public void setTurmaId(Long turmaId) { this.turmaId = turmaId; }
 }
