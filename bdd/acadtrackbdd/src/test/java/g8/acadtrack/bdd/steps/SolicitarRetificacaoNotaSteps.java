@@ -6,7 +6,9 @@ import g8.acadtrack.aplicacao.disciplina.CriarDisciplinaUseCase;
 import g8.acadtrack.aplicacao.nota.LancarNotaUseCase;
 import g8.acadtrack.aplicacao.retificacao.AprovarRetificacaoUseCase;
 import g8.acadtrack.aplicacao.retificacao.IniciarAnaliseRetificacaoUseCase;
+import g8.acadtrack.aplicacao.retificacao.ListarRetificacoesUseCase;
 import g8.acadtrack.aplicacao.retificacao.ReprovarRetificacaoUseCase;
+import g8.acadtrack.aplicacao.retificacao.SolicitacaoRetificacaoDetalheResultado;
 import g8.acadtrack.aplicacao.retificacao.SolicitarRetificacaoUseCase;
 import g8.acadtrack.aplicacao.simulado.CriarSimuladoUseCase;
 import g8.acadtrack.bdd.support.TestContext;
@@ -29,6 +31,7 @@ import io.cucumber.java.pt.Quando;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 public class SolicitarRetificacaoNotaSteps {
 
@@ -44,6 +47,7 @@ public class SolicitarRetificacaoNotaSteps {
     private final IniciarAnaliseRetificacaoUseCase iniciarAnaliseRetificacaoUseCase;
     private final AprovarRetificacaoUseCase aprovarRetificacaoUseCase;
     private final ReprovarRetificacaoUseCase reprovarRetificacaoUseCase;
+    private final ListarRetificacoesUseCase listarRetificacoesUseCase;
     private final SolicitacaoRetificacaoRepository solicitacaoRetificacaoRepository;
     private final NotaRepository notaRepository;
     private final AlunoRepository alunoRepository;
@@ -55,6 +59,7 @@ public class SolicitarRetificacaoNotaSteps {
     private SolicitacaoRetificacao retificacao;
     private Exception excecao;
     private double valorOriginalNota;
+    private List<SolicitacaoRetificacaoDetalheResultado> listaRetificacoes;
 
     public SolicitarRetificacaoNotaSteps(
             TestContext context,
@@ -67,6 +72,7 @@ public class SolicitarRetificacaoNotaSteps {
             IniciarAnaliseRetificacaoUseCase iniciarAnaliseRetificacaoUseCase,
             AprovarRetificacaoUseCase aprovarRetificacaoUseCase,
             ReprovarRetificacaoUseCase reprovarRetificacaoUseCase,
+            ListarRetificacoesUseCase listarRetificacoesUseCase,
             SolicitacaoRetificacaoRepository solicitacaoRetificacaoRepository,
             NotaRepository notaRepository,
             AlunoRepository alunoRepository
@@ -81,6 +87,7 @@ public class SolicitarRetificacaoNotaSteps {
         this.iniciarAnaliseRetificacaoUseCase = iniciarAnaliseRetificacaoUseCase;
         this.aprovarRetificacaoUseCase = aprovarRetificacaoUseCase;
         this.reprovarRetificacaoUseCase = reprovarRetificacaoUseCase;
+        this.listarRetificacoesUseCase = listarRetificacoesUseCase;
         this.solicitacaoRetificacaoRepository = solicitacaoRetificacaoRepository;
         this.notaRepository = notaRepository;
         this.alunoRepository = alunoRepository;
@@ -362,6 +369,42 @@ public class SolicitarRetificacaoNotaSteps {
         Nota notaAtualizada = notaRepository.buscarPorId(nota.getId())
                 .orElseThrow(() -> new AssertionError("Nota não encontrada após reprovação da retificação"));
         assertEquals(valorOriginalNota, notaAtualizada.getValor(), 0.001);
+    }
+
+    @Dado("que foram criadas {int} retificações com alunos e notas distintos")
+    public void queForamCriadasRetificacoesComAlunosENotasDistintos(int quantidade) {
+        for (int i = 0; i < quantidade; i++) {
+            String sufixo = "Listagem" + i;
+            Aluno a = criarAlunoUseCase.executar("Aluno " + sufixo, "aluno." + sufixo + "@email.com");
+            Disciplina d1 = criarDisciplinaUseCase.executar("Disciplina A " + sufixo);
+            Disciplina d2 = criarDisciplinaUseCase.executar("Disciplina B " + sufixo);
+            Simulado s = criarSimuladoUseCase.executar("Simulado " + sufixo, List.of(d1.getId(), d2.getId()));
+            Nota n = lancarNotaUseCase.executar(a.getId(), s.getId(), d1.getId(), 6.0 + i);
+            solicitarRetificacaoUseCase.executar(n.getId(), "Justificativa " + sufixo);
+        }
+    }
+
+    @Quando("o sistema lista todas as retificações")
+    public void oSistemaListaTodasAsRetificacoes() {
+        listaRetificacoes = listarRetificacoesUseCase.executar();
+    }
+
+    @Entao("a lista retorna {int} retificações")
+    public void aListaRetorna(int quantidade) {
+        assertEquals(quantidade, listaRetificacoes.size());
+    }
+
+    @Entao("cada retificação possui nome de aluno, disciplina e simulado preenchidos")
+    public void cadaRetificacaoPossuiNomeDeAlunoDisciplinaESimuladoPreenchidos() {
+        for (SolicitacaoRetificacaoDetalheResultado resultado : listaRetificacoes) {
+            assertNotNull(resultado.alunoNome());
+            assertNotEquals("-", resultado.alunoNome());
+            assertNotNull(resultado.disciplinaNome());
+            assertNotEquals("-", resultado.disciplinaNome());
+            assertNotNull(resultado.simuladoDescricao());
+            assertNotEquals("-", resultado.simuladoDescricao());
+            assertNotNull(resultado.notaAtual());
+        }
     }
 
     private String emailSeguro(String nomeAluno) {

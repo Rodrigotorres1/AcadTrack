@@ -138,7 +138,7 @@ public class ResponsavelController {
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = NotaResponse.class)))),
             @ApiResponse(responseCode = "403", description = "Responsável sem vínculo ativo ou sem permissão",
                     content = @Content(schema = @Schema(implementation = ErroApiResponse.class))),
-            @ApiResponse(responseCode = "404", description = "Recursos não encontrados",
+            @ApiResponse(responseCode = "404", description = "Aluno ou responsável não encontrado",
                     content = @Content(schema = @Schema(implementation = ErroApiResponse.class)))
     })
     @GetMapping("/{responsavelId}/alunos/{alunoId}/notas")

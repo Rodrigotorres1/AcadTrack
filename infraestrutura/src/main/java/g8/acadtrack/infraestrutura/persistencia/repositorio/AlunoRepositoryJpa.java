@@ -89,6 +89,32 @@ public class AlunoRepositoryJpa implements AlunoRepository {
     }
 
     @Override
+    public List<Aluno> buscarPorIds(List<Long> ids) {
+        Objects.requireNonNull(ids, "ids são obrigatórios");
+        if (ids.isEmpty()) {
+            return List.of();
+        }
+
+        return repository.findByIdIn(ids)
+                .stream()
+                .map(entity -> new Aluno(
+                        entity.getId(),
+                        entity.getNome(),
+                        entity.getEmail(),
+                        entity.getTurmaId(),
+                        entity.getResponsavelId(),
+                        entity.isVinculoResponsavelAtivo(),
+                        entity.isPermissaoVisualizarNotas(),
+                        entity.isPermissaoVisualizarSimulados(),
+                        entity.isPermissaoVisualizarDesempenho(),
+                        entity.isAtivo(),
+                        entity.getMediaAritmetica(),
+                        entity.getSituacaoAcademica()
+                ))
+                .toList();
+    }
+
+    @Override
     public List<Aluno> buscarTodos() {
         return repository.findAll()
                 .stream()

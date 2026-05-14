@@ -3,6 +3,7 @@ package g8.acadtrack.aplicacao.nota;
 import g8.acadtrack.aplicacao.ranking.GerarRankingAcademicoUseCase;
 import g8.acadtrack.aplicacao.nota.AvaliacaoAcademicaService.SimuladoDisciplinaKey;
 import g8.acadtrack.aplicacao.nota.risco.ClassificadorRiscoAcademicoService;
+import g8.acadtrack.dominioacademico.aluno.AlunoRepository;
 import g8.acadtrack.dominioacademico.aluno.SituacaoAcademica;
 import g8.acadtrack.dominioacademico.disciplina.Disciplina;
 import g8.acadtrack.dominioacademico.disciplina.DisciplinaRepository;
@@ -12,6 +13,7 @@ import g8.acadtrack.dominioavaliacao.simulado.Simulado;
 import g8.acadtrack.dominioavaliacao.simulado.SimuladoDisciplina;
 import g8.acadtrack.dominioavaliacao.simulado.SimuladoDisciplinaRepository;
 import g8.acadtrack.dominioavaliacao.simulado.SimuladoRepository;
+import g8.acadtrack.dominiocompartilhado.excecao.EntidadeNaoEncontradaException;
 import g8.acadtrack.dominiocompartilhado.risco.NivelRiscoAcademico;
 import org.springframework.stereotype.Service;
 
@@ -25,6 +27,7 @@ public class AnalisarDesempenhoAcademicoUseCase extends FluxoAnaliseAcademicaTem
     private static final double LIMIAR_BAIXO_DESEMPENHO_SIMULADO = 5.0;
 
     private final NotaRepository notaRepository;
+    private final AlunoRepository alunoRepository;
     private final AvaliacaoAcademicaService avaliacaoAcademicaService;
     private final SimuladoRepository simuladoRepository;
     private final SimuladoDisciplinaRepository simuladoDisciplinaRepository;
@@ -34,6 +37,7 @@ public class AnalisarDesempenhoAcademicoUseCase extends FluxoAnaliseAcademicaTem
 
     public AnalisarDesempenhoAcademicoUseCase(
             NotaRepository notaRepository,
+            AlunoRepository alunoRepository,
             AvaliacaoAcademicaService avaliacaoAcademicaService,
             SimuladoRepository simuladoRepository,
             SimuladoDisciplinaRepository simuladoDisciplinaRepository,
@@ -42,6 +46,7 @@ public class AnalisarDesempenhoAcademicoUseCase extends FluxoAnaliseAcademicaTem
             ClassificadorRiscoAcademicoService classificadorRiscoAcademicoService
     ) {
         this.notaRepository = notaRepository;
+        this.alunoRepository = alunoRepository;
         this.avaliacaoAcademicaService = avaliacaoAcademicaService;
         this.simuladoRepository = simuladoRepository;
         this.simuladoDisciplinaRepository = simuladoDisciplinaRepository;
@@ -52,6 +57,8 @@ public class AnalisarDesempenhoAcademicoUseCase extends FluxoAnaliseAcademicaTem
 
     @Override
     protected List<Nota> buscarNotas(Long alunoId) {
+        alunoRepository.buscarPorId(alunoId)
+                .orElseThrow(() -> new EntidadeNaoEncontradaException("Aluno não encontrado"));
         return notaRepository.buscarPorAlunoId(alunoId);
     }
 

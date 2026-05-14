@@ -4,6 +4,7 @@ import g8.acadtrack.dominiocompartilhado.excecao.AcessoDenegadoException;
 import g8.acadtrack.dominiocompartilhado.excecao.ConflitoDeEstadoException;
 import g8.acadtrack.dominiocompartilhado.excecao.EntidadeNaoEncontradaException;
 import g8.acadtrack.dominiocompartilhado.excecao.RegraDeNegocioException;
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -12,8 +13,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.time.OffsetDateTime;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -50,10 +51,20 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> handleValidation(MethodArgumentNotValidException ex) {
-        String mensagem = ex.getBindingResult().getFieldErrors().stream()
-                .map(fe -> fe.getDefaultMessage())
-                .collect(Collectors.joining("; "));
-        return build(HttpStatus.BAD_REQUEST, mensagem);
+        List<String> errors = ex.getBindingResult().getAllErrors().stream()
+                .map(error -> error.getDefaultMessage() != null ? error.getDefaultMessage() : "Valor inválido")
+                .distinct()
+                .toList();
+        return buildValidation(errors);
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<Map<String, Object>> handleConstraintViolation(ConstraintViolationException ex) {
+        List<String> errors = ex.getConstraintViolations().stream()
+                .map(violation -> violation.getMessage() != null ? violation.getMessage() : "Valor inválido")
+                .distinct()
+                .toList();
+        return buildValidation(errors);
     }
 
     private ResponseEntity<Map<String, Object>> build(HttpStatus status, String mensagem) {
@@ -63,5 +74,12 @@ public class GlobalExceptionHandler {
         body.put("error", status.getReasonPhrase());
         body.put("message", mensagem);
         return ResponseEntity.status(status).body(body);
+    }
+
+    private ResponseEntity<Map<String, Object>> buildValidation(List<String> errors) {
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("message", "Erro de validação");
+        body.put("errors", errors.isEmpty() ? List.of("Dados inválidos") : errors);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
     }
 }

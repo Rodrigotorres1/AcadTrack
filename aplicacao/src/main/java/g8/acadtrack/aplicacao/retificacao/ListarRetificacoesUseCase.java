@@ -20,9 +20,6 @@ public class ListarRetificacoesUseCase {
     }
 
     public List<SolicitacaoRetificacaoDetalheResultado> executar() {
-        return solicitacaoRetificacaoRepository.buscarTodas()
-                .stream()
-                .map(montarDetalheRetificacaoService::montar)
-                .toList();
+        return montarDetalheRetificacaoService.montarEmLote(solicitacaoRetificacaoRepository.buscarTodas());
     }
 }

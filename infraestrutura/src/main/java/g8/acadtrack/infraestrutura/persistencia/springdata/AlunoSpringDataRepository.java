@@ -7,6 +7,8 @@ import java.util.List;
 
 public interface AlunoSpringDataRepository extends JpaRepository<AlunoJpaEntity, Long> {
 
+    List<AlunoJpaEntity> findByIdIn(List<Long> ids);
+
     List<AlunoJpaEntity> findByResponsavelId(Long responsavelId);
 
     boolean existsByEmailIgnoreCase(String email);

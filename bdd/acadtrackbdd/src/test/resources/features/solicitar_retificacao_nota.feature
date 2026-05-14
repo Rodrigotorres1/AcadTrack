@@ -90,3 +90,9 @@ Feature: Solicitar retificação de nota
     E o aluno está inativo
     Quando ele solicita retificação informando a justificativa "Revisar nota lançada antes da inativação"
     Então o sistema registra a solicitação de retificação com status "PENDENTE"
+
+  Scenario: Listar retificações retorna dados enriquecidos de múltiplas solicitações
+    Dado que foram criadas 2 retificações com alunos e notas distintos
+    Quando o sistema lista todas as retificações
+    Então a lista retorna 2 retificações
+    E cada retificação possui nome de aluno, disciplina e simulado preenchidos

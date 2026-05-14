@@ -24,9 +24,10 @@ public class LancarNotaRequest {
     private Long disciplinaId;
 
     @Schema(description = "Pontuação 0–10", example = "8.5")
+    @NotNull(message = "Valor da nota é obrigatório")
     @DecimalMin(value = "0.0", message = "A nota deve estar entre 0 e 10")
     @DecimalMax(value = "10.0", message = "A nota deve estar entre 0 e 10")
-    private double valor;
+    private Double valor;
 
     public void setAlunoId(Long alunoId) {
         this.alunoId = alunoId;
@@ -40,7 +41,7 @@ public class LancarNotaRequest {
         this.disciplinaId = disciplinaId;
     }
 
-    public void setValor(double valor) {
+    public void setValor(Double valor) {
         this.valor = valor;
     }
 
@@ -56,7 +57,7 @@ public class LancarNotaRequest {
         return disciplinaId;
     }
 
-    public double getValor() {
+    public Double getValor() {
         return valor;
     }
 }

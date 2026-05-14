@@ -77,6 +77,10 @@ public class NotaController {
             @ApiResponse(responseCode = "201", description = "Persistida",
                     content = @Content(schema = @Schema(implementation = NotaResponse.class))),
             @ApiResponse(responseCode = "400", description = "Validação ou regra de negócio",
+                    content = @Content(schema = @Schema(implementation = ErroApiResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Aluno, simulado ou disciplina não encontrado",
+                    content = @Content(schema = @Schema(implementation = ErroApiResponse.class))),
+            @ApiResponse(responseCode = "409", description = "Nota duplicada para este aluno, simulado e disciplina",
                     content = @Content(schema = @Schema(implementation = ErroApiResponse.class)))
     })
     @PostMapping

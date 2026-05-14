@@ -114,6 +114,25 @@ public class NotaRepositoryJpa implements NotaRepository {
     }
 
     @Override
+    public List<Nota> buscarPorIds(List<Long> ids) {
+        Objects.requireNonNull(ids, "ids são obrigatórios");
+        if (ids.isEmpty()) {
+            return List.of();
+        }
+
+        return repository.findByIdIn(ids)
+                .stream()
+                .map(entity -> new Nota(
+                        entity.getId(),
+                        entity.getAlunoId(),
+                        entity.getSimuladoId(),
+                        entity.getDisciplinaId(),
+                        entity.getValor()
+                ))
+                .toList();
+    }
+
+    @Override
     public List<Nota> buscarTodas() {
         return repository.findAll()
                 .stream()

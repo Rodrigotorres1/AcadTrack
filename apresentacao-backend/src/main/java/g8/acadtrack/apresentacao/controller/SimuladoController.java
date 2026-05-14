@@ -130,6 +130,10 @@ public class SimuladoController {
             @ApiResponse(responseCode = "201", description = "Criado",
                     content = @Content(schema = @Schema(implementation = SimuladoResponse.class))),
             @ApiResponse(responseCode = "400", description = "Validação ou regra de composição",
+                    content = @Content(schema = @Schema(implementation = ErroApiResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Uma ou mais disciplinas não existem",
+                    content = @Content(schema = @Schema(implementation = ErroApiResponse.class))),
+            @ApiResponse(responseCode = "409", description = "Descrição de simulado já cadastrada",
                     content = @Content(schema = @Schema(implementation = ErroApiResponse.class)))
     })
     @PostMapping

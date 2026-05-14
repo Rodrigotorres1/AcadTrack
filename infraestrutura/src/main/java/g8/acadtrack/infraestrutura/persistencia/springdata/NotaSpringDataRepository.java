@@ -14,6 +14,8 @@ public interface NotaSpringDataRepository extends JpaRepository<NotaJpaEntity, L
 
     List<NotaJpaEntity> findByAlunoId(Long alunoId);
 
+    List<NotaJpaEntity> findByIdIn(List<Long> ids);
+
     List<NotaJpaEntity> findByAlunoIdIn(List<Long> alunoIds);
 
     List<NotaJpaEntity> findBySimuladoId(Long simuladoId);

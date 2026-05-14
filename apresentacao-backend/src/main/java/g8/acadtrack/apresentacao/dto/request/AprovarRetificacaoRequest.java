@@ -4,24 +4,26 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 @Schema(description = "Decisão de ajuste quando a solicitação entra como aprovada.")
 public class AprovarRetificacaoRequest {
 
     @Schema(example = "7.0")
+    @NotNull(message = "Novo valor da nota é obrigatório")
     @DecimalMin(value = "0.0", message = "A nota deve estar entre 0 e 10")
     @DecimalMax(value = "10.0", message = "A nota deve estar entre 0 e 10")
-    private double novoValorNota;
+    private Double novoValorNota;
 
     @Schema(example = "Conferência com segunda correção.")
     @NotBlank(message = "Justificativa da decisão é obrigatória")
     private String justificativaDecisao;
 
-    public double getNovoValorNota() {
+    public Double getNovoValorNota() {
         return novoValorNota;
     }
 
-    public void setNovoValorNota(double novoValorNota) {
+    public void setNovoValorNota(Double novoValorNota) {
         this.novoValorNota = novoValorNota;
     }
 

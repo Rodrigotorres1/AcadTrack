@@ -9,6 +9,8 @@ public interface AlunoRepository {
 
     Optional<Aluno> buscarPorId(Long id);
 
+    List<Aluno> buscarPorIds(List<Long> ids);
+
     List<Aluno> buscarTodos();
 
     List<Aluno> buscarPorResponsavelId(Long responsavelId);
