@@ -12,22 +12,22 @@ import java.util.List;
 @Service
 public class ConsultarSimuladosAlunoPorResponsavelUseCase {
 
-    private final AcessoResponsavelAlunoProxy acessoResponsavelAlunoProxy;
+    private final AcessoResponsavelAlunoService acessoResponsavelAlunoService;
     private final BuscarNotasPorAlunoUseCase buscarNotasPorAlunoUseCase;
     private final SimuladoRepository simuladoRepository;
 
     public ConsultarSimuladosAlunoPorResponsavelUseCase(
-            AcessoResponsavelAlunoProxy acessoResponsavelAlunoProxy,
+            AcessoResponsavelAlunoService acessoResponsavelAlunoService,
             BuscarNotasPorAlunoUseCase buscarNotasPorAlunoUseCase,
             SimuladoRepository simuladoRepository
     ) {
-        this.acessoResponsavelAlunoProxy = acessoResponsavelAlunoProxy;
+        this.acessoResponsavelAlunoService = acessoResponsavelAlunoService;
         this.buscarNotasPorAlunoUseCase = buscarNotasPorAlunoUseCase;
         this.simuladoRepository = simuladoRepository;
     }
 
     public List<Simulado> executar(Long responsavelId, Long alunoId) {
-        acessoResponsavelAlunoProxy.executar(alunoId, responsavelId, PermissaoResponsavel.VISUALIZAR_SIMULADOS);
+        acessoResponsavelAlunoService.executar(alunoId, responsavelId, PermissaoResponsavel.VISUALIZAR_SIMULADOS);
         return buscarNotasPorAlunoUseCase.executar(alunoId)
                 .stream()
                 .map(Nota::getSimuladoId)

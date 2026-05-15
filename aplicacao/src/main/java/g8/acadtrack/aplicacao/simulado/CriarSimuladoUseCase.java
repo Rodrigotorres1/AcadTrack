@@ -3,8 +3,6 @@ package g8.acadtrack.aplicacao.simulado;
 import g8.acadtrack.dominioacademico.disciplina.Disciplina;
 import g8.acadtrack.dominioacademico.disciplina.DisciplinaRepository;
 import g8.acadtrack.dominioavaliacao.simulado.Simulado;
-import g8.acadtrack.dominioavaliacao.simulado.SimuladoDisciplina;
-import g8.acadtrack.dominioavaliacao.simulado.SimuladoDisciplinaRepository;
 import g8.acadtrack.dominioavaliacao.simulado.SimuladoRepository;
 import g8.acadtrack.dominiocompartilhado.excecao.ConflitoDeEstadoException;
 import g8.acadtrack.dominiocompartilhado.excecao.EntidadeNaoEncontradaException;
@@ -21,18 +19,15 @@ public class CriarSimuladoUseCase {
 
     private final SimuladoRepository simuladoRepository;
     private final DisciplinaRepository disciplinaRepository;
-    private final SimuladoDisciplinaRepository simuladoDisciplinaRepository;
     private final ValidarComposicaoSimuladoService validarComposicaoSimuladoService;
 
     public CriarSimuladoUseCase(
             SimuladoRepository simuladoRepository,
             DisciplinaRepository disciplinaRepository,
-            SimuladoDisciplinaRepository simuladoDisciplinaRepository,
             ValidarComposicaoSimuladoService validarComposicaoSimuladoService
     ) {
         this.simuladoRepository = simuladoRepository;
         this.disciplinaRepository = disciplinaRepository;
-        this.simuladoDisciplinaRepository = simuladoDisciplinaRepository;
         this.validarComposicaoSimuladoService = validarComposicaoSimuladoService;
     }
 
@@ -58,14 +53,9 @@ public class CriarSimuladoUseCase {
         Simulado simuladoSalvo = simuladoRepository.salvar(new Simulado(null, descricao));
 
         for (Disciplina disciplina : disciplinas) {
-            simuladoDisciplinaRepository.salvar(new SimuladoDisciplina(
-                    null,
-                    simuladoSalvo.getId(),
-                    disciplina.getId(),
-                    PESO_PADRAO
-            ));
+            simuladoSalvo.adicionarDisciplina(disciplina.getId(), PESO_PADRAO);
         }
 
-        return simuladoSalvo;
+        return simuladoRepository.salvar(simuladoSalvo);
     }
 }

@@ -1,8 +1,8 @@
 package g8.acadtrack.aplicacao.nota;
 
-import g8.acadtrack.aplicacao.ranking.GerarRankingAcademicoUseCase;
 import g8.acadtrack.aplicacao.nota.AvaliacaoAcademicaService.SimuladoDisciplinaKey;
 import g8.acadtrack.aplicacao.nota.risco.ClassificadorRiscoAcademicoService;
+import g8.acadtrack.aplicacao.ranking.ContadorParticipantesRankingPort;
 import g8.acadtrack.dominioacademico.aluno.AlunoRepository;
 import g8.acadtrack.dominioacademico.aluno.SituacaoAcademica;
 import g8.acadtrack.dominioacademico.disciplina.Disciplina;
@@ -32,7 +32,7 @@ public class AnalisarDesempenhoAcademicoUseCase extends FluxoAnaliseAcademicaTem
     private final SimuladoRepository simuladoRepository;
     private final SimuladoDisciplinaRepository simuladoDisciplinaRepository;
     private final DisciplinaRepository disciplinaRepository;
-    private final GerarRankingAcademicoUseCase gerarRankingAcademicoUseCase;
+    private final ContadorParticipantesRankingPort contadorParticipantesRankingPort;
     private final ClassificadorRiscoAcademicoService classificadorRiscoAcademicoService;
 
     public AnalisarDesempenhoAcademicoUseCase(
@@ -42,7 +42,7 @@ public class AnalisarDesempenhoAcademicoUseCase extends FluxoAnaliseAcademicaTem
             SimuladoRepository simuladoRepository,
             SimuladoDisciplinaRepository simuladoDisciplinaRepository,
             DisciplinaRepository disciplinaRepository,
-            GerarRankingAcademicoUseCase gerarRankingAcademicoUseCase,
+            ContadorParticipantesRankingPort contadorParticipantesRankingPort,
             ClassificadorRiscoAcademicoService classificadorRiscoAcademicoService
     ) {
         this.notaRepository = notaRepository;
@@ -51,7 +51,7 @@ public class AnalisarDesempenhoAcademicoUseCase extends FluxoAnaliseAcademicaTem
         this.simuladoRepository = simuladoRepository;
         this.simuladoDisciplinaRepository = simuladoDisciplinaRepository;
         this.disciplinaRepository = disciplinaRepository;
-        this.gerarRankingAcademicoUseCase = gerarRankingAcademicoUseCase;
+        this.contadorParticipantesRankingPort = contadorParticipantesRankingPort;
         this.classificadorRiscoAcademicoService = classificadorRiscoAcademicoService;
     }
 
@@ -78,24 +78,6 @@ public class AnalisarDesempenhoAcademicoUseCase extends FluxoAnaliseAcademicaTem
             List<Nota> notas,
             double mediaGeral,
             SituacaoAcademica situacaoAcademica
-    ) {
-        return montarResultado(alunoId, notas, mediaGeral, situacaoAcademica, true);
-    }
-
-    public AnaliseDesempenhoAcademicoResultado executarSemRanking(Long alunoId) {
-        List<Nota> notas = buscarNotas(alunoId);
-        validarNotas(notas);
-        double mediaGeral = calcularMediaGeral(notas);
-        SituacaoAcademica situacaoAcademica = calcularSituacaoAcademica(mediaGeral);
-        return montarResultado(alunoId, notas, mediaGeral, situacaoAcademica, false);
-    }
-
-    private AnaliseDesempenhoAcademicoResultado montarResultado(
-            Long alunoId,
-            List<Nota> notas,
-            double mediaGeral,
-            SituacaoAcademica situacaoAcademica,
-            boolean incluirRanking
     ) {
         Map<Long, List<Nota>> notasPorSimulado = notas.stream()
                 .collect(Collectors.groupingBy(Nota::getSimuladoId));
@@ -136,14 +118,14 @@ public class AnalisarDesempenhoAcademicoUseCase extends FluxoAnaliseAcademicaTem
                 .sorted(Map.Entry.comparingByKey())
                 .map(entry -> mediaDisciplina(entry.getKey(), entry.getValue(), nomesDisciplinas))
                 .toList();
-        Integer posicaoRanking = incluirRanking
-                ? gerarRankingAcademicoUseCase.calcularPosicaoPorMedia(mediaGeral)
+        Integer posicaoRanking = incluirRanking()
+                ? calcularPosicaoRanking(mediaGeral)
                 : null;
-        int totalAlunosRanking = incluirRanking
-                ? gerarRankingAcademicoUseCase.contarParticipantes()
+        int totalAlunosRanking = incluirRanking()
+                ? contarParticipantesRanking()
                 : 0;
         boolean alunoNoTop10 = posicaoRanking != null && posicaoRanking <= 10;
-        String mensagemRanking = incluirRanking
+        String mensagemRanking = incluirRanking()
                 ? mensagemRanking(posicaoRanking, alunoNoTop10)
                 : "Ranking calculado sob demanda na consulta de desempenho";
 
@@ -217,6 +199,14 @@ public class AnalisarDesempenhoAcademicoUseCase extends FluxoAnaliseAcademicaTem
             return "Aluno em destaque no Top 10 acadêmico";
         }
         return "Aluno na posição " + posicaoRanking + " do ranking acadêmico";
+    }
+
+    private int calcularPosicaoRanking(double mediaGeral) {
+        return Math.toIntExact(contadorParticipantesRankingPort.contarParticipantesComMediaMaiorQue(mediaGeral) + 1);
+    }
+
+    private int contarParticipantesRanking() {
+        return Math.toIntExact(contadorParticipantesRankingPort.contarParticipantes());
     }
 
     private Map<Long, String> carregarNomesSimulados(List<Long> simuladoIds) {

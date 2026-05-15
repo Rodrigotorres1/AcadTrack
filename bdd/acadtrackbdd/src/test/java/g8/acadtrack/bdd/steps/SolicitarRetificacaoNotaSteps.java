@@ -14,6 +14,7 @@ import g8.acadtrack.aplicacao.simulado.CriarSimuladoUseCase;
 import g8.acadtrack.bdd.support.TestContext;
 import g8.acadtrack.dominioacademico.aluno.Aluno;
 import g8.acadtrack.dominioacademico.aluno.AlunoRepository;
+import g8.acadtrack.dominioacademico.aluno.SituacaoAcademica;
 import g8.acadtrack.dominioacademico.disciplina.Disciplina;
 import g8.acadtrack.dominioavaliacao.nota.Nota;
 import g8.acadtrack.dominioavaliacao.nota.NotaRepository;
@@ -343,7 +344,7 @@ public class SolicitarRetificacaoNotaSteps {
     public void aSituacaoAcademicaDoAlunoEAtualizadaAutomaticamente() {
         Aluno alunoAtualizado = alunoRepository.buscarPorId(aluno.getId())
                 .orElseThrow(() -> new AssertionError("Aluno não encontrado após aprovação da retificação"));
-        assertNotNull(alunoAtualizado.getSituacaoAcademica());
+        assertEquals(SituacaoAcademica.APROVADO, alunoAtualizado.getSituacaoAcademica());
     }
 
     @Quando("o responsável tenta aprovar a retificação sem justificativa de decisão")

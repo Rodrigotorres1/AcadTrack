@@ -4,7 +4,6 @@ import g8.acadtrack.aplicacao.nota.AvaliacaoAcademicaService;
 import g8.acadtrack.aplicacao.nota.AvaliacaoAcademicaService.SimuladoDisciplinaKey;
 import g8.acadtrack.aplicacao.nota.risco.ClassificadorRiscoAcademicoService;
 import g8.acadtrack.dominioacademico.aluno.Aluno;
-import g8.acadtrack.dominioacademico.aluno.AlunoRepository;
 import g8.acadtrack.dominioavaliacao.nota.Nota;
 import g8.acadtrack.dominioavaliacao.nota.NotaRepository;
 import g8.acadtrack.dominioavaliacao.simulado.SimuladoDisciplina;
@@ -22,7 +21,7 @@ public class GerarRankingAcademicoUseCase {
 
     private static final double LIMIAR_BAIXO_DESEMPENHO_SIMULADO = 5.0;
 
-    private final AlunoRepository alunoRepository;
+    private final ContadorParticipantesRankingPort contadorParticipantesRankingPort;
     private final OrdenarRankingAcademicoService ordenarRankingAcademicoService;
     private final NotaRepository notaRepository;
     private final SimuladoDisciplinaRepository simuladoDisciplinaRepository;
@@ -30,14 +29,14 @@ public class GerarRankingAcademicoUseCase {
     private final ClassificadorRiscoAcademicoService classificadorRiscoAcademicoService;
 
     public GerarRankingAcademicoUseCase(
-            AlunoRepository alunoRepository,
+            ContadorParticipantesRankingPort contadorParticipantesRankingPort,
             OrdenarRankingAcademicoService ordenarRankingAcademicoService,
             NotaRepository notaRepository,
             SimuladoDisciplinaRepository simuladoDisciplinaRepository,
             AvaliacaoAcademicaService avaliacaoAcademicaService,
             ClassificadorRiscoAcademicoService classificadorRiscoAcademicoService
     ) {
-        this.alunoRepository = alunoRepository;
+        this.contadorParticipantesRankingPort = contadorParticipantesRankingPort;
         this.ordenarRankingAcademicoService = ordenarRankingAcademicoService;
         this.notaRepository = notaRepository;
         this.simuladoDisciplinaRepository = simuladoDisciplinaRepository;
@@ -62,16 +61,8 @@ public class GerarRankingAcademicoUseCase {
         return resultado;
     }
 
-    public int calcularPosicaoPorMedia(double mediaAritmetica) {
-        return Math.toIntExact(alunoRepository.contarAlunosComNotasComMediaMaiorQue(mediaAritmetica) + 1);
-    }
-
-    public int contarParticipantes() {
-        return Math.toIntExact(alunoRepository.contarAlunosComNotas());
-    }
-
     private List<RankingAcademicoItem> montarItens() {
-        List<Aluno> alunos = alunoRepository.buscarAlunosComNotas();
+        List<Aluno> alunos = contadorParticipantesRankingPort.buscarParticipantes();
         if (alunos.isEmpty()) {
             return List.of();
         }
@@ -80,27 +71,41 @@ public class GerarRankingAcademicoUseCase {
                 .map(Aluno::getId)
                 .toList();
         List<Nota> notas = notaRepository.buscarPorAlunoIds(alunoIds);
+        Map<Long, List<Nota>> notasPorAluno = notas.stream()
+                .collect(Collectors.groupingBy(Nota::getAlunoId));
         Map<Long, List<Double>> mediasPonderadasPorAluno = calcularMediasPonderadasPorAluno(notas);
 
         return alunos.stream()
-                .map(aluno -> mapearAluno(aluno, mediasPonderadasPorAluno.getOrDefault(aluno.getId(), List.of())))
+                .map(aluno -> mapearAluno(
+                        aluno,
+                        notasPorAluno.getOrDefault(aluno.getId(), List.of()),
+                        mediasPonderadasPorAluno.getOrDefault(aluno.getId(), List.of())
+                ))
                 .toList();
     }
 
-    private RankingAcademicoItem mapearAluno(Aluno aluno, List<Double> mediasPonderadasPorSimulado) {
+    private RankingAcademicoItem mapearAluno(
+            Aluno aluno,
+            List<Nota> notasDoAluno,
+            List<Double> mediasPonderadasPorSimulado
+    ) {
+        double mediaGeral = notasDoAluno.isEmpty()
+                ? aluno.getMediaAritmetica()
+                : avaliacaoAcademicaService.calcularMediaAritmetica(notasDoAluno);
+
         return new RankingAcademicoItem(
                 aluno.getId(),
                 aluno.getNome(),
-                aluno.getMediaAritmetica(),
+                mediaGeral,
                 0,
-                aluno.getSituacaoAcademica().name(),
-                classificarRisco(aluno, mediasPonderadasPorSimulado)
+                avaliacaoAcademicaService.calcularSituacao(mediaGeral).name(),
+                classificarRisco(mediaGeral, mediasPonderadasPorSimulado)
         );
     }
 
-    private NivelRiscoAcademico classificarRisco(Aluno aluno, List<Double> mediasPonderadasPorSimulado) {
+    private NivelRiscoAcademico classificarRisco(double mediaGeral, List<Double> mediasPonderadasPorSimulado) {
         long simuladosComBaixoDesempenho = contarSimuladosComBaixoDesempenho(mediasPonderadasPorSimulado);
-        return classificadorRiscoAcademicoService.classificar(aluno.getMediaAritmetica(), simuladosComBaixoDesempenho);
+        return classificadorRiscoAcademicoService.classificar(mediaGeral, simuladosComBaixoDesempenho);
     }
 
     private Map<Long, List<Double>> calcularMediasPonderadasPorAluno(List<Nota> notas) {

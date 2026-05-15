@@ -28,6 +28,10 @@ public abstract class FluxoAnaliseAcademicaTemplate {
 
     protected abstract SituacaoAcademica calcularSituacaoAcademica(double mediaGeral);
 
+    protected boolean incluirRanking() {
+        return true;
+    }
+
     protected abstract AnaliseDesempenhoAcademicoResultado montarResultado(
             Long alunoId,
             List<Nota> notas,

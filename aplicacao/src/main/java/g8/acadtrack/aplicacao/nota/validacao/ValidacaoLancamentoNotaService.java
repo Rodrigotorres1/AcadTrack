@@ -5,7 +5,6 @@ import g8.acadtrack.dominioacademico.aluno.AlunoRepository;
 import g8.acadtrack.dominioacademico.disciplina.DisciplinaRepository;
 import g8.acadtrack.dominioavaliacao.nota.NotaRepository;
 import g8.acadtrack.dominioavaliacao.simulado.SimuladoRepository;
-import g8.acadtrack.dominioavaliacao.simulado.SimuladoDisciplinaRepository;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -17,7 +16,6 @@ public class ValidacaoLancamentoNotaService {
             AlunoRepository alunoRepository,
             SimuladoRepository simuladoRepository,
             DisciplinaRepository disciplinaRepository,
-            SimuladoDisciplinaRepository simuladoDisciplinaRepository,
             NotaRepository notaRepository
     ) {
         this.cadeiaValidacao = new ValidadorValorNotaDecorator(
@@ -28,8 +26,7 @@ public class ValidacaoLancamentoNotaService {
                                                 new ValidadorNotaDuplicadaDecorator(
                                                         new ValidadorLancamentoNotaBase(),
                                                         notaRepository
-                                                ),
-                                                simuladoDisciplinaRepository
+                                                )
                                         ),
                                         disciplinaRepository
                                 )

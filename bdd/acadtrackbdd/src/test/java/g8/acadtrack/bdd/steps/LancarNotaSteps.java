@@ -143,14 +143,10 @@ public class LancarNotaSteps {
                 + "}";
 
         try {
-            final MediaType application_JSON2 = MediaType.APPLICATION_JSON;
-            if (application_JSON2 != null) {
-                respostaApi = mockMvc.perform(post("/notas")
-                                .contentType(application_JSON2)
-                                .content(body))
-                        .andReturn();
-            } else {
-            }
+            respostaApi = mockMvc.perform(post("/notas")
+                            .contentType(MediaType.APPLICATION_JSON_VALUE)
+                            .content(body))
+                    .andReturn();
             context.setOperacaoExecutada(true);
         } catch (Exception e) {
             excecao = e;

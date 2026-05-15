@@ -8,7 +8,6 @@ import g8.acadtrack.dominioavaliacao.nota.Nota;
 import g8.acadtrack.dominioavaliacao.nota.NotaRepository;
 import g8.acadtrack.dominioavaliacao.simulado.Simulado;
 import g8.acadtrack.dominioavaliacao.simulado.SimuladoDisciplina;
-import g8.acadtrack.dominioavaliacao.simulado.SimuladoDisciplinaRepository;
 import g8.acadtrack.dominioavaliacao.simulado.SimuladoRepository;
 import g8.acadtrack.dominiocompartilhado.excecao.EntidadeNaoEncontradaException;
 import org.springframework.stereotype.Service;
@@ -23,7 +22,6 @@ import java.util.stream.Collectors;
 public class DetalharSimuladoUseCase {
 
     private final SimuladoRepository simuladoRepository;
-    private final SimuladoDisciplinaRepository simuladoDisciplinaRepository;
     private final DisciplinaRepository disciplinaRepository;
     private final NotaRepository notaRepository;
     private final AlunoRepository alunoRepository;
@@ -31,14 +29,12 @@ public class DetalharSimuladoUseCase {
 
     public DetalharSimuladoUseCase(
             SimuladoRepository simuladoRepository,
-            SimuladoDisciplinaRepository simuladoDisciplinaRepository,
             DisciplinaRepository disciplinaRepository,
             NotaRepository notaRepository,
             AlunoRepository alunoRepository,
             AnalisarConsistenciaSimuladoService analisarConsistenciaSimuladoService
     ) {
         this.simuladoRepository = simuladoRepository;
-        this.simuladoDisciplinaRepository = simuladoDisciplinaRepository;
         this.disciplinaRepository = disciplinaRepository;
         this.notaRepository = notaRepository;
         this.alunoRepository = alunoRepository;
@@ -49,7 +45,7 @@ public SimuladoDetalheResultado executar(Long simuladoId) {
     Simulado simulado = simuladoRepository.buscarPorId(simuladoId)
             .orElseThrow(() -> new EntidadeNaoEncontradaException("Simulado não encontrado"));
 
-    List<SimuladoDisciplina> vinculos = simuladoDisciplinaRepository.buscarPorSimulado(simulado.getId())
+    List<SimuladoDisciplina> vinculos = simulado.listarDisciplinas()
             .stream()
             .filter(v -> v.getSimuladoId().equals(simulado.getId()))
             .toList();

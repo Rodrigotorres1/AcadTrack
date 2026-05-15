@@ -18,30 +18,6 @@ public class SimuladoDisciplinaRepositoryJpa implements SimuladoDisciplinaReposi
     }
 
     @Override
-    public SimuladoDisciplina salvar(SimuladoDisciplina simuladoDisciplina) {
-        SimuladoDisciplinaJpaEntity entity = new SimuladoDisciplinaJpaEntity(
-                simuladoDisciplina.getId(),
-                simuladoDisciplina.getSimuladoId(),
-                simuladoDisciplina.getDisciplinaId(),
-                simuladoDisciplina.getPeso()
-        );
-
-        SimuladoDisciplinaJpaEntity salva = repository.save(entity);
-
-        return new SimuladoDisciplina(
-                salva.getId(),
-                salva.getSimuladoId(),
-                salva.getDisciplinaId(),
-                salva.getPeso()
-        );
-    }
-
-    @Override
-    public void excluirPorSimulado(Long simuladoId) {
-        repository.deleteBySimuladoId(simuladoId);
-    }
-
-    @Override
     public List<SimuladoDisciplina> buscarPorSimulado(Long simuladoId) {
         return repository.findBySimuladoId(simuladoId)
                 .stream()

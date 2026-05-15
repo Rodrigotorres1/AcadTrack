@@ -3,22 +3,26 @@ package g8.acadtrack.aplicacao.riscoacademico;
 import g8.acadtrack.dominioacademico.aluno.Aluno;
 import g8.acadtrack.dominioacademico.aluno.AlunoRepository;
 import g8.acadtrack.dominioacademico.aluno.SituacaoAcademica;
+import g8.acadtrack.dominioacademico.aluno.evento.RiscoAcademicoEvent;
 import g8.acadtrack.dominiousuarios.notificacao.NotificacaoResponsavel;
 import g8.acadtrack.dominiousuarios.notificacao.NotificacaoResponsavelRepository;
 import g8.acadtrack.dominiousuarios.notificacao.PrioridadeNotificacao;
 import g8.acadtrack.dominiousuarios.notificacao.StatusNotificacao;
 import g8.acadtrack.dominiocompartilhado.risco.NivelRiscoAcademico;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 @Component
-public class NotificarResponsavelRiscoAcademicoObserver implements ObservadorRiscoAcademico {
+public class NotificarResponsavelRiscoAcademicoHandler {
 
     private final AlunoRepository alunoRepository;
     private final NotificacaoResponsavelRepository notificacaoResponsavelRepository;
 
-    public NotificarResponsavelRiscoAcademicoObserver(
+    public NotificarResponsavelRiscoAcademicoHandler(
             AlunoRepository alunoRepository,
             NotificacaoResponsavelRepository notificacaoResponsavelRepository
     ) {
@@ -26,7 +30,7 @@ public class NotificarResponsavelRiscoAcademicoObserver implements ObservadorRis
         this.notificacaoResponsavelRepository = notificacaoResponsavelRepository;
     }
 
-    @Override
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, fallbackExecution = true)
     public void aoIdentificarRisco(RiscoAcademicoEvent event) {
         alunoRepository.buscarPorId(event.alunoId())
                 .filter(aluno -> aluno.getResponsavelId() != null)
@@ -48,7 +52,7 @@ public class NotificarResponsavelRiscoAcademicoObserver implements ObservadorRis
                 event.nivelRisco(),
                 determinarPrioridade(event.nivelRisco()),
                 montarMensagem(event, aluno.getNome()),
-                LocalDateTime.now(),
+                LocalDateTime.ofInstant(event.occurredAt(), ZoneId.systemDefault()),
                 StatusNotificacao.NAO_LIDA
         );
     }

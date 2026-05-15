@@ -17,6 +17,10 @@ public class SimuladoDisciplinaJpaEntity {
     private Long disciplinaId;
     private double peso;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "simulado_id", insertable = false, updatable = false)
+    private SimuladoJpaEntity simulado;
+
     public SimuladoDisciplinaJpaEntity() {
     }
 
@@ -57,5 +61,9 @@ public class SimuladoDisciplinaJpaEntity {
 
     public void setPeso(double peso) {
         this.peso = peso;
+    }
+
+    public SimuladoJpaEntity getSimulado() {
+        return simulado;
     }
 }

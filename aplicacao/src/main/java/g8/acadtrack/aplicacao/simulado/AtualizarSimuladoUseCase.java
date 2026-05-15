@@ -4,8 +4,6 @@ import g8.acadtrack.dominioacademico.disciplina.Disciplina;
 import g8.acadtrack.dominioacademico.disciplina.DisciplinaRepository;
 import g8.acadtrack.dominioavaliacao.nota.NotaRepository;
 import g8.acadtrack.dominioavaliacao.simulado.Simulado;
-import g8.acadtrack.dominioavaliacao.simulado.SimuladoDisciplina;
-import g8.acadtrack.dominioavaliacao.simulado.SimuladoDisciplinaRepository;
 import g8.acadtrack.dominioavaliacao.simulado.SimuladoRepository;
 import g8.acadtrack.dominiocompartilhado.excecao.ConflitoDeEstadoException;
 import g8.acadtrack.dominiocompartilhado.excecao.EntidadeNaoEncontradaException;
@@ -22,20 +20,17 @@ public class AtualizarSimuladoUseCase {
 
     private final SimuladoRepository simuladoRepository;
     private final DisciplinaRepository disciplinaRepository;
-    private final SimuladoDisciplinaRepository simuladoDisciplinaRepository;
     private final NotaRepository notaRepository;
     private final ValidarComposicaoSimuladoService validarComposicaoSimuladoService;
 
     public AtualizarSimuladoUseCase(
             SimuladoRepository simuladoRepository,
             DisciplinaRepository disciplinaRepository,
-            SimuladoDisciplinaRepository simuladoDisciplinaRepository,
             NotaRepository notaRepository,
             ValidarComposicaoSimuladoService validarComposicaoSimuladoService
     ) {
         this.simuladoRepository = simuladoRepository;
         this.disciplinaRepository = disciplinaRepository;
-        this.simuladoDisciplinaRepository = simuladoDisciplinaRepository;
         this.notaRepository = notaRepository;
         this.validarComposicaoSimuladoService = validarComposicaoSimuladoService;
     }
@@ -76,12 +71,10 @@ public class AtualizarSimuladoUseCase {
         }
 
         simulado.atualizar(descricaoTrimmed);
-
-        simuladoDisciplinaRepository.excluirPorSimulado(simuladoId);
+        simulado.listarDisciplinas()
+                .forEach(vinculo -> simulado.removerDisciplina(vinculo.getDisciplinaId()));
         for (Disciplina disciplina : disciplinas) {
-            simuladoDisciplinaRepository.salvar(new SimuladoDisciplina(
-                    null, simuladoId, disciplina.getId(), PESO_PADRAO
-            ));
+            simulado.adicionarDisciplina(disciplina.getId(), PESO_PADRAO);
         }
 
         return simuladoRepository.salvar(simulado);

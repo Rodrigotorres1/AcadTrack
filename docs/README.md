@@ -1,54 +1,55 @@
-# Documentacao do Projeto
+# Documentação — AcadTrack
 
-Esta pasta centraliza os artefatos da documentacao do AcadTrack.
+Esta pasta centraliza todos os artefatos acadêmicos e técnicos do projeto. O README raiz do repositório ([`../README.md`](../README.md)) é o ponto de entrada para quem quer rodar o sistema; este arquivo é o índice do que existe aqui dentro.
 
-**JDK:** referência **Java 17+** (Spring Boot / `pom.xml`); no relatório deve coincidir com o enunciado. O grupo validou o build e a API também com **JDK 25** no desenvolvimento (`java -version` / `JAVA_HOME`).
+---
 
-**DDD e CML:** modelagem em arquivo CML [`cml/acadtrack.cml`](cml/acadtrack.cml); resumo em [`cml/bounded_contexts.md`](cml/bounded_contexts.md); níveis em [`ddd_niveis.md`](ddd_niveis.md).
+## Índice de arquivos
 
-**Medidas de desempenho:** em [`descricao_do_dominio.md`](descricao_do_dominio.md) (secao *Medidas de desempenho*) e na raiz do repo em [`README.md`](../README.md) (secao *Médias e situação acadêmica*), esta explicito o papel da **media global simples** (situacao no aluno) vs **media ponderada por simulado**.
+| Arquivo / Pasta | Conteúdo |
+|---|---|
+| [`descricao_do_dominio.md`](descricao_do_dominio.md) | Descrição do domínio, Linguagem Onipresente, definição das duas médias (global simples vs. por simulado), regras de negócio alinhadas ao código |
+| [`ddd_niveis.md`](ddd_niveis.md) | DDD nos 4 níveis: preliminar, estratégico, tático e operacional |
+| [`arquitetura_limpa.md`](arquitetura_limpa.md) | Clean Architecture aplicada ao projeto: camadas, dependências, justificativas |
+| [`story_map_personas.md`](story_map_personas.md) | Story Map com personas (Coordenador, Professor, Aluno, Responsável) e backlog por release |
+| [`story_map.pdf`](story_map.pdf) | Story Map visual em PDF |
+| [`prototipos.md`](prototipos.md) | Referência ao protótipo Figma e capturas da interface implementada |
+| [`bdd.md`](bdd.md) | Abordagem BDD adotada, organização dos cenários, como interpretar os `.feature` |
+| [`padroes_entrega2.md`](padroes_entrega2.md) | Descrição dos 6 padrões de projeto implementados na Entrega 2 |
+| [`persistencia_orm_entrega2.md`](persistencia_orm_entrega2.md) | Mapeamento objeto-relacional: entidades JPA, relacionamentos, configuração H2 |
+| [`funcionalidades.md`](funcionalidades.md) | Detalhamento das 6 funcionalidades oficiais |
+| [`script_demonstracao.md`](script_demonstracao.md) | Roteiro passo a passo para demonstração via Swagger ou scripts |
+| [`demo_fluxo_swagger_passo_a_passo.md`](demo_fluxo_swagger_passo_a_passo.md) | Guia específico para execução do fluxo completo pelo Swagger UI |
+| [`validacoes.md`](validacoes.md) | Catálogo de validações com prints; imagens em [`validacoes/`](validacoes/) |
+| [`checklist_entrega2.md`](checklist_entrega2.md) | Checklist técnico da Entrega 2 |
+| [`cml/acadtrack.cml`](cml/acadtrack.cml) | Modelo Context Mapper com 3 Bounded Contexts e Context Map |
+| [`cml/bounded_contexts.md`](cml/bounded_contexts.md) | Resumo textual dos bounded contexts e suas responsabilidades |
+| [`img/`](img/) | Capturas de tela da interface (9 PNGs: dashboard, alunos, disciplinas, notas, simulado, desempenho, retificação, responsáveis, portal do responsável) |
+| [`validacoes/`](validacoes/) | Capturas de validações da API (prints de erros 400/409/403/404) |
 
-## Indice
+---
 
-- `arquitetura_limpa.md`
-- `bdd.md`
-- `checklist_entrega2.md`
-- `ddd_niveis.md`
-- `descricao_do_dominio.md`
-- `padroes_entrega2.md`
-- `persistencia_orm_entrega2.md`
-- `validacoes.md` (catálogo); imagens PNG em [`validacoes/`](./validacoes/)
-- `funcionalidades.md`
-- `prototipos.md`
-- `script_demonstracao.md`
-- `story_map_personas.md`
-- `story_map.pdf`
+## Observações sobre o domínio
 
-## Swagger, demonstração e validações
+### Duas médias, propósitos distintos
 
-- Roteiro passo a passo (Swagger/Postman, ordem dos fluxos por dependência): `script_demonstracao.md`
-- Prints e referência de comandos opcionais: `validacoes.md` (imagens em [`validacoes/`](./validacoes/))
+O sistema mantém intencionalmente duas formas de calcular a média do aluno:
 
-## Scripts de automação (PowerShell)
+- **Média global simples**: média aritmética de *todas* as notas do aluno, sem peso e sem filtro por simulado. É a base para `SituacaoAcademica` (APROVADO / RECUPERACAO / REPROVADO) persistida no cadastro do `Aluno`. Recalculada em `AvaliacaoAcademicaService` após lançamento de nota ou aprovação de retificação.
 
-- Resumo e utilidade de cada script: [`../scripts/README.md`](../scripts/README.md)
+- **Média por simulado**: média das notas do aluno restrita às disciplinas da composição de um simulado, com peso padrão interno `1.0`. Usada em `CalcularMediaPonderadaUseCase`, rankings e na análise de desempenho histórico por avaliação.
 
-## Personas
+### Personas técnicas vs. de negócio
 
-- Resumo rapido de personas e story map completo em `story_map_personas.md`.
+- **Coordenador** e **Professor** são personas de negócio documentadas (story map, cenários BDD). Nesta entrega, não existem como roles técnicas de autenticação no backend — as ações de cada persona são expostas por controllers abertos.
+- **Responsável** é a única persona com controle de acesso implementado no código (via `AcessoResponsavelAlunoProxy` e `PermissaoResponsavel`).
 
-Observacao sobre o Coordenador:
+### Versão do JDK
 
-- Nesta entrega, o **Coordenador** esta modelado como persona de negocio (documentacao e BDD), mas ainda nao foi implementado tecnicamente como role/perfil de autenticacao no backend.
+O `pom.xml` define Java 17 como versão mínima (requisito Spring Boot 3.x). O projeto foi validado com sucesso também em JDK 25.
 
-## CML e Bounded Contexts
+---
 
-- Modelo CML: `cml/acadtrack.cml`
-- Resumo dos contextos: `cml/bounded_contexts.md`
+## Scripts de automação
 
-## Checklist de entrega (docs) - principais 
-
-- [x] Estrutura de documentacao centralizada em `docs/`
-- [x] Modelo CML consolidado em `docs/cml/acadtrack.cml`
-- [x] Story map textual em `docs/story_map_personas.md`
-- [x] Story map visual em `docs/story_map.pdf`
+Os scripts PowerShell em [`../scripts/`](../scripts/) automatizam tarefas de desenvolvimento e demonstração. Consulte [`../scripts/README.md`](../scripts/README.md) para descrição de cada um.

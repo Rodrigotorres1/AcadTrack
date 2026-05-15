@@ -175,7 +175,7 @@ public class GerarRankingSteps {
                 .findFirst()
                 .orElseThrow(() -> new AssertionError("Aluno não encontrado no ranking acadêmico"));
         AnaliseDesempenhoAcademicoResultado analise =
-                analisarDesempenhoAcademicoUseCase.executarSemRanking(alunoComRiscoDivergente.getId());
+                analisarDesempenhoAcademicoUseCase.executar(alunoComRiscoDivergente.getId());
 
         assertEquals("APROVADO", item.situacaoAcademica());
         assertEquals(analise.nivelRisco(), item.nivelRisco());

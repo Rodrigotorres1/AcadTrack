@@ -12,7 +12,7 @@ public class RiscoAltoStrategy implements EstrategiaClassificacaoRiscoAcademico 
 
     @Override
     public boolean aplica(double mediaGeral, long simuladosComBaixoDesempenho) {
-        return mediaGeral < LIMIAR_RISCO_ALTO_MEDIA || simuladosComBaixoDesempenho >= 2;
+        return mediaGeral < LIMIAR_RISCO_ALTO_MEDIA && simuladosComBaixoDesempenho >= 2;
     }
 
     @Override

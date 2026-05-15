@@ -1,6 +1,7 @@
 package g8.acadtrack.aplicacao.nota.validacao;
 
 import g8.acadtrack.dominioacademico.aluno.Aluno;
+import g8.acadtrack.dominioavaliacao.simulado.Simulado;
 
 public class DadosLancamentoNota {
 
@@ -9,6 +10,7 @@ public class DadosLancamentoNota {
     private final Long disciplinaId;
     private final double valor;
     private Aluno aluno;
+    private Simulado simulado;
 
     public DadosLancamentoNota(Long alunoId, Long simuladoId, Long disciplinaId, double valor) {
         this.alunoId = alunoId;
@@ -39,5 +41,13 @@ public class DadosLancamentoNota {
 
     public void definirAluno(Aluno aluno) {
         this.aluno = aluno;
+    }
+
+    public Simulado simulado() {
+        return simulado;
+    }
+
+    public void definirSimulado(Simulado simulado) {
+        this.simulado = simulado;
     }
 }

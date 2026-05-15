@@ -1,6 +1,8 @@
 package g8.acadtrack.infraestrutura.persistencia.entidade;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -20,8 +22,13 @@ public class SimuladoJpaEntity {
 
     private String descricao;
 
-    @OneToMany(mappedBy = "simulado")
-    private List<NotaJpaEntity> notas = new ArrayList<>();
+    @OneToMany(
+            mappedBy = "simulado",
+            fetch = FetchType.LAZY,
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private List<SimuladoDisciplinaJpaEntity> disciplinas = new ArrayList<>();
 
     public SimuladoJpaEntity() {
     }
@@ -45,5 +52,9 @@ public class SimuladoJpaEntity {
 
     public void setDescricao(String descricao) {
         this.descricao = descricao;
+    }
+
+    public List<SimuladoDisciplinaJpaEntity> getDisciplinas() {
+        return disciplinas;
     }
 }

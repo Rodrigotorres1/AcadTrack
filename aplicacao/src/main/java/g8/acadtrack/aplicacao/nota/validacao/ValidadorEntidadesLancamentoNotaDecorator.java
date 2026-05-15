@@ -3,6 +3,7 @@ package g8.acadtrack.aplicacao.nota.validacao;
 import g8.acadtrack.dominioacademico.aluno.Aluno;
 import g8.acadtrack.dominioacademico.aluno.AlunoRepository;
 import g8.acadtrack.dominioacademico.disciplina.DisciplinaRepository;
+import g8.acadtrack.dominioavaliacao.simulado.Simulado;
 import g8.acadtrack.dominioavaliacao.simulado.SimuladoRepository;
 import g8.acadtrack.dominiocompartilhado.excecao.EntidadeNaoEncontradaException;
 
@@ -30,8 +31,10 @@ public class ValidadorEntidadesLancamentoNotaDecorator extends ValidadorLancamen
                 .orElseThrow(() -> new EntidadeNaoEncontradaException("Aluno não encontrado"));
         dados.definirAluno(aluno);
 
-        simuladoRepository.buscarPorId(dados.simuladoId())
+        Simulado simulado = simuladoRepository.buscarPorId(dados.simuladoId())
                 .orElseThrow(() -> new EntidadeNaoEncontradaException("Simulado não encontrado"));
+        dados.definirSimulado(simulado);
+
         disciplinaRepository.buscarPorId(dados.disciplinaId())
                 .orElseThrow(() -> new EntidadeNaoEncontradaException("Disciplina não encontrada"));
 

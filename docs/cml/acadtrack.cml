@@ -14,7 +14,6 @@ BoundedContext GestaoAcademicaContext implements GestaoAcademica {
 
     Long id
     String nome
-    boolean ativa
   }
 
   Aggregate Aluno {
@@ -23,20 +22,16 @@ BoundedContext GestaoAcademicaContext implements GestaoAcademica {
 
     Long id
     String nome
-    String matricula
+    String email
+    Long turmaId
+    Long responsavelId
+    boolean vinculoResponsavelAtivo
+    boolean permissaoVisualizarNotas
+    boolean permissaoVisualizarSimulados
+    boolean permissaoVisualizarDesempenho
     boolean ativo
-    -Turma turma
-  }
-
-  Aggregate Simulado {
-    Entity Simulado
-    aggregateRoot
-
-    Long id
-    String descricao
-    boolean finalizado
-    -Turma turma
-    List<DisciplinaSimulado> disciplinas
+    double mediaAritmetica
+    SituacaoAcademica situacaoAcademica
   }
 
   Aggregate Disciplina {
@@ -45,12 +40,7 @@ BoundedContext GestaoAcademicaContext implements GestaoAcademica {
 
     Long id
     String nome
-    boolean ativa
-  }
-
-  Entity DisciplinaSimulado {
-    Long disciplinaId
-    double pesoPadrao
+    StatusDisciplina status
   }
 
   Service GestaoAcademicaService {
@@ -58,8 +48,6 @@ BoundedContext GestaoAcademicaContext implements GestaoAcademica {
     void inativarDisciplina(Long disciplinaId)
     void ativarDisciplina(Long disciplinaId)
     void vincularAlunoATurma(Aluno aluno, Turma turma)
-    void criarSimuladoComDisciplinas(Simulado simulado)
-    void finalizarSimulado(Simulado simulado)
   }
 
   Repository AlunoRepository {
@@ -72,11 +60,6 @@ BoundedContext GestaoAcademicaContext implements GestaoAcademica {
     List<Turma> findAll()
   }
 
-  Repository SimuladoRepository {
-    Simulado findById(Long id)
-    List<Simulado> findAll()
-  }
-
   Repository DisciplinaRepository {
     Disciplina findById(Long id)
     List<Disciplina> findAll()
@@ -85,6 +68,22 @@ BoundedContext GestaoAcademicaContext implements GestaoAcademica {
 
 
 BoundedContext AvaliacaoDesempenhoContext implements AvaliacaoDesempenho {
+
+  Aggregate Simulado {
+    Entity Simulado
+    aggregateRoot
+
+    Long id
+    String descricao
+    List<SimuladoDisciplina> disciplinas
+  }
+
+  Entity SimuladoDisciplina {
+    Long id
+    Long simuladoId
+    Long disciplinaId
+    double peso
+  }
 
   Aggregate Nota {
     Entity Nota
@@ -115,7 +114,13 @@ BoundedContext AvaliacaoDesempenhoContext implements AvaliacaoDesempenho {
     void lancarNotaIndividual(Nota nota)
     double calcularMediaPonderada(Long alunoId, Long simuladoId)
     void gerarRanking(Long simuladoId)
+    void criarSimuladoComDisciplinas(Simulado simulado)
     void solicitarRetificacaoDeNota(SolicitacaoRetificacao solicitacao)
+  }
+
+  Repository SimuladoRepository {
+    Simulado findById(Long id)
+    List<Simulado> findAll()
   }
 
   Repository NotaRepository {

@@ -1,297 +1,28 @@
-﻿const state = {
-    perfil: null,
-    alunoMatricula: null,
-    alunos: [],
-    turmas: [],
-    disciplinas: [],
-    disciplinaNomePorId: {},
-    simuladoDescricaoPorId: {},
-    notaAlunos: [],
-    notaSimulados: [],
-    notaDisciplinas: [],
-    notaSimuladoSelecionadoId: null,
-    performanceAlunos: [],
-    simulados: [],
-    simuladoDisciplinas: [],
-    retificacoes: [],
-    selectedRetificacao: null,
-    notificationsResponsavelId: null,
-    responsaveis: [],
-    responsaveisLinhas: []
-};
-
-const PROFILE_CONFIG = {
-    coordenador: {
-        label: "Coordenador",
-        description: "Gerencia disciplinas, simulados, turmas e vínculos.",
-        defaultSection: "disciplinas"
-    },
-    professor: {
-        label: "Professor",
-        description: "Lança notas e participa da avaliação/retificação.",
-        defaultSection: "notas"
-    },
-    aluno: {
-        label: "Aluno",
-        description: "Consulta de desempenho acadêmico e ranking.",
-        defaultSection: "desempenho"
-    },
-    responsavel: {
-        label: "Responsável",
-        description: "Portal, permissões e notificações.",
-        defaultSection: "portal"
-    }
-};
-
-const ROLE_SECTIONS = {
-    coordenador: ["disciplinas", "simulados", "turmas", "alunos", "responsaveis"],
-    professor: ["notas", "desempenho", "retificacoes"],
-    aluno: ["notas", "desempenho", "retificacoes"],
-    responsavel: ["portal", "notificacoes"]
-};
-
-const formatNumber = (value) => {
-    if (value === null || value === undefined || Number.isNaN(Number(value))) {
-        return "-";
-    }
-    return Number(value).toLocaleString("pt-BR", {
-        minimumFractionDigits: 1,
-        maximumFractionDigits: 2
-    });
-};
-
-const normalize = (value) => String(value || "").toLowerCase();
-
-const normalizeClassName = (value) => String(value || "")
-    .trim()
-    .toLowerCase()
-    .replaceAll("°", "º")
-    .replace(/\s+/g, "");
-
-const riskClass = (nivelRisco) => {
-    const risk = normalize(nivelRisco);
-    if (risk.includes("alto")) return "alto";
-    if (risk.includes("moderado")) return "moderado";
-    if (risk.includes("baixo")) return "baixo";
-    return "neutral";
-};
-
-const statusClass = (value) => {
-    const text = normalize(value);
-    if (text.includes("alto") || text.includes("erro") || text.includes("bloque")) return "danger";
-    if (text.includes("moderado") || text.includes("atenc") || text.includes("media")) return "warning";
-    if (text.includes("baixo") || text.includes("sucesso") || text.includes("ok")) return "success";
-    return "neutral";
-};
-
-const escapeHtml = (value) => String(value ?? "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-
-const API_BASE_URL_STORAGE_KEY = "acadtrackApiBaseUrl";
-const API_PROBE_PATH = "/v3/api-docs";
-const API_CANDIDATE_PORTS = Array.from({ length: 20 }, (_, index) => 8080 + index);
-let apiBaseUrlPromise = null;
-
-function normalizeApiBaseUrl(value) {
-    return String(value || "").trim().replace(/\/+$/, "");
-}
-
-function addUniqueApiBaseUrl(candidates, value) {
-    const normalized = normalizeApiBaseUrl(value);
-    if (normalized && !candidates.includes(normalized)) {
-        candidates.push(normalized);
-    }
-}
-
-function getStoredApiBaseUrl() {
-    try {
-        return window.localStorage.getItem(API_BASE_URL_STORAGE_KEY);
-    } catch {
-        return "";
-    }
-}
-
-function rememberApiBaseUrl(baseUrl) {
-    try {
-        if (baseUrl) {
-            window.localStorage.setItem(API_BASE_URL_STORAGE_KEY, baseUrl);
-        }
-    } catch {
-        // localStorage can be unavailable for file:// pages in some browsers.
-    }
-}
-
-function getApiBaseUrlCandidates() {
-    const candidates = [];
-    const params = new URLSearchParams(window.location.search);
-
-    addUniqueApiBaseUrl(candidates, params.get("api"));
-    addUniqueApiBaseUrl(candidates, params.get("apiBaseUrl"));
-    addUniqueApiBaseUrl(candidates, window.ACADTRACK_API_BASE_URL);
-
-    if (window.location.protocol === "http:" || window.location.protocol === "https:") {
-        addUniqueApiBaseUrl(candidates, window.location.origin);
-    }
-
-    addUniqueApiBaseUrl(candidates, getStoredApiBaseUrl());
-    API_CANDIDATE_PORTS.forEach((port) => addUniqueApiBaseUrl(candidates, `http://localhost:${port}`));
-
-    return candidates;
-}
-
-function isHttpUrl(value) {
-    return /^https?:\/\//i.test(String(value || ""));
-}
-
-function buildApiUrl(path, baseUrl) {
-    if (isHttpUrl(path)) {
-        return path;
-    }
-
-    const normalizedPath = String(path || "").startsWith("/") ? path : `/${path}`;
-    return `${baseUrl}${normalizedPath}`;
-}
-
-async function fetchWithTimeout(url, options = {}, timeoutMs = 12000) {
-    const controller = new AbortController();
-    const timeoutId = window.setTimeout(() => controller.abort(), timeoutMs);
-
-    try {
-        return await fetch(url, {
-            ...options,
-            signal: controller.signal
-        });
-    } finally {
-        window.clearTimeout(timeoutId);
-    }
-}
-
-async function canUseApiBaseUrl(baseUrl) {
-    try {
-        const response = await fetchWithTimeout(buildApiUrl(API_PROBE_PATH, baseUrl), {
-            headers: { "Accept": "application/json" }
-        }, 1800);
-
-        return response.ok;
-    } catch {
-        return false;
-    }
-}
-
-async function resolveApiBaseUrl() {
-    if (!apiBaseUrlPromise) {
-        apiBaseUrlPromise = (async () => {
-            const candidates = getApiBaseUrlCandidates();
-
-            for (const baseUrl of candidates) {
-                if (await canUseApiBaseUrl(baseUrl)) {
-                    rememberApiBaseUrl(baseUrl);
-                    return baseUrl;
-                }
-            }
-
-            throw new Error("Não foi possível conectar à API. Inicie o backend Spring Boot e, se ele estiver em outra porta, abra a tela com ?api=http://localhost:PORT.");
-        })().catch((error) => {
-            apiBaseUrlPromise = null;
-            throw error;
-        });
-    }
-
-    return apiBaseUrlPromise;
-}
-
-async function requestJson(path, options = {}) {
-    const apiBaseUrl = isHttpUrl(path) ? "" : await resolveApiBaseUrl();
-    const url = buildApiUrl(path, apiBaseUrl);
-
-    let response;
-    try {
-        response = await fetchWithTimeout(url, {
-            ...options,
-            headers: {
-                "Accept": "application/json",
-                ...(options.headers || {})
-            }
-        });
-    } catch {
-        apiBaseUrlPromise = null;
-        throw new Error("Falha ao conectar à API. Verifique se o backend está em execução e tente novamente.");
-    }
-
-    const contentType = response.headers.get("content-type") || "";
-    const payload = contentType.includes("application/json") ? await response.json() : await response.text();
-
-    if (!response.ok) {
-        const message = typeof payload === "object" && payload !== null && payload.message
-            ? payload.message
-            : `A API retornou status ${response.status}.`;
-        const error = new Error(message);
-        error.status = response.status;
-        throw error;
-    }
-
-    return payload;
-}
-
-function setStatus(elementId, text, kind = "neutral") {
-    const element = document.getElementById(elementId);
-    element.textContent = text;
-    element.className = `status-pill ${kind}`;
-}
-
-function message(text, kind = "neutral") {
-    const className = kind === "error" ? "message-box error" : kind === "ok" ? "message-box ok" : "message-box";
-    return `<div class="${className}">${escapeHtml(text)}</div>`;
-}
-
-function getProfileConfig(profile) {
-    return PROFILE_CONFIG[profile] || null;
-}
-
-function getAllowedSections(profile) {
-    return ROLE_SECTIONS[profile] || [];
-}
-
-function canAccessSection(sectionId) {
-    return !state.perfil || getAllowedSections(state.perfil).includes(sectionId);
-}
-
-function applyRoleNavigation(profile) {
-    const allowedSections = getAllowedSections(profile);
-    document.querySelectorAll(".nav-link").forEach((link) => {
-        const allowed = allowedSections.includes(link.dataset.section);
-        link.hidden = !allowed;
-        if (!allowed) {
-            link.classList.remove("active");
-        }
-    });
-}
-
-function renderActiveProfile(profile) {
-    const config = getProfileConfig(profile);
-    document.getElementById("activeProfileLabel").textContent = config?.label || "-";
-    document.getElementById("activeProfileDescription").textContent = config?.description || "";
-}
-
-function isPositiveEnrollment(value) {
-    return /^\d+$/.test(String(value || "").trim()) && Number(value) >= 1;
-}
-
-function rememberStudentEnrollment(value) {
-    state.alunoMatricula = String(value || "").trim() || null;
-}
-
-function getStudentEnrollmentFromForm(form) {
-    return String(new FormData(form).get("alunoId") || "").trim();
-}
+import { requestJson } from "./js/apiClient.js";
+import { getProfileConfig } from "./js/config.js";
+import { renderError } from "./js/errors.js";
+import { applyRoleNavigation, canAccessSection } from "./js/navigation.js";
+import {
+    endSession,
+    getStudentEnrollmentFromForm,
+    rememberStudentEnrollment,
+    renderActiveProfile,
+    startSession
+} from "./js/session.js";
+import { patchState, setState, state } from "./js/store.js";
+import {
+    escapeHtml,
+    formatNumber,
+    isPositiveEnrollment,
+    normalize,
+    normalizeClassName,
+    riskClass,
+    statusClass
+} from "./js/utils.js";
+import { message } from "./js/views/ui.js";
 
 function showLogin(feedback = "") {
-    state.perfil = null;
-    state.alunoMatricula = null;
+    endSession();
     applyRoleNavigation(null);
     document.body.classList.add("login-active");
     document.querySelector(".sidebar").hidden = true;
@@ -301,14 +32,12 @@ function showLogin(feedback = "") {
 }
 
 function enterApplication(profile) {
-    const config = getProfileConfig(profile);
+    const config = startSession(profile);
     if (!config) {
         showLogin(message("Selecione um perfil válido.", "error"));
         return;
     }
 
-    state.perfil = profile;
-    state.alunoMatricula = null;
     applyRoleNavigation(profile);
     document.body.classList.remove("login-active");
     document.querySelector(".sidebar").hidden = false;
@@ -437,7 +166,7 @@ function renderPerformanceStudentOptions() {
 
 async function loadPerformanceView() {
     if (state.perfil === "aluno") {
-        state.performanceAlunos = [];
+        setState("performanceAlunos", []);
         document.getElementById("performanceSelectSubtitle").textContent = "Informe sua matrícula para visualizar o desempenho completo";
         document.getElementById("performanceSubmitButton").textContent = "Visualizar meu desempenho";
         showPerformanceSelect(message("Digite sua matrícula para consultar os dados calculados pelo backend."));
@@ -451,11 +180,11 @@ async function loadPerformanceView() {
     showPerformanceSelect(message("Carregando alunos..."));
 
     try {
-        state.performanceAlunos = await requestJson("/alunos");
+        setState("performanceAlunos", await requestJson("/alunos"));
         renderPerformanceStudentOptions();
         document.getElementById("performanceFeedback").innerHTML = "";
     } catch (error) {
-        state.performanceAlunos = [];
+        setState("performanceAlunos", []);
         renderPerformanceStudentOptions();
         document.getElementById("performanceFeedback").innerHTML = message("Não foi possível carregar os alunos cadastrados.", "error");
     }
@@ -551,7 +280,7 @@ async function handlePerformanceSubmit(event) {
         const analise = await requestJson(`/alunos/${encodeURIComponent(alunoId)}/desempenho`);
         renderPerformancePanel(analise, aluno);
     } catch (error) {
-        feedback.innerHTML = message(error.message || "Não foi possível carregar o desempenho do aluno.", "error");
+        renderError(feedback, error, "Não foi possível carregar o desempenho do aluno.");
     }
 }
 
@@ -609,16 +338,16 @@ async function handleNotificationsSubmit(event) {
         const aluno = await requestJson(`/alunos/${encodeURIComponent(alunoId)}`);
         const responsavelId = aluno?.responsavelId;
         if (!responsavelId) {
-            state.notificationsResponsavelId = null;
+            setState("notificationsResponsavelId", null);
             list.innerHTML = message("Este aluno não possui responsável vinculado.", "error");
             return;
         }
-        state.notificationsResponsavelId = responsavelId;
+        setState("notificationsResponsavelId", responsavelId);
         list.innerHTML = message("Carregando notificações...");
         const notifications = await requestJson(`/responsaveis/${encodeURIComponent(responsavelId)}/notificacoes`);
         list.innerHTML = renderNotifications(notifications);
     } catch (error) {
-        list.innerHTML = message(error.message, "error");
+        renderError(list, error);
     }
 }
 
@@ -633,7 +362,7 @@ async function markNotificationAsRead(responsavelId, notificationId) {
         const notifications = await requestJson(`/responsaveis/${encodeURIComponent(responsavelId)}/notificacoes`);
         list.innerHTML = renderNotifications(notifications);
     } catch (error) {
-        list.innerHTML = message(error.message || "Não foi possível marcar a notificação como lida.", "error");
+        renderError(list, error, "Não foi possível marcar a notificação como lida.");
     }
 }
 
@@ -894,11 +623,11 @@ async function loadStudents() {
 
     try {
         const alunos = await requestJson("/alunos");
-        state.alunos = alunos.map(mapStudentFromApi);
+        setState("alunos", alunos.map(mapStudentFromApi));
         feedback.innerHTML = "";
         renderStudentsTable();
     } catch (error) {
-        state.alunos = [];
+        setState("alunos", []);
         renderStudentsTable();
         feedback.innerHTML = message("Não foi possível carregar os alunos. Tente novamente em alguns instantes.", "error");
     }
@@ -912,14 +641,14 @@ async function loadClasses(showFeedback = false, feedbackElementId = "studentFor
 
     try {
         const turmas = await requestJson("/turmas");
-        state.turmas = uniqueClasses(turmas);
+        setState("turmas", uniqueClasses(turmas));
         renderClassOptions();
         renderClassesTable();
         if (showFeedback && feedback) {
             feedback.innerHTML = "";
         }
     } catch (error) {
-        state.turmas = [];
+        setState("turmas", []);
         renderClassOptions();
         renderClassesTable();
         if (showFeedback && feedback) {
@@ -995,7 +724,7 @@ async function handleStudentSubmit(event) {
         await loadStudentsView();
         document.getElementById("studentsFeedback").innerHTML = message("Aluno cadastrado com sucesso.", "ok");
     } catch (error) {
-        feedback.innerHTML = message(error.message, "error");
+        renderError(feedback, error);
     }
 }
 
@@ -1010,7 +739,7 @@ async function updateStudentStatus(alunoId, shouldActivate) {
         await loadStudentsView();
         document.getElementById("studentsFeedback").innerHTML = message(shouldActivate ? "Aluno ativado com sucesso." : "Aluno inativado com sucesso.", "ok");
     } catch (error) {
-        feedback.innerHTML = message(error.message || "Não foi possível atualizar o aluno.", "error");
+        renderError(feedback, error, "Não foi possível atualizar o aluno.");
     }
 }
 
@@ -1070,7 +799,7 @@ async function handleStudentEditSubmit(event) {
         await loadStudentsView();
         showStudentsList(message("Aluno atualizado com sucesso.", "ok"));
     } catch (error) {
-        feedback.innerHTML = message(error.message, "error");
+        renderError(feedback, error);
     }
 }
 
@@ -1116,7 +845,7 @@ async function handleClassSubmit(event) {
         await loadClasses(false);
         showClassesList(message("Turma cadastrada com sucesso.", "ok"));
     } catch (error) {
-        feedback.innerHTML = message(error.message, "error");
+        renderError(feedback, error);
     }
 }
 
@@ -1181,11 +910,11 @@ async function loadSubjects() {
 
     try {
         const disciplinas = await requestJson("/disciplinas");
-        state.disciplinas = disciplinas.map(mapSubjectFromApi);
+        setState("disciplinas", disciplinas.map(mapSubjectFromApi));
         feedback.innerHTML = "";
         renderSubjectsTable();
     } catch (error) {
-        state.disciplinas = [];
+        setState("disciplinas", []);
         renderSubjectsTable();
         feedback.innerHTML = message("Não foi possível carregar as disciplinas. Tente novamente em alguns instantes.", "error");
     }
@@ -1225,7 +954,7 @@ async function showSubjectDetails(disciplinaId) {
             </div>
         `;
     } catch (error) {
-        content.innerHTML = message(error.message, "error");
+        renderError(content, error);
     }
 }
 
@@ -1243,7 +972,7 @@ async function updateSubjectStatus(disciplinaId, shouldActivate) {
         closeSubjectDetails();
         await loadSubjects();
     } catch (error) {
-        feedback.innerHTML = message(error.message, "error");
+        renderError(feedback, error);
     }
 }
 
@@ -1264,7 +993,7 @@ async function deleteSubject(disciplinaId) {
         await loadSubjects();
         document.getElementById("subjectsFeedback").innerHTML = message("Disciplina excluída com sucesso.", "ok");
     } catch (error) {
-        feedback.innerHTML = message(error.message, "error");
+        renderError(feedback, error);
     }
 }
 
@@ -1287,7 +1016,7 @@ async function handleSubjectSubmit(event) {
         await loadSubjects();
         document.getElementById("subjectsFeedback").innerHTML = message("Disciplina cadastrada com sucesso.", "ok");
     } catch (error) {
-        feedback.innerHTML = message(error.message, "error");
+        renderError(feedback, error);
     }
 }
 
@@ -1322,7 +1051,7 @@ async function handleSubjectEditSubmit(event) {
         await loadSubjects();
         showSubjectsList(message("Disciplina atualizada com sucesso.", "ok"));
     } catch (error) {
-        feedback.innerHTML = message(error.message, "error");
+        renderError(feedback, error);
     }
 }
 
@@ -1385,11 +1114,11 @@ function renderNoteFormOptions() {
 
 async function handleNoteExamChange(event) {
     const simuladoId = String(event.target.value || "");
-    state.notaSimuladoSelecionadoId = simuladoId;
+    setState("notaSimuladoSelecionadoId", simuladoId);
 
     const selectDisciplina = document.getElementById("noteSubjectSelect");
 
-    state.notaDisciplinas = [];
+    setState("notaDisciplinas", []);
     selectDisciplina.innerHTML = `<option value="">Carregando disciplinas...</option>`;
 
     if (!simuladoId) {
@@ -1400,12 +1129,12 @@ async function handleNoteExamChange(event) {
     try {
         const disciplinas = await requestJson(`/simulados/${encodeURIComponent(simuladoId)}/disciplinas`);
 
-        state.notaDisciplinas = Array.isArray(disciplinas)
+        setState("notaDisciplinas", Array.isArray(disciplinas)
             ? disciplinas.filter((disciplina) => {
                 const status = String(disciplina.status || "").toLowerCase();
                 return status.includes("ativa") && !status.includes("inativa");
             })
-            : [];
+            : []);
 
         if (state.notaDisciplinas.length === 0) {
             selectDisciplina.innerHTML = `<option value="">Nenhuma disciplina vinculada a este simulado</option>`;
@@ -1422,7 +1151,7 @@ async function handleNoteExamChange(event) {
 
         document.getElementById("noteFormFeedback").innerHTML = "";
     } catch (error) {
-        state.notaDisciplinas = [];
+        setState("notaDisciplinas", []);
         selectDisciplina.innerHTML = `<option value="">Erro ao carregar disciplinas</option>`;
         document.getElementById("noteFormFeedback").innerHTML =
             message("Não foi possível carregar as disciplinas desse simulado.", "error");
@@ -1479,17 +1208,21 @@ async function loadNotesView() {
             requestJson("/simulados")
         ]);
 
-        state.notaAlunos = alunos;
-        state.notaSimulados = simulados;
-        state.notaSimuladoSelecionadoId = null;
-        state.notaDisciplinas = [];
+        patchState({
+            notaAlunos: alunos,
+            notaSimulados: simulados,
+            notaSimuladoSelecionadoId: null,
+            notaDisciplinas: []
+        });
         renderNoteFormOptions();
         feedback.innerHTML = message("Selecione um simulado para ver as disciplinas vinculadas.");
     } catch (error) {
-        state.notaAlunos = [];
-        state.notaSimulados = [];
-        state.notaSimuladoSelecionadoId = null;
-        state.notaDisciplinas = [];
+        patchState({
+            notaAlunos: [],
+            notaSimulados: [],
+            notaSimuladoSelecionadoId: null,
+            notaDisciplinas: []
+        });
         renderNoteFormOptions();
         feedback.innerHTML = message("Não foi possível carregar os dados para lançamento de nota.", "error");
     }
@@ -1497,8 +1230,10 @@ async function loadNotesView() {
 
 function clearNoteForm(clearFeedback = true) {
     document.getElementById("noteForm").reset();
-    state.notaSimuladoSelecionadoId = null;
-    state.notaDisciplinas = [];
+    patchState({
+        notaSimuladoSelecionadoId: null,
+        notaDisciplinas: []
+    });
     renderNoteSelect(
         "noteSubjectSelect",
         [],
@@ -1573,7 +1308,7 @@ async function handleNoteSubmit(event) {
         clearNoteForm(false);
         feedback.innerHTML = message("Nota lançada com sucesso.", "ok");
     } catch (error) {
-        feedback.innerHTML = message(error.message || "Não foi possível lançar a nota.", "error");
+        renderError(feedback, error, "Não foi possível lançar a nota.");
     }
 }
 
@@ -1604,28 +1339,34 @@ async function handleStudentNotesSubmit(event) {
     try {
         if (!state.disciplinaNomePorId || Object.keys(state.disciplinaNomePorId).length === 0) {
             const disciplinas = await requestJson("/disciplinas");
-            state.disciplinaNomePorId = Array.isArray(disciplinas)
-                ? disciplinas.reduce((acc, disciplina) => {
-                    acc[String(disciplina.id)] = disciplina.nome || `ID ${disciplina.id}`;
-                    return acc;
-                }, {})
-                : {};
+            setState(
+                "disciplinaNomePorId",
+                Array.isArray(disciplinas)
+                    ? disciplinas.reduce((acc, disciplina) => {
+                        acc[String(disciplina.id)] = disciplina.nome || `ID ${disciplina.id}`;
+                        return acc;
+                    }, {})
+                    : {}
+            );
         }
         if (!state.simuladoDescricaoPorId || Object.keys(state.simuladoDescricaoPorId).length === 0) {
             const simulados = await requestJson("/simulados");
-            state.simuladoDescricaoPorId = Array.isArray(simulados)
-                ? simulados.reduce((acc, simulado) => {
-                    acc[String(simulado.id)] = simulado.descricao || `ID ${simulado.id}`;
-                    return acc;
-                }, {})
-                : {};
+            setState(
+                "simuladoDescricaoPorId",
+                Array.isArray(simulados)
+                    ? simulados.reduce((acc, simulado) => {
+                        acc[String(simulado.id)] = simulado.descricao || `ID ${simulado.id}`;
+                        return acc;
+                    }, {})
+                    : {}
+            );
         }
         const notas = await requestJson(`/notas/aluno/${encodeURIComponent(alunoId)}`);
         renderStudentNotesList(notas);
         feedback.innerHTML = "";
     } catch (error) {
         list.innerHTML = "";
-        feedback.innerHTML = message(error.message || "Não foi possível carregar as notas.", "error");
+        renderError(feedback, error, "Não foi possível carregar as notas.");
     }
 }
 
@@ -1682,13 +1423,13 @@ async function loadSimulationsView() {
     feedback.innerHTML = message("Carregando simulados...");
 
     try {
-        state.simulados = await requestJson("/simulados");
+        setState("simulados", await requestJson("/simulados"));
         renderSimulationsTable();
         feedback.innerHTML = "";
     } catch (error) {
-        state.simulados = [];
+        setState("simulados", []);
         renderSimulationsTable();
-        feedback.innerHTML = message(error.message || "Não foi possível carregar os simulados.", "error");
+        renderError(feedback, error, "Não foi possível carregar os simulados.");
     }
 }
 
@@ -1716,7 +1457,7 @@ async function showSimulationDetails(simuladoId) {
         renderSimulationDetails(simulado);
         document.getElementById("simulationDetailsFeedback").innerHTML = "";
     } catch (error) {
-        document.getElementById("simulationDetailsFeedback").innerHTML = message(error.message || "Não foi possível carregar os detalhes.", "error");
+        renderError(document.getElementById("simulationDetailsFeedback"), error, "Não foi possível carregar os detalhes.");
     }
 }
 
@@ -1785,13 +1526,13 @@ async function showSimulationCreateView() {
     updateSimulationSelectedCounter();
 
     try {
-        state.simuladoDisciplinas = await requestJson("/disciplinas");
+        setState("simuladoDisciplinas", await requestJson("/disciplinas"));
         renderSimulationSubjectOptions();
         document.getElementById("simulationFormFeedback").innerHTML = "";
     } catch (error) {
-        state.simuladoDisciplinas = [];
+        setState("simuladoDisciplinas", []);
         renderSimulationSubjectOptions();
-        document.getElementById("simulationFormFeedback").innerHTML = message(error.message || "Não foi possível carregar as disciplinas.", "error");
+        renderError(document.getElementById("simulationFormFeedback"), error, "Não foi possível carregar as disciplinas.");
     }
 }
 
@@ -1878,7 +1619,7 @@ async function handleSimulationSubmit(event) {
         await loadSimulationsView();
         document.getElementById("simulationsFeedback").innerHTML = message("Simulado criado com sucesso.", "ok");
     } catch (error) {
-        feedback.innerHTML = message(error.message || "Não foi possível criar o simulado.", "error");
+        renderError(feedback, error, "Não foi possível criar o simulado.");
     }
 }
 
@@ -1931,14 +1672,14 @@ async function showSimulationEditForm(simuladoId) {
             requestJson(`/simulados/${encodeURIComponent(simuladoId)}`),
             requestJson("/disciplinas")
         ]);
-        state.simuladoDisciplinas = disciplinas;
+        setState("simuladoDisciplinas", disciplinas);
         const selectedIds = (detalhe.disciplinas || []).map((d) => d.disciplinaId ?? d.id);
         document.getElementById("simuladoEditDescricao").value = detalhe.descricao || "";
         document.getElementById("simuladoEditForm").dataset.simuladoId = simuladoId;
         renderSimuladoEditSubjectOptions(selectedIds);
         document.getElementById("simuladoEditFormFeedback").innerHTML = "";
     } catch (error) {
-        document.getElementById("simuladoEditFormFeedback").innerHTML = message(error.message || "Erro ao carregar simulado.", "error");
+        renderError(document.getElementById("simuladoEditFormFeedback"), error, "Erro ao carregar simulado.");
     }
 }
 
@@ -1961,7 +1702,7 @@ async function handleSimuladoEditSubmit(event) {
         await loadSimulationsView();
         showSimulationsList(message("Simulado atualizado com sucesso.", "ok"));
     } catch (error) {
-        feedback.innerHTML = message(error.message || "Erro ao salvar simulado.", "error");
+        renderError(feedback, error, "Erro ao salvar simulado.");
     }
 }
 
@@ -2036,13 +1777,13 @@ async function loadCorrectionsView() {
     feedback.innerHTML = message("Carregando retificações...");
 
     try {
-        state.retificacoes = await requestJson("/retificacoes");
+        setState("retificacoes", await requestJson("/retificacoes"));
         renderCorrectionsTable();
         feedback.innerHTML = "";
     } catch (error) {
-        state.retificacoes = [];
+        setState("retificacoes", []);
         renderCorrectionsTable();
-        feedback.innerHTML = message(error.message || "Não foi possível carregar as retificações.", "error");
+        renderError(feedback, error, "Não foi possível carregar as retificações.");
     }
 }
 
@@ -2057,7 +1798,7 @@ function renderCorrectionReviewInfo(retificacao) {
 }
 
 function renderCorrectionReview(retificacao, readOnly = false) {
-    state.selectedRetificacao = retificacao;
+    setState("selectedRetificacao", retificacao);
     document.getElementById("correctionsListView").hidden = true;
     document.getElementById("correctionReviewView").hidden = false;
     document.getElementById("correctionReviewStatus").textContent = correctionStatusInfo(retificacao.status).label;
@@ -2094,7 +1835,7 @@ async function showCorrectionReview(correctionId, readOnly = false) {
         renderCorrectionReview(retificacao, readOnly || !correctionStatusInfo(retificacao.status).open);
         document.getElementById("correctionsFeedback").innerHTML = "";
     } catch (error) {
-        document.getElementById("correctionsFeedback").innerHTML = message(error.message || "Não foi possível carregar a solicitação.", "error");
+        renderError(document.getElementById("correctionsFeedback"), error, "Não foi possível carregar a solicitação.");
     }
 }
 
@@ -2147,7 +1888,7 @@ async function submitCorrectionDecision(shouldApprove) {
         await loadCorrectionsView();
         document.getElementById("correctionsFeedback").innerHTML = message(shouldApprove ? "Retificação aprovada com sucesso." : "Retificação reprovada com sucesso.", "ok");
     } catch (error) {
-        feedback.innerHTML = message(error.message || "Não foi possível registrar a decisão.", "error");
+        renderError(feedback, error, "Não foi possível registrar a decisão.");
     }
 }
 
@@ -2244,14 +1985,12 @@ async function loadGuardiansView() {
             requestJson("/responsaveis"),
             requestJson("/alunos")
         ]);
-        state.responsaveis = responsaveis;
-        state.alunos = alunos;
-        state.responsaveisLinhas = buildGuardianRows();
+        patchState({ responsaveis, alunos });
+        setState("responsaveisLinhas", buildGuardianRows());
         feedback.innerHTML = "";
         renderGuardiansTable();
     } catch (error) {
-        state.responsaveis = [];
-        state.responsaveisLinhas = [];
+        patchState({ responsaveis: [], responsaveisLinhas: [] });
         renderGuardiansTable();
         feedback.innerHTML = message("Não foi possível carregar os responsáveis. Tente novamente em alguns instantes.", "error");
     }
@@ -2286,15 +2025,13 @@ async function showGuardianLinkForm() {
             requestJson("/responsaveis"),
             requestJson("/alunos")
         ]);
-        state.responsaveis = responsaveis;
-        state.alunos = alunos;
+        patchState({ responsaveis, alunos });
         renderGuardianSelects();
         document.getElementById("guardianLinkFeedback").innerHTML = "";
     } catch (error) {
-        state.responsaveis = [];
-        state.alunos = [];
+        patchState({ responsaveis: [], alunos: [] });
         renderGuardianSelects();
-        document.getElementById("guardianLinkFeedback").innerHTML = message(error.message, "error");
+        renderError(document.getElementById("guardianLinkFeedback"), error);
     }
 }
 
@@ -2356,7 +2093,7 @@ async function toggleGuardianLink(responsavelId, shouldActivate) {
         closeGuardianDetails();
         await loadGuardiansView();
     } catch (error) {
-        feedback.innerHTML = message(error.message, "error");
+        renderError(feedback, error);
     }
 }
 
@@ -2376,7 +2113,7 @@ async function deleteGuardian(responsavelId) {
         await loadGuardiansView();
         document.getElementById("guardiansFeedback").innerHTML = message("Responsável excluído com sucesso.", "ok");
     } catch (error) {
-        feedback.innerHTML = message(error.message, "error");
+        renderError(feedback, error);
     }
 }
 
@@ -2403,7 +2140,7 @@ async function handleGuardianLinkSubmit(event) {
         await loadGuardiansView();
         document.getElementById("guardiansFeedback").innerHTML = message("Responsável vinculado com sucesso.", "ok");
     } catch (error) {
-        feedback.innerHTML = message(error.message, "error");
+        renderError(feedback, error);
     }
 }
 
@@ -2426,7 +2163,7 @@ async function handleGuardianSubmit(event) {
         await loadGuardiansView();
         document.getElementById("guardiansFeedback").innerHTML = message("Responsável cadastrado com sucesso.", "ok");
     } catch (error) {
-        feedback.innerHTML = message(error.message, "error");
+        renderError(feedback, error);
     }
 }
 

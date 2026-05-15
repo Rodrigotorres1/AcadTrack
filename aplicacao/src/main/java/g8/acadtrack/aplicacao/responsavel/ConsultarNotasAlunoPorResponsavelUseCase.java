@@ -10,19 +10,19 @@ import java.util.List;
 @Service
 public class ConsultarNotasAlunoPorResponsavelUseCase {
 
-    private final AcessoResponsavelAlunoProxy acessoResponsavelAlunoProxy;
+    private final AcessoResponsavelAlunoService acessoResponsavelAlunoService;
     private final BuscarNotasPorAlunoUseCase buscarNotasPorAlunoUseCase;
 
     public ConsultarNotasAlunoPorResponsavelUseCase(
-            AcessoResponsavelAlunoProxy acessoResponsavelAlunoProxy,
+            AcessoResponsavelAlunoService acessoResponsavelAlunoService,
             BuscarNotasPorAlunoUseCase buscarNotasPorAlunoUseCase
     ) {
-        this.acessoResponsavelAlunoProxy = acessoResponsavelAlunoProxy;
+        this.acessoResponsavelAlunoService = acessoResponsavelAlunoService;
         this.buscarNotasPorAlunoUseCase = buscarNotasPorAlunoUseCase;
     }
 
     public List<Nota> executar(Long responsavelId, Long alunoId) {
-        acessoResponsavelAlunoProxy.executar(alunoId, responsavelId, PermissaoResponsavel.VISUALIZAR_NOTAS);
+        acessoResponsavelAlunoService.executar(alunoId, responsavelId, PermissaoResponsavel.VISUALIZAR_NOTAS);
         return buscarNotasPorAlunoUseCase.executar(alunoId);
     }
 }

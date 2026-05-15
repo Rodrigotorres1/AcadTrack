@@ -4,7 +4,6 @@ import g8.acadtrack.dominioacademico.disciplina.Disciplina;
 import g8.acadtrack.dominioacademico.disciplina.DisciplinaRepository;
 import g8.acadtrack.dominioavaliacao.simulado.Simulado;
 import g8.acadtrack.dominioavaliacao.simulado.SimuladoDisciplina;
-import g8.acadtrack.dominioavaliacao.simulado.SimuladoDisciplinaRepository;
 import g8.acadtrack.dominioavaliacao.simulado.SimuladoRepository;
 import org.springframework.stereotype.Service;
 
@@ -14,18 +13,15 @@ import java.util.List;
 public class ListarSimuladosComResumoUseCase {
 
     private final SimuladoRepository simuladoRepository;
-    private final SimuladoDisciplinaRepository simuladoDisciplinaRepository;
     private final DisciplinaRepository disciplinaRepository;
     private final AnalisarConsistenciaSimuladoService analisarConsistenciaSimuladoService;
 
     public ListarSimuladosComResumoUseCase(
             SimuladoRepository simuladoRepository,
-            SimuladoDisciplinaRepository simuladoDisciplinaRepository,
             DisciplinaRepository disciplinaRepository,
             AnalisarConsistenciaSimuladoService analisarConsistenciaSimuladoService
     ) {
         this.simuladoRepository = simuladoRepository;
-        this.simuladoDisciplinaRepository = simuladoDisciplinaRepository;
         this.disciplinaRepository = disciplinaRepository;
         this.analisarConsistenciaSimuladoService = analisarConsistenciaSimuladoService;
     }
@@ -38,7 +34,7 @@ public class ListarSimuladosComResumoUseCase {
     }
 
     private SimuladoResumoResultado montarResumo(Simulado simulado) {
-        List<SimuladoDisciplina> vinculos = simuladoDisciplinaRepository.buscarPorSimulado(simulado.getId());
+        List<SimuladoDisciplina> vinculos = simulado.listarDisciplinas();
         List<Long> disciplinasIds = vinculos.stream()
                 .map(SimuladoDisciplina::getDisciplinaId)
                 .distinct()

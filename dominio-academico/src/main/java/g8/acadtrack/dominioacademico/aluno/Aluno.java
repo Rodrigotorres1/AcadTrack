@@ -1,9 +1,15 @@
 package g8.acadtrack.dominioacademico.aluno;
 
 import g8.acadtrack.dominiocompartilhado.email.Email;
+import g8.acadtrack.dominiocompartilhado.evento.DomainEvent;
 import g8.acadtrack.dominiocompartilhado.excecao.AcessoDenegadoException;
 import g8.acadtrack.dominiocompartilhado.excecao.ConflitoDeEstadoException;
 import g8.acadtrack.dominiocompartilhado.excecao.RegraDeNegocioException;
+import g8.acadtrack.dominiocompartilhado.risco.NivelRiscoAcademico;
+import g8.acadtrack.dominioacademico.aluno.evento.RiscoAcademicoEvent;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class Aluno {
 
@@ -19,6 +25,7 @@ public class Aluno {
     private boolean ativo;
     private double mediaAritmetica;
     private SituacaoAcademica situacaoAcademica;
+    private final List<DomainEvent> eventosDominio = new ArrayList<>();
 
     public Aluno(Long id, String nome, String email, Long turmaId, Long responsavelId) {
         this(
@@ -195,6 +202,29 @@ public class Aluno {
     public void atualizarDesempenhoAcademico(double mediaAritmetica, SituacaoAcademica situacaoAcademica) {
         this.mediaAritmetica = mediaAritmetica;
         this.situacaoAcademica = situacaoAcademica == null ? SituacaoAcademica.APROVADO : situacaoAcademica;
+    }
+
+    public void registrarRiscoAcademicoIdentificado(NivelRiscoAcademico nivelRisco) {
+        if (nivelRisco == null || nivelRisco == NivelRiscoAcademico.BAIXO) {
+            return;
+        }
+
+        registrarEvento(RiscoAcademicoEvent.criar(
+                id,
+                mediaAritmetica,
+                nivelRisco,
+                situacaoAcademica
+        ));
+    }
+
+    public List<DomainEvent> liberarEventosDominio() {
+        List<DomainEvent> eventos = List.copyOf(eventosDominio);
+        eventosDominio.clear();
+        return eventos;
+    }
+
+    private void registrarEvento(DomainEvent evento) {
+        eventosDominio.add(evento);
     }
 
     public void atualizar(String nome, String email) {

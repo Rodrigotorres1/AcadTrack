@@ -4,7 +4,6 @@ import g8.acadtrack.dominioacademico.aluno.Aluno;
 import g8.acadtrack.dominioacademico.aluno.AlunoRepository;
 import g8.acadtrack.infraestrutura.persistencia.entidade.AlunoJpaEntity;
 import g8.acadtrack.infraestrutura.persistencia.springdata.AlunoSpringDataRepository;
-import g8.acadtrack.infraestrutura.persistencia.springdata.NotaSpringDataRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -15,14 +14,9 @@ import java.util.Optional;
 public class AlunoRepositoryJpa implements AlunoRepository {
 
     private final AlunoSpringDataRepository repository;
-    private final NotaSpringDataRepository notaRepository;
 
-    public AlunoRepositoryJpa(
-            AlunoSpringDataRepository repository,
-            NotaSpringDataRepository notaRepository
-    ) {
+    public AlunoRepositoryJpa(AlunoSpringDataRepository repository) {
         this.repository = repository;
-        this.notaRepository = notaRepository;
     }
 
     @Override
@@ -157,34 +151,4 @@ public class AlunoRepositoryJpa implements AlunoRepository {
                 .toList();
     }
 
-    @Override
-    public List<Aluno> buscarAlunosComNotas() {
-        return notaRepository.findAlunosComNotas()
-                .stream()
-                .map(entity -> new Aluno(
-                        entity.getId(),
-                        entity.getNome(),
-                        entity.getEmail(),
-                        entity.getTurmaId(),
-                        entity.getResponsavelId(),
-                        entity.isVinculoResponsavelAtivo(),
-                        entity.isPermissaoVisualizarNotas(),
-                        entity.isPermissaoVisualizarSimulados(),
-                        entity.isPermissaoVisualizarDesempenho(),
-                        entity.isAtivo(),
-                        entity.getMediaAritmetica(),
-                        entity.getSituacaoAcademica()
-                ))
-                .toList();
-    }
-
-    @Override
-    public long contarAlunosComNotas() {
-        return notaRepository.countAlunosComNotas();
-    }
-
-    @Override
-    public long contarAlunosComNotasComMediaMaiorQue(double mediaAritmetica) {
-        return notaRepository.countAlunosComNotasComMediaMaiorQue(mediaAritmetica);
-    }
 }

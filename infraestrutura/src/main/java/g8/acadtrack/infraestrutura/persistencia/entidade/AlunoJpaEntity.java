@@ -5,12 +5,9 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
@@ -32,23 +29,14 @@ public class AlunoJpaEntity {
     @Column(name = "responsavel_id")
     private Long responsavelId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "turma_id", insertable = false, updatable = false)
-    private TurmaJpaEntity turma;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "responsavel_id", insertable = false, updatable = false)
-    private ResponsavelJpaEntity responsavel;
-
     private boolean vinculoResponsavelAtivo;
     private boolean permissaoVisualizarNotas;
     private boolean permissaoVisualizarSimulados;
     private boolean permissaoVisualizarDesempenho;
-    private Boolean ativo = true;
+    private boolean ativo = true;
 
-    // Coluna legada do schema H2; no domínio, este valor é a média aritmética atual.
     @Column(name = "media_atual")
-    private double mediaAritmetica;
+    private double mediaAtual;
 
     @Enumerated(EnumType.STRING)
     private SituacaoAcademica situacaoAcademica;
@@ -80,7 +68,7 @@ public class AlunoJpaEntity {
         this.permissaoVisualizarSimulados = permissaoVisualizarSimulados;
         this.permissaoVisualizarDesempenho = permissaoVisualizarDesempenho;
         this.ativo = ativo;
-        this.mediaAritmetica = mediaAritmetica;
+        this.mediaAtual = mediaAritmetica;
         this.situacaoAcademica = situacaoAcademica;
     }
 
@@ -121,62 +109,15 @@ public class AlunoJpaEntity {
     }
 
     public boolean isAtivo() {
-        return ativo == null || ativo;
+        return ativo;
     }
 
     public double getMediaAritmetica() {
-        return mediaAritmetica;
+        return mediaAtual;
     }
 
     public SituacaoAcademica getSituacaoAcademica() {
         return situacaoAcademica == null ? SituacaoAcademica.APROVADO : situacaoAcademica;
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public void setNome(String nome) {
-        this.nome = nome;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public void setTurmaId(Long turmaId) {
-        this.turmaId = turmaId;
-    }
-
-    public void setResponsavelId(Long responsavelId) {
-        this.responsavelId = responsavelId;
-    }
-
-    public void setVinculoResponsavelAtivo(boolean vinculoResponsavelAtivo) {
-        this.vinculoResponsavelAtivo = vinculoResponsavelAtivo;
-    }
-
-    public void setPermissaoVisualizarNotas(boolean permissaoVisualizarNotas) {
-        this.permissaoVisualizarNotas = permissaoVisualizarNotas;
-    }
-
-    public void setPermissaoVisualizarSimulados(boolean permissaoVisualizarSimulados) {
-        this.permissaoVisualizarSimulados = permissaoVisualizarSimulados;
-    }
-
-    public void setPermissaoVisualizarDesempenho(boolean permissaoVisualizarDesempenho) {
-        this.permissaoVisualizarDesempenho = permissaoVisualizarDesempenho;
-    }
-
-    public void setAtivo(boolean ativo) {
-        this.ativo = ativo;
-    }
-
-    public void setMediaAritmetica(double mediaAritmetica) {
-        this.mediaAritmetica = mediaAritmetica;
-    }
-
-    public void setSituacaoAcademica(SituacaoAcademica situacaoAcademica) {
-        this.situacaoAcademica = situacaoAcademica;
-    }
 }

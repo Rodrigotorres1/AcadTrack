@@ -4,7 +4,7 @@ O uso dos padroes abaixo foi mantido ligado aos fluxos existentes do AcadTrack. 
 
 | Padrao | Onde aparece no codigo | Funcionalidade | Problema resolvido | Uso natural |
 |---|---|---|---|---|
-| Observer | `ObservadorRiscoAcademico`, `PublicadorRiscoAcademico`, `NotificarResponsavelRiscoAcademicoObserver` | Lancamento de notas, analise de desempenho e notificacoes | Quando a nota/desempenho muda, notificar responsaveis sem acoplar o caso de uso de nota ao repositorio de notificacoes | Sim: notificacao e consequencia do evento academico |
+| Domain Events | `DomainEvent`, `RiscoAcademicoEvent`, `DomainEventPublisher`, `NotificarResponsavelRiscoAcademicoHandler` | Lancamento de notas, analise de desempenho e notificacoes | Quando a nota/desempenho muda, publicar evento de dominio sem acoplar agregados e casos de uso ao repositorio de notificacoes | Sim: notificacao e consequencia do evento academico |
 | Iterator | `RankingAcademicoIterator`, `ListaRankingAcademicoIterator`, `GerarRankingAcademicoUseCase` | Ranking academico de apoio a analise | Percorrer lista ordenada de alunos sem expor a estrutura interna da colecao | Sim: ranking precisa ser percorrido em ordem |
 | Template Method | `FluxoAnaliseAcademicaTemplate` e `AnalisarDesempenhoAcademicoUseCase` | Analise consolidada de desempenho | Padronizar o fluxo: buscar notas, validar, calcular media, definir situacao e montar resultado | Sim: toda analise segue os mesmos passos |
 | Decorator | `ValidadorLancamentoNotaDecorator` e decoradores de valor, entidades, disciplina ativa e duplicidade | Lancamento de notas | Adicionar validacoes extras sem concentrar tudo no caso de uso principal | Sim: cada regra complementa a validacao anterior |
@@ -13,10 +13,10 @@ O uso dos padroes abaixo foi mantido ligado aos fluxos existentes do AcadTrack. 
 
 ## Relacao com as funcionalidades existentes
 
-- **Lancamento de notas:** usa Decorator para validar, atualiza media/situacao e publica evento para Observer.
+- **Lancamento de notas:** usa Decorator para validar, atualiza media/situacao e publica Domain Event.
 - **Analise de desempenho:** usa Template Method no fluxo padrao, Strategy para nivel de risco e Iterator para ranking/posicao.
 - **Responsaveis e portal:** usa Proxy para proteger consultas de notas, simulados e desempenho.
-- **Notificacoes:** usa Observer como incremento dos fluxos de notas/desempenho, nao como funcionalidade independente.
+- **Notificacoes:** usa handler de Domain Event como incremento dos fluxos de notas/desempenho, nao como funcionalidade independente.
 - **Ranking:** permanece apoio da analise academica, nao substitui o relatorio removido.
 
 ## Pontos de cuidado
