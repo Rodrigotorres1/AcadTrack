@@ -3,7 +3,9 @@ package g8.acadtrack.bdd.steps;
 import g8.acadtrack.aplicacao.aluno.CriarAlunoUseCase;
 import g8.acadtrack.aplicacao.responsavel.CriarResponsavelUseCase;
 import g8.acadtrack.bdd.support.TestContext;
+import g8.acadtrack.dominiocompartilhado.excecao.ConflitoDeEstadoException;
 import g8.acadtrack.dominiocompartilhado.excecao.RegraDeNegocioException;
+import io.cucumber.java.pt.Dado;
 import io.cucumber.java.pt.Entao;
 import io.cucumber.java.pt.Quando;
 
@@ -28,6 +30,11 @@ public class CadastroEmailSteps {
         this.context = context;
         this.criarAlunoUseCase = criarAlunoUseCase;
         this.criarResponsavelUseCase = criarResponsavelUseCase;
+    }
+
+    @Dado("que já existe aluno com e-mail {string}")
+    public void queJaExisteAlunoComEmail(String email) {
+        criarAlunoUseCase.executar("Aluno Email Existente", email);
     }
 
     @Quando("o coordenador tenta cadastrar aluno sem e-mail")
@@ -64,6 +71,14 @@ public class CadastroEmailSteps {
         assertNotNull(excecao);
         assertInstanceOf(RegraDeNegocioException.class, excecao);
         assertEquals("Email inválido", context.getMensagem());
+    }
+
+    @Entao("o sistema informa que o e-mail do aluno já está cadastrado")
+    public void oSistemaInformaQueOEmailDoAlunoJaEstaCadastrado() {
+        assertFalse(context.isOperacaoExecutada());
+        assertNotNull(excecao);
+        assertInstanceOf(ConflitoDeEstadoException.class, excecao);
+        assertEquals("Já existe aluno cadastrado com este e-mail", context.getMensagem());
     }
 
     private void tentarCadastrar(Runnable acao) {

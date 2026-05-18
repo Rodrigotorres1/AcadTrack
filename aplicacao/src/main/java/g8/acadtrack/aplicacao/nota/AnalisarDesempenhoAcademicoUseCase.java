@@ -11,7 +11,6 @@ import g8.acadtrack.dominioavaliacao.nota.Nota;
 import g8.acadtrack.dominioavaliacao.nota.NotaRepository;
 import g8.acadtrack.dominioavaliacao.simulado.Simulado;
 import g8.acadtrack.dominioavaliacao.simulado.SimuladoDisciplina;
-import g8.acadtrack.dominioavaliacao.simulado.SimuladoDisciplinaRepository;
 import g8.acadtrack.dominioavaliacao.simulado.SimuladoRepository;
 import g8.acadtrack.dominiocompartilhado.excecao.EntidadeNaoEncontradaException;
 import g8.acadtrack.dominiocompartilhado.risco.NivelRiscoAcademico;
@@ -24,13 +23,10 @@ import java.util.stream.Collectors;
 @Service
 public class AnalisarDesempenhoAcademicoUseCase extends FluxoAnaliseAcademicaTemplate {
 
-    private static final double LIMIAR_BAIXO_DESEMPENHO_SIMULADO = 5.0;
-
     private final NotaRepository notaRepository;
     private final AlunoRepository alunoRepository;
     private final AvaliacaoAcademicaService avaliacaoAcademicaService;
     private final SimuladoRepository simuladoRepository;
-    private final SimuladoDisciplinaRepository simuladoDisciplinaRepository;
     private final DisciplinaRepository disciplinaRepository;
     private final ContadorParticipantesRankingPort contadorParticipantesRankingPort;
     private final ClassificadorRiscoAcademicoService classificadorRiscoAcademicoService;
@@ -40,7 +36,6 @@ public class AnalisarDesempenhoAcademicoUseCase extends FluxoAnaliseAcademicaTem
             AlunoRepository alunoRepository,
             AvaliacaoAcademicaService avaliacaoAcademicaService,
             SimuladoRepository simuladoRepository,
-            SimuladoDisciplinaRepository simuladoDisciplinaRepository,
             DisciplinaRepository disciplinaRepository,
             ContadorParticipantesRankingPort contadorParticipantesRankingPort,
             ClassificadorRiscoAcademicoService classificadorRiscoAcademicoService
@@ -49,7 +44,6 @@ public class AnalisarDesempenhoAcademicoUseCase extends FluxoAnaliseAcademicaTem
         this.alunoRepository = alunoRepository;
         this.avaliacaoAcademicaService = avaliacaoAcademicaService;
         this.simuladoRepository = simuladoRepository;
-        this.simuladoDisciplinaRepository = simuladoDisciplinaRepository;
         this.disciplinaRepository = disciplinaRepository;
         this.contadorParticipantesRankingPort = contadorParticipantesRankingPort;
         this.classificadorRiscoAcademicoService = classificadorRiscoAcademicoService;
@@ -155,7 +149,7 @@ public class AnalisarDesempenhoAcademicoUseCase extends FluxoAnaliseAcademicaTem
             Map<SimuladoDisciplinaKey, Double> pesosPorSimuladoEDisciplina
     ) {
         double mediaPonderada = avaliacaoAcademicaService.calcularMediaPonderada(notas, pesosPorSimuladoEDisciplina);
-        boolean baixoDesempenho = mediaPonderada < LIMIAR_BAIXO_DESEMPENHO_SIMULADO;
+        boolean baixoDesempenho = avaliacaoAcademicaService.isBaixoDesempenhoSimulado(mediaPonderada);
 
         return new AnaliseDesempenhoAcademicoResultado.MediaSimulado(
                 simuladoId,
@@ -230,7 +224,7 @@ public class AnalisarDesempenhoAcademicoUseCase extends FluxoAnaliseAcademicaTem
     }
 
     private Map<SimuladoDisciplinaKey, Double> carregarPesosPorSimuladoEDisciplina(List<Long> simuladoIds) {
-        return simuladoDisciplinaRepository.buscarPorSimuladoIds(simuladoIds)
+        return simuladoRepository.buscarPesosDisciplinasPorSimuladoIds(simuladoIds)
                 .stream()
                 .collect(Collectors.groupingBy(
                         simuladoDisciplina -> new SimuladoDisciplinaKey(

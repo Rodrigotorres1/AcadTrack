@@ -646,6 +646,46 @@
     </section>
 
     <section id="retificacoes" class="content-section">
+        <div id="correctionStudentRequestView" hidden>
+            <div class="section-header">
+                <div>
+                    <h2>Solicitar Retificação de Nota</h2>
+                    <p>Escolha a nota e informe a justificativa da solicitação</p>
+                </div>
+            </div>
+
+            <article class="card correction-form-card">
+                <form id="studentCorrectionForm" class="student-form" novalidate>
+                    <div class="form-field">
+                        <label for="studentCorrectionEnrollment">Matrícula</label>
+                        <input id="studentCorrectionEnrollment" name="alunoId" type="number" min="1" placeholder="Ex.: 1" required>
+                    </div>
+
+                    <div class="form-actions">
+                        <button id="loadStudentCorrectionNotesButton" class="primary-button" type="button">Carregar notas</button>
+                    </div>
+
+                    <div class="form-field">
+                        <label for="studentCorrectionNoteSelect">Nota</label>
+                        <select id="studentCorrectionNoteSelect" name="notaId" required disabled>
+                            <option value="">Informe a matrícula para carregar as notas</option>
+                        </select>
+                    </div>
+
+                    <div class="form-field">
+                        <label for="studentCorrectionJustification">Justificativa</label>
+                        <textarea id="studentCorrectionJustification" name="justificativa" placeholder="Explique por que a nota precisa ser revisada" required></textarea>
+                    </div>
+
+                    <div id="studentCorrectionFeedback" class="note-feedback"></div>
+
+                    <div class="form-actions">
+                        <button class="primary-button" type="submit">Solicitar Retificação</button>
+                    </div>
+                </form>
+            </article>
+        </div>
+
         <div id="correctionsListView">
             <div class="section-header">
                 <div>

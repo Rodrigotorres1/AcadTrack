@@ -122,8 +122,6 @@ AcadTrack/
 │       │       └── ValidacaoLancamentoNotaService  Monta a cadeia e dispara a validação
 │       ├── notificacao/             ListarNotificacoesResponsavel, MarcarNotificacaoLida (2)
 │       ├── ranking/
-│       │   ├── RankingAcademicoIterator            (interface — PADRÃO: Iterator)
-│       │   ├── ListaRankingAcademicoIterator       percorre lista ordenada sem expor internos
 │       │   ├── GerarRankingAcademicoUseCase        ranking geral com critério configurável
 │       │   ├── GerarRankingUseCase                 ranking de alunos por simulado
 │       │   ├── CriterioRankingAcademico            enum (MEDIA_DESC)
@@ -594,14 +592,13 @@ Turmas → Disciplinas → Alunos → Responsáveis
 
 ## Padrões de projeto
 
-Seis padrões foram implementados como parte da Entrega 2, cada um mapeado a uma necessidade real do domínio:
+Cinco padrões foram implementados como parte da Entrega 2, cada um mapeado a uma necessidade real do domínio:
 
 | Padrão | Onde está no código | Por que foi usado |
 |---|---|---|
 | **Template Method** | `FluxoAnaliseAcademicaTemplate` (`aplicacao/nota/`) | Define as 4 etapas fixas da análise acadêmica (coleta → consolidação → classificação → notificação); subclasses especializadas podem customizar etapas sem quebrar a sequência |
 | **Decorator** | `ValidadorLancamentoNotaDecorator` + 5 decoradores concretos (`aplicacao/nota/validacao/`) | Encadeia validações de nota em ordem sem acoplar `LancarNotaUseCase` a cada regra individual; adicionar uma nova validação não exige alterar o use case |
 | **Domain Events** | `DomainEvent`, `RiscoAcademicoEvent`, `DomainEventPublisher`, `SpringDomainEventPublisher`, `NotificarResponsavelRiscoAcademicoHandler` | Desacopla o domínio e os casos de uso da geração de notificações; novos publicadores assíncronos podem ser adicionados sem alterar os agregados |
-| **Iterator** | `RankingAcademicoIterator`, `ListaRankingAcademicoIterator` (`aplicacao/ranking/`) | Percorre a coleção ordenada de alunos no ranking sem expor a estrutura interna da lista |
 | **Proxy** | `AcessoResponsavelAlunoProxy` (`aplicacao/responsavel/`) | Intercepta qualquer consulta de responsável a dados de aluno e verifica vínculo ativo + permissão antes de delegar; centraliza o controle de acesso num único ponto |
 | **Strategy** | `EstrategiaClassificacaoRiscoAcademico` + `RiscoAltoStrategy`, `RiscoBaixoStrategy`, `RiscoModeradoStrategy` (`aplicacao/nota/risco/`) | Permite trocar o critério de classificação de risco (ex.: por frequência, por média combinada) sem alterar o fluxo de análise |
 
@@ -743,5 +740,5 @@ Links externos:
 | Nome | E-mail | Funcionalidades / Padrões |
 |---|---|---|
 | **Erick Belo** | eab2@cesar.school | F3 (Lançamento de notas), F6 (Retificação); Decorator, Observer |
-| **João Marcelo Montenegro** | jmtpm@cesar.school | F1 (Disciplinas), F2 (Responsáveis); Iterator, Proxy |
+| **João Marcelo Montenegro** | jmtpm@cesar.school | F1 (Disciplinas), F2 (Responsáveis); Proxy |
 | **Rodrigo Torres** | rtgf@cesar.school | F4 (Análise de desempenho), F5 (Simulados); Template Method, Strategy |

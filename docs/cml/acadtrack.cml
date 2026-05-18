@@ -3,6 +3,24 @@ Domain AcadTrack {
   Subdomain GestaoAcademica
   Subdomain AvaliacaoDesempenho
   Subdomain Usuarios
+  Subdomain Compartilhado
+}
+
+
+BoundedContext CompartilhadoContext implements Compartilhado {
+
+  ValueObject Email {
+    String endereco
+  }
+
+  ValueObject NivelRiscoAcademico {
+    String valor
+  }
+
+  DomainEvent DomainEvent {
+    UUID eventId
+    Instant occurredAt
+  }
 }
 
 
@@ -34,6 +52,15 @@ BoundedContext GestaoAcademicaContext implements GestaoAcademica {
     SituacaoAcademica situacaoAcademica
   }
 
+  DomainEvent RiscoAcademicoEvent {
+    UUID eventId
+    Instant occurredAt
+    Long alunoId
+    double mediaGeral
+    NivelRiscoAcademico nivelRisco
+    SituacaoAcademica situacaoAcademica
+  }
+
   Aggregate Disciplina {
     Entity Disciplina
     aggregateRoot
@@ -44,25 +71,45 @@ BoundedContext GestaoAcademicaContext implements GestaoAcademica {
   }
 
   Service GestaoAcademicaService {
+    void criarAluno(Aluno aluno)
+    void atualizarAluno(Aluno aluno)
+    void ativarAluno(Long alunoId)
+    void inativarAluno(Long alunoId)
+    void criarTurma(Turma turma)
+    void vincularAlunoATurma(Long alunoId, Long turmaId)
+    void limparTurmasDuplicadas()
     void criarDisciplina(Disciplina disciplina)
-    void inativarDisciplina(Long disciplinaId)
+    void atualizarDisciplina(Disciplina disciplina)
     void ativarDisciplina(Long disciplinaId)
-    void vincularAlunoATurma(Aluno aluno, Turma turma)
+    void inativarDisciplina(Long disciplinaId)
+    void excluirDisciplina(Long disciplinaId)
   }
 
   Repository AlunoRepository {
-    Aluno findById(Long id)
-    List<Aluno> findAll()
+    Aluno salvar(Aluno aluno)
+    Optional<Aluno> buscarPorId(Long id)
+    List<Aluno> buscarPorIds(List<Long> ids)
+    List<Aluno> buscarTodos()
+    List<Aluno> buscarPorResponsavelId(Long responsavelId)
+    boolean existeAlunoComEmailIgnorandoMaiusculas(String email)
   }
 
   Repository TurmaRepository {
-    Turma findById(Long id)
-    List<Turma> findAll()
+    Turma salvar(Turma turma)
+    Optional<Turma> buscarPorId(Long id)
+    List<Turma> buscarTodos()
+    boolean existeComNomeNormalizado(String nomeNormalizado)
+    void excluirPorId(Long id)
   }
 
   Repository DisciplinaRepository {
-    Disciplina findById(Long id)
-    List<Disciplina> findAll()
+    Disciplina salvar(Disciplina disciplina)
+    Optional<Disciplina> buscarPorId(Long id)
+    Optional<Disciplina> buscarPorNomeNormalizado(String nomeNormalizado)
+    List<Disciplina> buscarPorIds(List<Long> ids)
+    List<Disciplina> buscarTodos()
+    boolean possuiVinculoAcademico(Long disciplinaId)
+    void excluirPorId(Long id)
   }
 }
 
@@ -76,9 +123,9 @@ BoundedContext AvaliacaoDesempenhoContext implements AvaliacaoDesempenho {
     Long id
     String descricao
     List<SimuladoDisciplina> disciplinas
-  }
 
-  Entity SimuladoDisciplina {
+    Entity SimuladoDisciplina
+
     Long id
     Long simuladoId
     Long disciplinaId
@@ -101,9 +148,10 @@ BoundedContext AvaliacaoDesempenhoContext implements AvaliacaoDesempenho {
     aggregateRoot
 
     Long id
-    String justificativa
-    String statusRetificacao
     Long notaId
+    String justificativa
+    String justificativaDecisao
+    StatusSolicitacaoRetificacao status
   }
 
   ValueObject MediaPonderada {
@@ -113,24 +161,43 @@ BoundedContext AvaliacaoDesempenhoContext implements AvaliacaoDesempenho {
   Service AvaliacaoService {
     void lancarNotaIndividual(Nota nota)
     double calcularMediaPonderada(Long alunoId, Long simuladoId)
-    void gerarRanking(Long simuladoId)
+    void analisarDesempenhoAcademico(Long alunoId)
+    void gerarRanking(int limite)
     void criarSimuladoComDisciplinas(Simulado simulado)
+    void atualizarSimulado(Simulado simulado)
     void solicitarRetificacaoDeNota(SolicitacaoRetificacao solicitacao)
+    void iniciarAnaliseRetificacao(Long solicitacaoId)
+    void aprovarRetificacao(Long solicitacaoId)
+    void reprovarRetificacao(Long solicitacaoId)
   }
 
   Repository SimuladoRepository {
-    Simulado findById(Long id)
-    List<Simulado> findAll()
+    Simulado salvar(Simulado simulado)
+    Optional<Simulado> buscarPorId(Long id)
+    Optional<Simulado> buscarPorDescricaoNormalizada(String descricao)
+    List<Simulado> buscarPorIds(List<Long> ids)
+    List<Simulado> buscarTodos()
+    List<SimuladoDisciplina> buscarPesosDisciplinasPorSimuladoIds(List<Long> simuladoIds)
   }
 
   Repository NotaRepository {
-    Nota findById(Long id)
-    List<Nota> findAll()
+    Nota salvar(Nota nota)
+    Optional<Nota> buscarPorId(Long id)
+    List<Nota> buscarPorIds(List<Long> ids)
+    List<Nota> buscarPorAlunoId(Long alunoId)
+    List<Nota> buscarPorAlunoIds(List<Long> alunoIds)
+    List<Nota> buscarPorSimuladoId(Long simuladoId)
+    List<Nota> buscarTodas()
+    List<Nota> buscarPorAlunoESimulado(Long alunoId, Long simuladoId)
+    boolean existePorAlunoSimuladoDisciplina(Long alunoId, Long simuladoId, Long disciplinaId)
   }
 
   Repository SolicitacaoRetificacaoRepository {
-    SolicitacaoRetificacao findById(Long id)
-    List<SolicitacaoRetificacao> findAll()
+    SolicitacaoRetificacao salvar(SolicitacaoRetificacao solicitacao)
+    Optional<SolicitacaoRetificacao> buscarPorId(Long id)
+    List<SolicitacaoRetificacao> buscarTodas()
+    List<SolicitacaoRetificacao> buscarPorNotaId(Long notaId)
+    boolean existeEmAbertoPorNotaId(Long notaId)
   }
 }
 
@@ -146,27 +213,61 @@ BoundedContext UsuariosContext implements Usuarios {
     String email
   }
 
-  ValueObject Email {
-    String endereco
+  Aggregate NotificacaoResponsavel {
+    Entity NotificacaoResponsavel
+    aggregateRoot
+
+    Long id
+    Long alunoId
+    Long responsavelId
+    NivelRiscoAcademico nivelRisco
+    PrioridadeNotificacao prioridade
+    String mensagem
+    LocalDateTime dataCriacao
+    StatusNotificacao status
   }
 
   Service UsuariosService {
-    void vincularResponsavel(Long alunoId, Responsavel responsavel)
-    void desvincularResponsavel(Long alunoId, Responsavel responsavel)
+    void criarResponsavel(Responsavel responsavel)
+    void vincularResponsavel(Long alunoId, Long responsavelId)
+    void desvincularResponsavel(Long alunoId, Long responsavelId)
+    void excluirResponsavel(Long responsavelId)
+    void listarNotificacoes(Long responsavelId)
+    void marcarNotificacaoLida(Long responsavelId, Long notificacaoId)
   }
 
   Repository ResponsavelRepository {
-    Responsavel findById(Long id)
-    List<Responsavel> findAll()
+    Responsavel salvar(Responsavel responsavel)
+    Optional<Responsavel> buscarPorId(Long id)
+    List<Responsavel> buscarTodos()
+    boolean existeResponsavelComEmailIgnorandoMaiusculas(String email)
+    void excluirPorId(Long id)
+  }
+
+  Repository NotificacaoResponsavelRepository {
+    NotificacaoResponsavel salvar(NotificacaoResponsavel notificacao)
+    Optional<NotificacaoResponsavel> buscarPorId(Long id)
+    List<NotificacaoResponsavel> buscarPorResponsavelId(Long responsavelId)
+    boolean existeNotificacaoNaoLidaPara(Long alunoId, Long responsavelId, NivelRiscoAcademico nivelRisco)
   }
 }
 
 
 ContextMap AcadTrackContextMap {
 
+  contains CompartilhadoContext
   contains GestaoAcademicaContext
   contains AvaliacaoDesempenhoContext
   contains UsuariosContext
+
+  GestaoAcademicaContext -> CompartilhadoContext
+  [CONFORMIST]
+
+  AvaliacaoDesempenhoContext -> CompartilhadoContext
+  [CONFORMIST]
+
+  UsuariosContext -> CompartilhadoContext
+  [CONFORMIST]
 
   GestaoAcademicaContext -> AvaliacaoDesempenhoContext
   [CUSTOMER_SUPPLIER]

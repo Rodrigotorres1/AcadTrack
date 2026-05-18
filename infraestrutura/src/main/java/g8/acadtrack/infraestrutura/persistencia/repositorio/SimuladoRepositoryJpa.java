@@ -91,6 +91,18 @@ public class SimuladoRepositoryJpa implements SimuladoRepository {
     }
 
     @Override
+    public List<SimuladoDisciplina> buscarPesosDisciplinasPorSimuladoIds(List<Long> simuladoIds) {
+        if (simuladoIds == null || simuladoIds.isEmpty()) {
+            return List.of();
+        }
+
+        return simuladoDisciplinaRepository.findBySimuladoIdIn(simuladoIds)
+                .stream()
+                .map(this::toDisciplinaDomain)
+                .toList();
+    }
+
+    @Override
     public Optional<Simulado> buscarPorId(Long id) {
         Long idObrigatorio = Objects.requireNonNull(id, "id é obrigatório");
         return repository.findById(idObrigatorio)

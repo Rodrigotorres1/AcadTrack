@@ -15,6 +15,7 @@ function createInitialState() {
         simulados: [],
         simuladoDisciplinas: [],
         retificacoes: [],
+        retificacaoNotas: [],
         selectedRetificacao: null,
         notificationsResponsavelId: null,
         responsaveis: [],

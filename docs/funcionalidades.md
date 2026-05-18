@@ -38,12 +38,12 @@ Essa funcionalidade exige processamento de dados, combinacao entre notas e compo
 Os alunos sao ordenados para apoiar a analise academica. O ranking por simulado usa media por simulado; o ranking academico geral usa a media global persistida no aluno.
 
 **Por que nao e CRUD:**
-Essa funcionalidade exige calculo, comparacao e ordenacao dos alunos. Na Entrega 2 ela nao e tratada como funcionalidade principal separada, mas como apoio da analise de desempenho e como aplicacao do padrao Iterator.
+Essa funcionalidade exige calculo, comparacao e ordenacao dos alunos. Na Entrega 2 ela nao e tratada como funcionalidade principal separada, mas como apoio da analise de desempenho.
 
 **Validacoes:**
 - Apenas alunos com notas validas participam do ranking
 - A ordenacao pode considerar media, desempenho ou risco academico
-- A colecao ordenada e percorrida por Iterator na camada de aplicacao
+- A colecao ordenada e limitada com APIs nativas do Java na camada de aplicacao
 
 ---
 

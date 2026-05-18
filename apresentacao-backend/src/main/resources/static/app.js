@@ -104,7 +104,11 @@ function showSection(sectionId) {
     }
 
     if (sectionId === "retificacoes") {
-        showCorrectionsList();
+        if (state.perfil === "aluno") {
+            showStudentCorrectionRequestView();
+        } else {
+            showCorrectionsList();
+        }
         loadCorrectionsView();
     }
 
@@ -1719,6 +1723,119 @@ function handleSimulationTableClick(event) {
     }
 }
 
+function showStudentCorrectionRequestView(feedback = "") {
+    const form = document.getElementById("studentCorrectionForm");
+    const enrollment = document.getElementById("studentCorrectionEnrollment");
+
+    document.getElementById("correctionStudentRequestView").hidden = false;
+    document.getElementById("correctionsListView").hidden = true;
+    document.getElementById("correctionReviewView").hidden = true;
+    document.getElementById("studentCorrectionFeedback").innerHTML = feedback;
+    form.reset();
+    enrollment.value = state.alunoMatricula || "";
+    setState("retificacaoNotas", []);
+    renderStudentCorrectionNoteOptions();
+}
+
+function renderStudentCorrectionNoteOptions() {
+    const select = document.getElementById("studentCorrectionNoteSelect");
+
+    if (state.retificacaoNotas.length === 0) {
+        select.disabled = true;
+        select.innerHTML = `<option value="">Informe a matrícula para carregar as notas</option>`;
+        return;
+    }
+
+    select.disabled = false;
+    select.innerHTML = `<option value="">Selecione a nota</option>${state.retificacaoNotas.map((nota) => {
+        const disciplina = nota.nomeDisciplina || `Disciplina ${nota.disciplinaId}`;
+        const simulado = nota.descricaoSimulado || `Simulado ${nota.simuladoId}`;
+        return `
+            <option value="${escapeHtml(nota.id)}">
+                Nota ID ${escapeHtml(nota.id)} - ${formatNumber(nota.valor)} | ${escapeHtml(disciplina)} | ${escapeHtml(simulado)}
+            </option>
+        `;
+    }).join("")}`;
+}
+
+async function loadStudentCorrectionNotes() {
+    const alunoId = String(document.getElementById("studentCorrectionEnrollment").value || "").trim();
+    const feedback = document.getElementById("studentCorrectionFeedback");
+
+    if (!alunoId) {
+        feedback.innerHTML = message("Informe a matrícula do aluno.", "error");
+        return;
+    }
+    if (!isPositiveEnrollment(alunoId)) {
+        feedback.innerHTML = message("A matrícula deve ser um número inteiro positivo.", "error");
+        return;
+    }
+
+    rememberStudentEnrollment(alunoId);
+    feedback.innerHTML = message("Carregando notas...");
+
+    try {
+        const notas = await requestJson(`/notas/aluno/${encodeURIComponent(alunoId)}`);
+        setState("retificacaoNotas", Array.isArray(notas) ? notas : []);
+        renderStudentCorrectionNoteOptions();
+        feedback.innerHTML = state.retificacaoNotas.length > 0
+            ? message("Selecione a nota e informe a justificativa.")
+            : message("Nenhuma nota encontrada para esta matrícula.", "error");
+    } catch (error) {
+        setState("retificacaoNotas", []);
+        renderStudentCorrectionNoteOptions();
+        renderError(feedback, error, "Não foi possível carregar as notas do aluno.");
+    }
+}
+
+async function handleStudentCorrectionSubmit(event) {
+    event.preventDefault();
+
+    const formData = new FormData(event.currentTarget);
+    const alunoId = String(formData.get("alunoId") || "").trim();
+    const notaId = String(formData.get("notaId") || "").trim();
+    const justificativa = String(formData.get("justificativa") || "").trim();
+    const feedback = document.getElementById("studentCorrectionFeedback");
+
+    if (!alunoId) {
+        feedback.innerHTML = message("Informe a matrícula do aluno.", "error");
+        return;
+    }
+    if (!isPositiveEnrollment(alunoId)) {
+        feedback.innerHTML = message("A matrícula deve ser um número inteiro positivo.", "error");
+        return;
+    }
+    if (!notaId) {
+        feedback.innerHTML = message("Selecione a nota que deve ser retificada.", "error");
+        return;
+    }
+    if (!justificativa) {
+        feedback.innerHTML = message("Informe a justificativa da solicitação.", "error");
+        return;
+    }
+
+    rememberStudentEnrollment(alunoId);
+    feedback.innerHTML = message("Enviando solicitação de retificação...");
+
+    try {
+        await requestJson("/retificacoes", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                notaId: Number(notaId),
+                justificativa
+            })
+        });
+
+        event.currentTarget.reset();
+        document.getElementById("studentCorrectionEnrollment").value = alunoId;
+        renderStudentCorrectionNoteOptions();
+        feedback.innerHTML = message("Solicitação de retificação enviada com sucesso.", "ok");
+    } catch (error) {
+        renderError(feedback, error, "Não foi possível solicitar a retificação.");
+    }
+}
+
 function correctionStatusInfo(status) {
     const normalized = String(status || "").toUpperCase();
     if (normalized === "EM_ANALISE") {
@@ -1739,6 +1856,7 @@ function renderCorrectionStatusBadge(status) {
 }
 
 function showCorrectionsList(feedback = "") {
+    document.getElementById("correctionStudentRequestView").hidden = true;
     document.getElementById("correctionsListView").hidden = false;
     document.getElementById("correctionReviewView").hidden = true;
     document.getElementById("correctionsFeedback").innerHTML = feedback;
@@ -1773,6 +1891,11 @@ function renderCorrectionsTable() {
 }
 
 async function loadCorrectionsView() {
+    if (state.perfil === "aluno") {
+        showStudentCorrectionRequestView();
+        return;
+    }
+
     const feedback = document.getElementById("correctionsFeedback");
     feedback.innerHTML = message("Carregando retificações...");
 
@@ -1799,6 +1922,7 @@ function renderCorrectionReviewInfo(retificacao) {
 
 function renderCorrectionReview(retificacao, readOnly = false) {
     setState("selectedRetificacao", retificacao);
+    document.getElementById("correctionStudentRequestView").hidden = true;
     document.getElementById("correctionsListView").hidden = true;
     document.getElementById("correctionReviewView").hidden = false;
     document.getElementById("correctionReviewStatus").textContent = correctionStatusInfo(retificacao.status).label;
@@ -2225,6 +2349,8 @@ document.getElementById("cancelSimuladoEditButton").addEventListener("click", ()
 document.getElementById("simuladoEditForm").addEventListener("submit", handleSimuladoEditSubmit);
 document.getElementById("simuladoEditSubjectOptions").addEventListener("change", updateSimuladoEditCounter);
 document.getElementById("backToCorrectionsButton").addEventListener("click", returnToCorrectionsList);
+document.getElementById("loadStudentCorrectionNotesButton").addEventListener("click", loadStudentCorrectionNotes);
+document.getElementById("studentCorrectionForm").addEventListener("submit", handleStudentCorrectionSubmit);
 document.getElementById("approveCorrectionButton").addEventListener("click", () => submitCorrectionDecision(true));
 document.getElementById("rejectCorrectionButton").addEventListener("click", () => submitCorrectionDecision(false));
 document.getElementById("correctionsTableBody").addEventListener("click", handleCorrectionsTableClick);

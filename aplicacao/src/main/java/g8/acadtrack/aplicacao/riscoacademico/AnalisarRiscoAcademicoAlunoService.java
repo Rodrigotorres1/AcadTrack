@@ -6,7 +6,7 @@ import g8.acadtrack.aplicacao.nota.risco.ClassificadorRiscoAcademicoService;
 import g8.acadtrack.dominioacademico.aluno.SituacaoAcademica;
 import g8.acadtrack.dominioavaliacao.nota.Nota;
 import g8.acadtrack.dominioavaliacao.simulado.SimuladoDisciplina;
-import g8.acadtrack.dominioavaliacao.simulado.SimuladoDisciplinaRepository;
+import g8.acadtrack.dominioavaliacao.simulado.SimuladoRepository;
 import g8.acadtrack.dominiocompartilhado.risco.NivelRiscoAcademico;
 import org.springframework.stereotype.Service;
 
@@ -17,19 +17,17 @@ import java.util.stream.Collectors;
 @Service
 public class AnalisarRiscoAcademicoAlunoService {
 
-    private static final double LIMIAR_BAIXO_DESEMPENHO_SIMULADO = 5.0;
-
     private final AvaliacaoAcademicaService avaliacaoAcademicaService;
-    private final SimuladoDisciplinaRepository simuladoDisciplinaRepository;
+    private final SimuladoRepository simuladoRepository;
     private final ClassificadorRiscoAcademicoService classificadorRiscoAcademicoService;
 
     public AnalisarRiscoAcademicoAlunoService(
             AvaliacaoAcademicaService avaliacaoAcademicaService,
-            SimuladoDisciplinaRepository simuladoDisciplinaRepository,
+            SimuladoRepository simuladoRepository,
             ClassificadorRiscoAcademicoService classificadorRiscoAcademicoService
     ) {
         this.avaliacaoAcademicaService = avaliacaoAcademicaService;
-        this.simuladoDisciplinaRepository = simuladoDisciplinaRepository;
+        this.simuladoRepository = simuladoRepository;
         this.classificadorRiscoAcademicoService = classificadorRiscoAcademicoService;
     }
 
@@ -65,12 +63,12 @@ public class AnalisarRiscoAcademicoAlunoService {
                         notasDoSimulado,
                         pesosPorSimuladoEDisciplina
                 ))
-                .filter(mediaPonderada -> mediaPonderada < LIMIAR_BAIXO_DESEMPENHO_SIMULADO)
+                .filter(avaliacaoAcademicaService::isBaixoDesempenhoSimulado)
                 .count();
     }
 
     private Map<SimuladoDisciplinaKey, Double> carregarPesosPorSimuladoEDisciplina(List<Long> simuladoIds) {
-        return simuladoDisciplinaRepository.buscarPorSimuladoIds(simuladoIds)
+        return simuladoRepository.buscarPesosDisciplinasPorSimuladoIds(simuladoIds)
                 .stream()
                 .collect(Collectors.groupingBy(
                         simuladoDisciplina -> new SimuladoDisciplinaKey(

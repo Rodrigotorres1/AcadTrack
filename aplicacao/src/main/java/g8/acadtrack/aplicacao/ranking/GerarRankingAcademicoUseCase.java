@@ -7,11 +7,10 @@ import g8.acadtrack.dominioacademico.aluno.Aluno;
 import g8.acadtrack.dominioavaliacao.nota.Nota;
 import g8.acadtrack.dominioavaliacao.nota.NotaRepository;
 import g8.acadtrack.dominioavaliacao.simulado.SimuladoDisciplina;
-import g8.acadtrack.dominioavaliacao.simulado.SimuladoDisciplinaRepository;
+import g8.acadtrack.dominioavaliacao.simulado.SimuladoRepository;
 import g8.acadtrack.dominiocompartilhado.risco.NivelRiscoAcademico;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -19,12 +18,10 @@ import java.util.stream.Collectors;
 @Service
 public class GerarRankingAcademicoUseCase {
 
-    private static final double LIMIAR_BAIXO_DESEMPENHO_SIMULADO = 5.0;
-
     private final ContadorParticipantesRankingPort contadorParticipantesRankingPort;
     private final OrdenarRankingAcademicoService ordenarRankingAcademicoService;
     private final NotaRepository notaRepository;
-    private final SimuladoDisciplinaRepository simuladoDisciplinaRepository;
+    private final SimuladoRepository simuladoRepository;
     private final AvaliacaoAcademicaService avaliacaoAcademicaService;
     private final ClassificadorRiscoAcademicoService classificadorRiscoAcademicoService;
 
@@ -32,14 +29,14 @@ public class GerarRankingAcademicoUseCase {
             ContadorParticipantesRankingPort contadorParticipantesRankingPort,
             OrdenarRankingAcademicoService ordenarRankingAcademicoService,
             NotaRepository notaRepository,
-            SimuladoDisciplinaRepository simuladoDisciplinaRepository,
+            SimuladoRepository simuladoRepository,
             AvaliacaoAcademicaService avaliacaoAcademicaService,
             ClassificadorRiscoAcademicoService classificadorRiscoAcademicoService
     ) {
         this.contadorParticipantesRankingPort = contadorParticipantesRankingPort;
         this.ordenarRankingAcademicoService = ordenarRankingAcademicoService;
         this.notaRepository = notaRepository;
-        this.simuladoDisciplinaRepository = simuladoDisciplinaRepository;
+        this.simuladoRepository = simuladoRepository;
         this.avaliacaoAcademicaService = avaliacaoAcademicaService;
         this.classificadorRiscoAcademicoService = classificadorRiscoAcademicoService;
     }
@@ -50,15 +47,11 @@ public class GerarRankingAcademicoUseCase {
 
     public List<RankingAcademicoItem> executar(int limite, CriterioRankingAcademico criterio) {
         List<RankingAcademicoItem> ordenados = ordenarRankingAcademicoService.ordenar(montarItens(), criterio);
-        RankingAcademicoIterator iterator = new ListaRankingAcademicoIterator(ordenados);
-        List<RankingAcademicoItem> resultado = new ArrayList<>();
         int quantidadeMaxima = limite <= 0 ? ordenados.size() : Math.min(limite, ordenados.size());
 
-        while (iterator.hasNext() && resultado.size() < quantidadeMaxima) {
-            resultado.add(iterator.next());
-        }
-
-        return resultado;
+        return ordenados.stream()
+                .limit(quantidadeMaxima)
+                .toList();
     }
 
     private List<RankingAcademicoItem> montarItens() {
@@ -137,7 +130,7 @@ public class GerarRankingAcademicoUseCase {
                 .distinct()
                 .toList();
 
-        return simuladoDisciplinaRepository.buscarPorSimuladoIds(simuladoIds)
+        return simuladoRepository.buscarPesosDisciplinasPorSimuladoIds(simuladoIds)
                 .stream()
                 .collect(Collectors.groupingBy(
                         simuladoDisciplina -> new SimuladoDisciplinaKey(
@@ -150,7 +143,7 @@ public class GerarRankingAcademicoUseCase {
 
     private long contarSimuladosComBaixoDesempenho(List<Double> mediasPonderadasPorSimulado) {
         return mediasPonderadasPorSimulado.stream()
-                .filter(mediaPonderada -> mediaPonderada < LIMIAR_BAIXO_DESEMPENHO_SIMULADO)
+                .filter(avaliacaoAcademicaService::isBaixoDesempenhoSimulado)
                 .count();
     }
 

@@ -2,6 +2,7 @@ package g8.acadtrack.dominiocompartilhado.email;
 
 import g8.acadtrack.dominiocompartilhado.excecao.RegraDeNegocioException;
 
+import java.util.Locale;
 import java.util.regex.Pattern;
 
 public final class Email {
@@ -16,7 +17,7 @@ public final class Email {
             throw new RegraDeNegocioException("Email é obrigatório");
         }
 
-        String emailNormalizado = email.trim();
+        String emailNormalizado = email.trim().toLowerCase(Locale.ROOT);
         if (!FORMATO_EMAIL.matcher(emailNormalizado).matches()) {
             throw new RegraDeNegocioException("Email inválido");
         }

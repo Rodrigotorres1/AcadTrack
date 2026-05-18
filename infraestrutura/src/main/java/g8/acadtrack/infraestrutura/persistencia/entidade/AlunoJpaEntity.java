@@ -29,11 +29,11 @@ public class AlunoJpaEntity {
     @Column(name = "responsavel_id")
     private Long responsavelId;
 
-    private boolean vinculoResponsavelAtivo;
-    private boolean permissaoVisualizarNotas;
-    private boolean permissaoVisualizarSimulados;
-    private boolean permissaoVisualizarDesempenho;
-    private boolean ativo = true;
+    private Boolean vinculoResponsavelAtivo = false;
+    private Boolean permissaoVisualizarNotas = false;
+    private Boolean permissaoVisualizarSimulados = false;
+    private Boolean permissaoVisualizarDesempenho = false;
+    private Boolean ativo = true;
 
     @Column(name = "media_atual")
     private double mediaAtual;
@@ -93,23 +93,23 @@ public class AlunoJpaEntity {
     }
 
     public boolean isVinculoResponsavelAtivo() {
-        return vinculoResponsavelAtivo;
+        return Boolean.TRUE.equals(vinculoResponsavelAtivo);
     }
 
     public boolean isPermissaoVisualizarNotas() {
-        return permissaoVisualizarNotas;
+        return Boolean.TRUE.equals(permissaoVisualizarNotas);
     }
 
     public boolean isPermissaoVisualizarSimulados() {
-        return permissaoVisualizarSimulados;
+        return Boolean.TRUE.equals(permissaoVisualizarSimulados);
     }
 
     public boolean isPermissaoVisualizarDesempenho() {
-        return permissaoVisualizarDesempenho;
+        return Boolean.TRUE.equals(permissaoVisualizarDesempenho);
     }
 
     public boolean isAtivo() {
-        return ativo;
+        return ativo == null || ativo;
     }
 
     public double getMediaAritmetica() {

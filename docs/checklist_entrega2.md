@@ -27,7 +27,6 @@
 Detalhamento em `docs/padroes_entrega2.md`.
 
 - Observer: notificacoes automaticas de desempenho/risco.
-- Iterator: ranking academico e percorrimento ordenado.
 - Template Method: fluxo padronizado de analise academica.
 - Decorator: validacoes extras no lancamento de notas.
 - Proxy: controle de acesso do responsavel.

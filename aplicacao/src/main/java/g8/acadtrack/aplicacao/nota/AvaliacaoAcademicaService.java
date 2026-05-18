@@ -12,6 +12,8 @@ import java.util.Map;
 @Service
 public class AvaliacaoAcademicaService {
 
+    public static final double LIMIAR_BAIXO_DESEMPENHO_SIMULADO = 5.0;
+
     public double calcularMediaAritmetica(List<Nota> notas) {
         if (notas == null || notas.isEmpty()) {
             return 0.0;
@@ -50,6 +52,10 @@ public class AvaliacaoAcademicaService {
         }
 
         return arredondarMedia(somaPonderada / somaPesos);
+    }
+
+    public boolean isBaixoDesempenhoSimulado(double mediaPonderada) {
+        return mediaPonderada < LIMIAR_BAIXO_DESEMPENHO_SIMULADO;
     }
 
     public double arredondarMedia(double media) {

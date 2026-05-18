@@ -2,7 +2,6 @@ package g8.acadtrack.infraestrutura.persistencia.repositorio;
 
 import g8.acadtrack.dominioavaliacao.simulado.SimuladoDisciplina;
 import g8.acadtrack.dominioavaliacao.simulado.SimuladoDisciplinaRepository;
-import g8.acadtrack.infraestrutura.persistencia.entidade.SimuladoDisciplinaJpaEntity;
 import g8.acadtrack.infraestrutura.persistencia.springdata.SimuladoDisciplinaSpringDataRepository;
 import org.springframework.stereotype.Repository;
 

@@ -11,6 +11,8 @@ public interface SimuladoRepository {
 
     List<Simulado> buscarPorIds(List<Long> ids);
 
+    List<SimuladoDisciplina> buscarPesosDisciplinasPorSimuladoIds(List<Long> simuladoIds);
+
     Optional<Simulado> buscarPorId(Long id);
 
     Optional<Simulado> buscarPorDescricaoNormalizada(String descricao);

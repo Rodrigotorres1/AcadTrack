@@ -14,9 +14,7 @@ public record RiscoAcademicoEvent(
         Long alunoId,
         double mediaGeral,
         NivelRiscoAcademico nivelRisco,
-        SituacaoAcademica situacaoAcademica,
-        Integer posicaoRanking,
-        boolean alunoNoTop10
+        SituacaoAcademica situacaoAcademica
 ) implements DomainEvent {
 
     public RiscoAcademicoEvent {
@@ -39,9 +37,7 @@ public record RiscoAcademicoEvent(
                 alunoId,
                 mediaGeral,
                 nivelRisco,
-                situacaoAcademica,
-                null,
-                false
+                situacaoAcademica
         );
     }
 }
