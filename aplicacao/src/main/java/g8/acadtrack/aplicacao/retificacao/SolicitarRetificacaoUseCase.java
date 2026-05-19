@@ -28,6 +28,9 @@ public class SolicitarRetificacaoUseCase {
         notaRepository.buscarPorId(notaId)
                 .orElseThrow(() -> new EntidadeNaoEncontradaException("Nota não encontrada"));
     
+        if (solicitacaoRetificacaoRepository.existeEmAbertoPorNotaId(notaId)) {
+            throw new ConflitoDeEstadoException("Já existe solicitação de retificação em aberto para esta nota");
+        }
 
         SolicitacaoRetificacao solicitacao = new SolicitacaoRetificacao(
                 null,
@@ -36,10 +39,6 @@ public class SolicitarRetificacaoUseCase {
                 null,
                 StatusSolicitacaoRetificacao.PENDENTE
         );
-
-        if (solicitacaoRetificacaoRepository.existeEmAbertoPorNotaId(notaId)) {
-            throw new ConflitoDeEstadoException("Já existe solicitação de retificação em aberto para esta nota");
-        }
 
         return solicitacaoRetificacaoRepository.salvar(solicitacao);
     }

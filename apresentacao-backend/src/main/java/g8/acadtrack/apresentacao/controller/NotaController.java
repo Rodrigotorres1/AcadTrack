@@ -1,16 +1,13 @@
 package g8.acadtrack.apresentacao.controller;
 
-import g8.acadtrack.aplicacao.disciplina.ListarDisciplinasUseCase;
-import g8.acadtrack.aplicacao.nota.BuscarNotasPorAlunoUseCase;
+import g8.acadtrack.aplicacao.nota.BuscarNotasEnriquecidaPorAlunoUseCase;
 import g8.acadtrack.aplicacao.nota.CalcularMediaPonderadaUseCase;
 import g8.acadtrack.aplicacao.nota.LancarNotaUseCase;
-import g8.acadtrack.aplicacao.simulado.ListarSimuladosUseCase;
+import g8.acadtrack.aplicacao.nota.NotaEnriquecida;
 import g8.acadtrack.apresentacao.dto.request.LancarNotaRequest;
 import g8.acadtrack.apresentacao.dto.response.ErroApiResponse;
 import g8.acadtrack.apresentacao.dto.response.NotaResponse;
-import g8.acadtrack.dominioacademico.disciplina.Disciplina;
 import g8.acadtrack.dominioavaliacao.nota.Nota;
-import g8.acadtrack.dominioavaliacao.simulado.Simulado;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -26,8 +23,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Tag(name = "Notas",
         description = "Lançamento e consultas. Muitos fluxos assumem dados já criados (aluno, simulado, vínculos) — "
@@ -37,21 +32,15 @@ import java.util.stream.Collectors;
 public class NotaController {
 
     private final LancarNotaUseCase lancarNotaUseCase;
-    private final BuscarNotasPorAlunoUseCase buscarNotasPorAlunoUseCase;
+    private final BuscarNotasEnriquecidaPorAlunoUseCase buscarNotasEnriquecidaPorAlunoUseCase;
     private final CalcularMediaPonderadaUseCase calcularMediaPonderadaUseCase;
-    private final ListarDisciplinasUseCase listarDisciplinasUseCase;
-    private final ListarSimuladosUseCase listarSimuladosUseCase;
 
     public NotaController(LancarNotaUseCase lancarNotaUseCase,
-                          BuscarNotasPorAlunoUseCase buscarNotasPorAlunoUseCase,
-                          CalcularMediaPonderadaUseCase calcularMediaPonderadaUseCase,
-                          ListarDisciplinasUseCase listarDisciplinasUseCase,
-                          ListarSimuladosUseCase listarSimuladosUseCase) {
+                          BuscarNotasEnriquecidaPorAlunoUseCase buscarNotasEnriquecidaPorAlunoUseCase,
+                          CalcularMediaPonderadaUseCase calcularMediaPonderadaUseCase) {
         this.lancarNotaUseCase = lancarNotaUseCase;
-        this.buscarNotasPorAlunoUseCase = buscarNotasPorAlunoUseCase;
+        this.buscarNotasEnriquecidaPorAlunoUseCase = buscarNotasEnriquecidaPorAlunoUseCase;
         this.calcularMediaPonderadaUseCase = calcularMediaPonderadaUseCase;
-        this.listarDisciplinasUseCase = listarDisciplinasUseCase;
-        this.listarSimuladosUseCase = listarSimuladosUseCase;
     }
 
     @Operation(summary = "Lançar nota",
@@ -108,33 +97,10 @@ public class NotaController {
     public ResponseEntity<List<NotaResponse>> buscarPorAluno(
             @Parameter(description = "`id` do aluno criado via POST /alunos (campo id no JSON 201)", example = "1") @PathVariable Long alunoId) {
 
-        List<Nota> notas = buscarNotasPorAlunoUseCase.executar(alunoId);
+        List<NotaEnriquecida> notas = buscarNotasEnriquecidaPorAlunoUseCase.executar(alunoId);
 
-        List<Long> disciplinaIds = notas.stream()
-                .map(Nota::getDisciplinaId)
-                .distinct()
-                .toList();
-
-        List<Long> simuladoIds = notas.stream()
-                .map(Nota::getSimuladoId)
-                .distinct()
-                .toList();
-
-        Map<Long, String> nomePorDisciplinaId = listarDisciplinasUseCase.executarPorIds(disciplinaIds)
-                .stream()
-                .collect(Collectors.toMap(Disciplina::getId, Disciplina::getNome));
-
-        Map<Long, String> descricaoPorSimuladoId = listarSimuladosUseCase.executarPorIds(simuladoIds)
-                .stream()
-                .collect(Collectors.toMap(Simulado::getId, Simulado::getDescricao));
-
-        List<NotaResponse> response = notas
-                .stream()
-                .map(nota -> NotaResponse.fromDomain(
-                        nota,
-                        nomePorDisciplinaId.get(nota.getDisciplinaId()),
-                        descricaoPorSimuladoId.get(nota.getSimuladoId())
-                ))
+        List<NotaResponse> response = notas.stream()
+                .map(n -> NotaResponse.fromDomain(n.nota(), n.nomeDisciplina(), n.descricaoSimulado()))
                 .toList();
 
         return ResponseEntity.ok(response);
@@ -156,5 +122,4 @@ public class NotaController {
         double media = calcularMediaPonderadaUseCase.executar(alunoId, simuladoId);
         return ResponseEntity.ok(media);
     }
-
 }

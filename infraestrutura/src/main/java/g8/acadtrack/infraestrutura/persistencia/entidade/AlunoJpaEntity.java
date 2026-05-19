@@ -5,9 +5,12 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
@@ -26,8 +29,16 @@ public class AlunoJpaEntity {
     @Column(name = "turma_id")
     private Long turmaId;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "turma_id", insertable = false, updatable = false)
+    private TurmaJpaEntity turma;
+
     @Column(name = "responsavel_id")
     private Long responsavelId;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "responsavel_id", insertable = false, updatable = false)
+    private ResponsavelJpaEntity responsavel;
 
     private Boolean vinculoResponsavelAtivo = false;
     private Boolean permissaoVisualizarNotas = false;
