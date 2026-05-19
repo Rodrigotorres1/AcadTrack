@@ -11,6 +11,7 @@ import g8.acadtrack.dominioavaliacao.simulado.SimuladoRepository;
 import g8.acadtrack.dominiocompartilhado.risco.NivelRiscoAcademico;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -48,10 +49,14 @@ public class GerarRankingAcademicoUseCase {
     public List<RankingAcademicoItem> executar(int limite, CriterioRankingAcademico criterio) {
         List<RankingAcademicoItem> ordenados = ordenarRankingAcademicoService.ordenar(montarItens(), criterio);
         int quantidadeMaxima = limite <= 0 ? ordenados.size() : Math.min(limite, ordenados.size());
+        RankingAcademicoIterator iterator = new ListaRankingAcademicoIterator(ordenados);
+        List<RankingAcademicoItem> resultado = new ArrayList<>(quantidadeMaxima);
 
-        return ordenados.stream()
-                .limit(quantidadeMaxima)
-                .toList();
+        while (iterator.hasNext() && resultado.size() < quantidadeMaxima) {
+            resultado.add(iterator.next());
+        }
+
+        return resultado;
     }
 
     private List<RankingAcademicoItem> montarItens() {

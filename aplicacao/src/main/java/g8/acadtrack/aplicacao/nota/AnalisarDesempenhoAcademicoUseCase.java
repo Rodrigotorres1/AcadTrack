@@ -14,6 +14,7 @@ import g8.acadtrack.dominioavaliacao.simulado.SimuladoDisciplina;
 import g8.acadtrack.dominioavaliacao.simulado.SimuladoRepository;
 import g8.acadtrack.dominiocompartilhado.excecao.EntidadeNaoEncontradaException;
 import g8.acadtrack.dominiocompartilhado.risco.NivelRiscoAcademico;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -21,6 +22,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
+@Primary
 public class AnalisarDesempenhoAcademicoUseCase extends FluxoAnaliseAcademicaTemplate {
 
     private final NotaRepository notaRepository;
