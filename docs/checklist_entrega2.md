@@ -46,18 +46,19 @@ Detalhamento em `docs/persistencia_orm_entrega2.md`.
 
 ## Camada web
 
-As duas copias web devem permanecer sincronizadas:
+O frontend e uma SPA vanilla JS servida pelo Spring Boot a partir de:
 
-- `apresentacao-frontend`
 - `apresentacao-backend/src/main/resources/static`
 
-Telas/abas existentes:
+O modulo `apresentacao-frontend` e um placeholder Maven conceitual (`packaging=pom`) que documenta a camada de apresentacao dentro da arquitetura multi-modulo. Ver `apresentacao-frontend/README.md` para detalhes.
 
-- Dashboard com resumo e Top 10 academico.
-- Alunos com cadastro/listagem e criacao de turma.
+Telas/abas existentes (10 secoes no HTML):
+
+- Alunos com cadastro/listagem, criacao de turma e vinculo de responsavel.
+- Turmas.
 - Disciplinas.
-- Notas.
-- Desempenho com risco e ranking do aluno.
+- Notas (lancamento e listagem enriquecida com nomes de disciplina e simulado).
+- Desempenho com risco, historico por simulado, notas por disciplina, posicao no ranking e Top 10.
 - Simulados.
 - Retificacoes.
 - Responsaveis.
