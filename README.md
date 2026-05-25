@@ -660,7 +660,7 @@ Os testes BDD usam H2 em memória (configurado em `bdd/acadtrackbdd/src/test/res
 Tests run: 101, Failures: 0, Errors: 0, Skipped: 0 — BUILD SUCCESS
 ```
 
-Os 101 testes incluem 77 cenários Cucumber e 24 testes unitários JUnit distribuídos nos módulos `aplicacao` e `bdd/acadtrackbdd`.
+Os 101 testes incluem 77 cenários Cucumber e 24 testes unitários JUnit, todos fisicamente no módulo `bdd/acadtrackbdd`.
 
 ### Teste unitário
 
