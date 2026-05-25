@@ -613,7 +613,7 @@ Turmas → Disciplinas → Alunos → Responsáveis
 
 ## Padrões de projeto
 
-Cinco padrões foram implementados como parte da Entrega 2, cada um mapeado a uma necessidade real do domínio:
+Seis padrões foram implementados como parte da Entrega 2, cada um mapeado a uma necessidade real do domínio:
 
 | Padrão | Onde está no código | Por que foi usado |
 |---|---|---|
@@ -622,6 +622,7 @@ Cinco padrões foram implementados como parte da Entrega 2, cada um mapeado a um
 | **Domain Events** | `DomainEvent`, `RiscoAcademicoEvent`, `DomainEventPublisher`, `SpringDomainEventPublisher`, `NotificarResponsavelRiscoAcademicoHandler` | Desacopla o domínio e os casos de uso da geração de notificações; novos publicadores assíncronos podem ser adicionados sem alterar os agregados |
 | **Proxy** | `AcessoResponsavelAlunoProxy` (`aplicacao/responsavel/`) | Intercepta qualquer consulta de responsável a dados de aluno e verifica vínculo ativo + permissão antes de delegar; centraliza o controle de acesso num único ponto |
 | **Strategy** | `EstrategiaClassificacaoRiscoAcademico` + `RiscoAltoStrategy`, `RiscoBaixoStrategy`, `RiscoModeradoStrategy` (`aplicacao/nota/risco/`) | Permite trocar o critério de classificação de risco (ex.: por frequência, por média combinada) sem alterar o fluxo de análise |
+| **Iterator** | `RankingAcademicoIterator`, `ListaRankingAcademicoIterator`, `GerarRankingAcademicoUseCase` (`aplicacao/ranking/`) | Percorre a coleção ordenada do ranking com limite configurável sem expor o índice interno; garante que o Top N seja sempre obtido de forma controlada |
 
 ---
 
@@ -762,4 +763,4 @@ Links externos:
 |---|---|---|
 | **Erick Belo** | eab2@cesar.school | F3 (Lançamento de notas), F6 (Retificação); Decorator, Observer |
 | **João Marcelo Montenegro** | jmtpm@cesar.school | F1 (Disciplinas), F2 (Responsáveis); Proxy |
-| **Rodrigo Torres** | rtgf@cesar.school | F4 (Análise de desempenho), F5 (Simulados); Template Method, Strategy |
+| **Rodrigo Torres** | rtgf@cesar.school | F4 (Análise de desempenho), F5 (Simulados); Template Method, Strategy, Iterator |
