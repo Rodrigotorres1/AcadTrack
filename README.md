@@ -387,7 +387,8 @@ Turmas → Disciplinas → Alunos → Responsáveis
 
 // response 201
 { "id": 1, "nome": "João Silva", "email": "joao.silva@escola.edu",
-  "ativo": true, "mediaGlobal": null, "situacaoAcademica": null, "turmaId": null }
+  "turmaId": null, "responsavelId": null, "situacao": "Ativo",
+  "mediaAritmetica": 0.0, "situacaoAcademica": "SEM_NOTAS" }
 ```
 
 **PUT** `/alunos/{alunoId}/responsavel`
@@ -400,12 +401,17 @@ Turmas → Disciplinas → Alunos → Responsáveis
 **GET** `/alunos/{alunoId}/desempenho` — response 200
 ```json
 {
-  "alunoId": 1, "nomeAluno": "João Silva",
-  "mediaGlobal": 7.25, "situacaoAcademica": "APROVADO",
-  "nivelRisco": "BAIXO",
+  "alunoId": 1,
+  "mediaGeral": 7.25, "situacaoAcademica": "APROVADO",
+  "nivelRisco": "BAIXO", "riscoAcademico": false,
+  "posicaoRanking": 2, "totalAlunosRanking": 5, "alunoNoTop10": true,
   "historicoSimulados": [
-    { "simuladoId": 1, "descricao": "Simulado 1", "mediaPonderada": 7.25,
-      "notas": [{ "disciplinaId": 1, "nomeDisciplina": "Matemática", "valor": 7.5 }] }
+    { "simuladoId": 1, "nomeSimulado": "Simulado 1", "mediaPonderada": 7.25,
+      "quantidadeNotas": 2, "baixoDesempenho": false }
+  ],
+  "notasPorDisciplina": [
+    { "disciplinaId": 1, "nomeDisciplina": "Matemática", "media": 7.5,
+      "status": "APROVADO", "nivelRisco": "BAIXO" }
   ]
 }
 ```
@@ -498,8 +504,8 @@ Turmas → Disciplinas → Alunos → Responsáveis
 **GET** `/rankings?limite=5&criterio=MEDIA_DESC`
 ```json
 [
-  { "posicao": 1, "alunoId": 2, "nomeAluno": "Maria", "media": 9.0, "nivelRisco": "BAIXO" },
-  { "posicao": 2, "alunoId": 1, "nomeAluno": "João", "media": 7.5, "nivelRisco": "BAIXO" }
+  { "posicao": 1, "alunoId": 2, "nomeAluno": "Maria", "media": 9.0, "situacaoAcademica": "APROVADO", "nivelRisco": "BAIXO" },
+  { "posicao": 2, "alunoId": 1, "nomeAluno": "João", "media": 7.5, "situacaoAcademica": "APROVADO", "nivelRisco": "BAIXO" }
 ]
 ```
 
