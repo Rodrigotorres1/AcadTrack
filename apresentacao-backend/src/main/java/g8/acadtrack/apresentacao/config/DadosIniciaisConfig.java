@@ -18,11 +18,11 @@ public class DadosIniciaisConfig {
 
     private static final List<String> TURMAS_PADRAO = List.of(
             "1\u00BA A",
-            "1\u00BAB",
-            "2\u00BAA",
-            "2\u00BAB",
-            "3\u00BAA",
-            "3\u00BAB"
+            "1\u00BA B",
+            "2\u00BA A",
+            "2\u00BA B",
+            "3\u00BA A",
+            "3\u00BA B"
     );
 
     @Bean

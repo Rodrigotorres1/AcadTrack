@@ -352,7 +352,7 @@ Turmas → Disciplinas → Alunos → Responsáveis
 | GET | `/turmas` | Lista todas as turmas | 200 |
 | POST | `/turmas` | Cria uma turma | 201, 400, 409 |
 
-> Na inicialização, `DadosIniciaisConfig` já cria automaticamente as turmas `1ºA`, `1ºB`, `2ºA`, `2ºB`, `3ºA` e `3ºB`.
+> Na inicialização, `DadosIniciaisConfig` já cria automaticamente as turmas `1º A`, `1º B`, `2º A`, `2º B`, `3º A` e `3º B`.
 
 **POST** `/turmas`
 ```json
@@ -642,7 +642,7 @@ Seis padrões foram implementados como parte da Entrega 2, cada um mapeado a uma
 ### Apenas o módulo BDD
 
 ```powershell
-.\mvnw.cmd -pl bdd/acadtrackbdd test
+.\mvnw.cmd -pl bdd/acadtrackbdd -am test
 ```
 
 Os testes BDD usam H2 em memória (configurado em `bdd/acadtrackbdd/src/test/resources/application.properties`), isolado do banco de desenvolvimento em `data/`. O hook `LimparBancoDeDadosHook` limpa as tabelas antes de cada cenário.
