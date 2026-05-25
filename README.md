@@ -56,7 +56,7 @@ O projeto segue **Clean Architecture** com separação estrita de camadas. As de
                      │ chama use cases
 ┌────────────────────▼────────────────────────┐
 │                 aplicacao                   │  Use Cases, padrões de projeto,
-│             (sem Spring)                    │  orquestração de fluxos
+│              (sem JPA)                      │  orquestração de fluxos
 └─────────┬───────────────────────┬───────────┘
           │ acessa interfaces     │ usa entidades
           │ de repositório        │ do domínio
@@ -392,6 +392,8 @@ Turmas → Disciplinas → Alunos → Responsáveis
 // response 201
 { "id": 1, "nome": "João Silva", "email": "joao.silva@escola.edu",
   "turmaId": null, "responsavelId": null, "situacao": "Ativo",
+  "vinculoResponsavelAtivo": false, "podeVisualizarNotas": false,
+  "podeVisualizarSimulados": false, "podeVisualizarDesempenho": false,
   "mediaAritmetica": 0.0, "situacaoAcademica": "APROVADO" }
 ```
 
