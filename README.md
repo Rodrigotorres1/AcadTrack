@@ -436,7 +436,7 @@ Turmas → Disciplinas → Alunos → Responsáveis
 { "nome": "Matemática" }
 
 // response 201
-{ "id": 1, "nome": "Matemática", "ativa": true }
+{ "id": 1, "nome": "Matemática", "status": "ATIVA" }
 ```
 
 ---
