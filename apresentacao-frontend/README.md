@@ -21,7 +21,7 @@ static/
 └── app.js       Lógica da SPA: chamadas REST, gerenciamento de estado, navegação
 ```
 
-A pasta `apresentacao-frontend/static/` é uma cópia de referência dos mesmos arquivos, mantida para deixar claro na estrutura de pastas que existe uma camada de frontend separada conceitualmente. **A versão que o Spring Boot serve é sempre a que está em `apresentacao-backend/static/`.**
+Este módulo não contém arquivos de frontend. **A versão que o Spring Boot serve é a que está em `apresentacao-backend/src/main/resources/static/`.**
 
 ---
 

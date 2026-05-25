@@ -164,8 +164,7 @@ AcadTrack/
 │               └── app.js                           Chamadas REST, estado da aplicação
 │
 ├── apresentacao-frontend/           Placeholder Maven (packaging=pom, sem código Java)
-│   └── static/                     Cópia dos mesmos 3 arquivos da SPA
-│   └── README.md                   Explica a decisão de duplicação
+│   └── README.md                   Explica por que o módulo existe sem arquivos de frontend
 │
 ├── bdd/acadtrackbdd/                Módulo de testes BDD
 │   └── src/test/
@@ -644,8 +643,10 @@ Os testes BDD usam H2 em memória (configurado em `bdd/acadtrackbdd/src/test/res
 
 **Resultado esperado:**
 ```
-Tests run: 77, Failures: 0, Errors: 0, Skipped: 0 — BUILD SUCCESS
+Tests run: 101, Failures: 0, Errors: 0, Skipped: 0 — BUILD SUCCESS
 ```
+
+Os 101 testes incluem 77 cenários Cucumber e 24 testes unitários JUnit distribuídos nos módulos `aplicacao` e `bdd/acadtrackbdd`.
 
 ### Teste unitário
 
@@ -682,9 +683,9 @@ O domínio (`dominio-*`) não tem nenhuma anotação Spring ou JPA. Isso garante
 
 H2 elimina pré-requisitos de instalação para rodar o projeto. O uso de `spring.jpa.hibernate.ddl-auto=update` faz o schema ser gerenciado automaticamente. A troca para PostgreSQL exigiria apenas alterar `application.properties` e o driver — os repositórios JPA não mudam.
 
-### Por que o frontend está em dois lugares?
+### Por que o frontend está em `apresentacao-backend/static/` e não em `apresentacao-frontend/`?
 
-`apresentacao-frontend/` existe como módulo Maven para representar conceitualmente a camada de apresentação web dentro da arquitetura multi-módulo. Os arquivos reais (`index.html`, `styles.css`, `app.js`) ficam em `apresentacao-backend/src/main/resources/static/` porque é de lá que o Tomcat embutido do Spring Boot serve arquivos estáticos automaticamente. A duplicação é intencional e documentada em `apresentacao-frontend/README.md`.
+`apresentacao-frontend/` existe como módulo Maven (`packaging=pom`, sem código Java) para representar conceitualmente a camada de apresentação web dentro da arquitetura multi-módulo. Os arquivos reais (`index.html`, `styles.css`, `app.js`) ficam em `apresentacao-backend/src/main/resources/static/` porque é de lá que o Tomcat embutido do Spring Boot serve arquivos estáticos automaticamente — nenhuma configuração extra é necessária.
 
 ### Por que não há autenticação?
 
