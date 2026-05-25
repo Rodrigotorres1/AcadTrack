@@ -261,7 +261,14 @@ docker compose up --build
 
 Aguarde o build (~2 min na primeira vez). Quando aparecer `Started AcadTrackApplication`, acesse `http://localhost:8080`.
 
-Os dados do H2 ficam em um volume Docker nomeado (`acadtrack-data`) e persistem entre reinicializações. Para parar: `Ctrl+C` e, se quiser remover o container: `docker compose down`.
+Os dados do H2 ficam em um volume Docker nomeado (`acadtrack-data`) e persistem entre reinicializações.
+
+| O que fazer | Comando |
+|---|---|
+| Subir em segundo plano | `docker compose up -d` |
+| Ver logs em tempo real | `docker compose logs -f` |
+| Parar | `docker compose down` |
+| Rebuild após mudança de código | `docker compose up --build -d` |
 
 ---
 
