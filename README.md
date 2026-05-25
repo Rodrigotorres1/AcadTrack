@@ -198,6 +198,7 @@ AcadTrack/
 ├── dominio-academico/               Domínio: Aluno, Turma, Disciplina
 │   └── src/main/java/g8/acadtrack/dominioacademico/
 │       ├── aluno/    Aluno.java, AlunoRepository.java, PermissaoResponsavel.java, SituacaoAcademica.java
+│       │             evento/ RiscoAcademicoEvent.java (Domain Event publicado após análise de risco)
 │       ├── disciplina/ Disciplina.java, DisciplinaRepository.java, StatusDisciplina.java
 │       └── turma/    Turma.java, TurmaRepository.java
 │
@@ -212,6 +213,7 @@ AcadTrack/
 ├── dominio-compartilhado/           Artefatos transversais
 │   └── src/main/java/g8/acadtrack/dominiocompartilhado/
 │       ├── email/      Email.java (Value Object com validação de formato)
+│       ├── evento/     DomainEvent.java (interface base para todos os eventos de domínio)
 │       ├── excecao/    EntidadeNaoEncontradaException, RegraDeNegocioException,
 │       │               ConflitoDeEstadoException, AcessoDenegadoException
 │       └── risco/      NivelRiscoAcademico.java (enum: BAIXO, MODERADO, ALTO)
@@ -222,16 +224,18 @@ AcadTrack/
 │       │                PrioridadeNotificacao.java, StatusNotificacao.java
 │       └── responsavel/ Responsavel.java, ResponsavelRepository.java
 │
-├── infraestrutura/                  Implementações de persistência (JPA)
-│   └── src/main/java/g8/acadtrack/infraestrutura/persistencia/
-│       ├── entidade/    9 classes @Entity (uma por agregado):
-│       │                AlunoJpaEntity, DisciplinaJpaEntity, NotaJpaEntity,
-│       │                NotificacaoResponsavelJpaEntity, ResponsavelJpaEntity,
-│       │                SimuladoJpaEntity, SimuladoDisciplinaJpaEntity,
-│       │                SolicitacaoRetificacaoJpaEntity, TurmaJpaEntity
-│       ├── repositorio/ 9 adaptadores RepositoryJpa — implementam interfaces do domínio,
-│       │                delegam para Spring Data, convertem Entity ↔ domínio
-│       └── springdata/  9 interfaces JpaRepository (Spring Data)
+├── infraestrutura/                  Implementações de persistência (JPA) e eventos
+│   └── src/main/java/g8/acadtrack/infraestrutura/
+│       ├── evento/      SpringDomainEventPublisher.java (implementa DomainEventPublisher via ApplicationEventPublisher)
+│       └── persistencia/
+│           ├── entidade/    9 classes @Entity (uma por agregado):
+│           │                AlunoJpaEntity, DisciplinaJpaEntity, NotaJpaEntity,
+│           │                NotificacaoResponsavelJpaEntity, ResponsavelJpaEntity,
+│           │                SimuladoJpaEntity, SimuladoDisciplinaJpaEntity,
+│           │                SolicitacaoRetificacaoJpaEntity, TurmaJpaEntity
+│           ├── repositorio/ 9 adaptadores RepositoryJpa — implementam interfaces do domínio,
+│           │                delegam para Spring Data, convertem Entity ↔ domínio
+│           └── springdata/  9 interfaces JpaRepository (Spring Data)
 │
 ├── scripts/                         Scripts PowerShell utilitários
 │   ├── run-backend.ps1              Sobe o backend na primeira porta livre (8080–8299)
