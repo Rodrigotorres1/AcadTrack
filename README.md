@@ -388,7 +388,7 @@ Turmas → Disciplinas → Alunos → Responsáveis
 // response 201
 { "id": 1, "nome": "João Silva", "email": "joao.silva@escola.edu",
   "turmaId": null, "responsavelId": null, "situacao": "Ativo",
-  "mediaAritmetica": 0.0, "situacaoAcademica": "SEM_NOTAS" }
+  "mediaAritmetica": 0.0, "situacaoAcademica": "APROVADO" }
 ```
 
 **PUT** `/alunos/{alunoId}/responsavel`
@@ -553,7 +553,7 @@ Turmas → Disciplinas → Alunos → Responsáveis
 
 // response 201
 { "id": 1, "notaId": 1, "justificativa": "...", "status": "PENDENTE",
-  "nomeAluno": "João Silva", "nomeDisciplina": "Matemática", "descricaoSimulado": "Simulado 1" }
+  "alunoNome": "João Silva", "disciplinaNome": "Matemática", "simuladoDescricao": "Simulado 1" }
 ```
 
 **PATCH** `/retificacoes/{id}/aprovar`
