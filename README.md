@@ -150,11 +150,11 @@ AcadTrack/
 │       │   ├── AcadTrackApplication.java            @SpringBootApplication — ponto de entrada
 │       │   ├── config/
 │       │   │   ├── CorsConfig.java                  Libera todas as origens para dev local
-│       │   │   ├── DadosIniciaisConfig.java          Cria as 6 turmas padrão (1ºA…3ºB) na inicialização
+│       │   │   ├── DadosIniciaisConfig.java          Cria as 6 turmas padrão (1º A…3º B) na inicialização
 │       │   │   └── OpenApiConfig.java               Configura título/versão do Swagger
 │       │   ├── controller/                          8 @RestController (ver seção Endpoints)
-│       │   ├── dto/request/                         17 classes de request com @Valid
-│       │   └── dto/response/                        16 classes de response com factory fromDomain()
+│       │   ├── dto/request/                         14 classes de request com @Valid
+│       │   └── dto/response/                        12 arquivos de response (17 tipos incluindo os aninhados)
 │       │   └── exception/GlobalExceptionHandler     Mapeia exceções de domínio para HTTP
 │       └── resources/
 │           ├── application.properties               Porta 8080, H2 em arquivo, Swagger, JPA
@@ -476,7 +476,8 @@ Turmas → Disciplinas → Alunos → Responsáveis
 { "alunoId": 1, "simuladoId": 1, "disciplinaId": 1, "valor": 7.5 }
 
 // response 201
-{ "id": 1, "alunoId": 1, "simuladoId": 1, "disciplinaId": 1, "valor": 7.5 }
+{ "id": 1, "alunoId": 1, "simuladoId": 1, "disciplinaId": 1, "valor": 7.5,
+  "nomeDisciplina": null, "descricaoSimulado": null }
 ```
 
 **GET** `/notas/aluno/{alunoId}` — response 200 (enriquecido com nomes)
