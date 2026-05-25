@@ -169,10 +169,11 @@ AcadTrack/
 ├── bdd/acadtrackbdd/                Módulo de testes BDD
 │   └── src/test/
 │       ├── java/g8/acadtrack/bdd/
-│       │   ├── config/              CucumberTest.java, CucumberSpringConfiguration.java
-│       │   ├── steps/               11 classes de step definitions
+│       │   ├── CucumberTest.java, CucumberSpringConfiguration.java, TestSpringConfiguration.java
+│       │   ├── steps/               12 classes de step definitions
 │       │   ├── support/             LimparBancoDeDadosHook.java, TestContext.java
-│       │   └── unit/               ListarRetificacoesUseCaseTest.java
+│       │   └── unit/               5 testes JUnit (ListarRetificacoes, RiscoStrategy, Email,
+│       │                            AvaliacaoAcademicaService, OrdenarRankingAcademicoService)
 │       └── resources/
 │           ├── application.properties   H2 em memória (isolado dos testes)
 │           └── features/
@@ -663,7 +664,7 @@ Os 101 testes incluem 77 cenários Cucumber e 24 testes unitários JUnit distrib
 
 ### Teste unitário
 
-`ListarRetificacoesUseCaseTest` em `bdd/acadtrackbdd/src/test/java/.../unit/` é um teste JUnit puro do use case de listagem de retificações.
+Os 24 testes JUnit estão em `bdd/acadtrackbdd/src/test/java/.../unit/` (`ListarRetificacoesUseCaseTest`, `RiscoAcademicoStrategyTest`, `EmailTest`, `AvaliacaoAcademicaServiceTest`, `OrdenarRankingAcademicoServiceTest`) e em `bdd/acadtrackbdd/src/test/java/g8/acadtrack/aplicacao/nota/` (`AnalisarRiscoAcademicoSemRankingUseCaseTest`).
 
 ### Features BDD (Gherkin)
 
