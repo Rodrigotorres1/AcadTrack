@@ -1,0 +1,10 @@
+services:
+  acadtrack:
+    build: .
+    ports:
+      - "8080:8080"
+    volumes:
+      - acadtrack-data:/app/data
+
+volumes:
+  acadtrack-data:

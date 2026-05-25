@@ -251,6 +251,20 @@ AcadTrack/
 
 ## Como rodar
 
+### Com Docker (recomendado — sem instalar JDK ou Maven)
+
+Requisito: [Docker Desktop](https://www.docker.com/products/docker-desktop/) instalado e em execução.
+
+```bash
+docker compose up --build
+```
+
+Aguarde o build (~2 min na primeira vez). Quando aparecer `Started AcadTrackApplication`, acesse `http://localhost:8080`.
+
+Os dados do H2 ficam em um volume Docker nomeado (`acadtrack-data`) e persistem entre reinicializações. Para parar: `Ctrl+C` e, se quiser remover o container: `docker compose down`.
+
+---
+
 ### Pré-requisitos
 
 | Requisito | Versão mínima | Observação |
