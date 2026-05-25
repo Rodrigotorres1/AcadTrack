@@ -21,6 +21,7 @@ RUN sed -i 's/\r$//' mvnw && chmod +x mvnw
 RUN ./mvnw dependency:go-offline -B -q
 
 COPY . .
+RUN sed -i 's/\r$//' mvnw && chmod +x mvnw
 RUN ./mvnw package -DskipTests -B -q -pl apresentacao-backend -am
 
 # ---- Run ----
