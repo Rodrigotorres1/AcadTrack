@@ -1,35 +1,35 @@
 # Módulo `apresentacao-frontend`
 
-Este módulo Maven existe como **placeholder conceitual** (`packaging=pom`, sem código Java compilável). Ele representa a camada de apresentação web dentro da arquitetura multi-módulo do AcadTrack.
+Este módulo Maven (`packaging=jar`) contém todos os arquivos da camada de apresentação web do AcadTrack.
 
 ---
 
-## Por que existe e por que não tem código aqui
-
-O Spring Boot serve arquivos estáticos automaticamente a partir de:
+## Estrutura
 
 ```
-apresentacao-backend/src/main/resources/static/
+src/main/resources/static/
+├── index.html        Interface web (login por persona, navegação lateral, formulários)
+├── styles.css        Estilos da interface
+├── app.js            Lógica principal da SPA: chamadas REST, gerenciamento de estado, navegação
+└── js/
+    ├── apiClient.js  Cliente HTTP centralizado para chamadas à API REST
+    ├── config.js     Configurações globais (base URL, etc.)
+    ├── errors.js     Tratamento de erros da API
+    ├── navigation.js Roteamento e navegação entre seções
+    ├── session.js    Gerenciamento de sessão e persona ativa
+    ├── store.js      Estado global da aplicação
+    ├── utils.js      Funções utilitárias compartilhadas
+    └── views/
+        └── ui.js     Funções de renderização de componentes visuais
 ```
 
-Essa é a localização padrão do Spring — nenhuma configuração extra é necessária. Os três arquivos da SPA ficam lá:
-
-```
-static/
-├── index.html   Interface web (login por persona, navegação lateral, formulários)
-├── styles.css   Estilos da interface
-└── app.js       Lógica da SPA: chamadas REST, gerenciamento de estado, navegação
-```
-
-Este módulo não contém arquivos de frontend. **A versão que o Spring Boot serve é a que está em `apresentacao-backend/src/main/resources/static/`.**
+O Spring Boot serve os arquivos automaticamente a partir do classpath (`classpath:/static/`). Como `apresentacao-frontend` é uma dependência do `apresentacao-backend`, seus recursos ficam no classpath do jar executável — nenhuma configuração extra é necessária.
 
 ---
 
 ## O que a interface faz
 
 A SPA consome a API REST do backend via `fetch`. Não acessa banco de dados, repositórios ou regras de negócio diretamente.
-
-Funcionalidades disponíveis na interface:
 
 | Seção | O que permite fazer |
 |---|---|

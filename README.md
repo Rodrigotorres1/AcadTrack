@@ -78,8 +78,8 @@ O projeto segue **Clean Architecture** com separação estrita de camadas. As de
 | `dominio-usuarios` | `Responsavel`, `NotificacaoResponsavel` e interfaces |
 | `aplicacao` | Todos os use cases, padrões de projeto, serviços de domínio |
 | `infraestrutura` | Entidades JPA (`@Entity`), adaptadores de repositório, Spring Data |
-| `apresentacao-backend` | Aplicação Spring Boot executável, controllers REST, DTOs, SPA estática |
-| `apresentacao-frontend` | Placeholder Maven (`packaging=pom`); arquivos reais ficam em `apresentacao-backend/static/` |
+| `apresentacao-backend` | Aplicação Spring Boot executável, controllers REST, DTOs |
+| `apresentacao-frontend` | Camada de apresentação web — SPA (`index.html`, `styles.css`, `app.js` + módulos `js/`) |
 | `bdd/acadtrackbdd` | Testes BDD com Cucumber e Spring Test |
 
 ---
@@ -157,14 +157,15 @@ AcadTrack/
 │       │   └── dto/response/                        12 arquivos de response (17 tipos incluindo os aninhados)
 │       │   └── exception/GlobalExceptionHandler     Mapeia exceções de domínio para HTTP
 │       └── resources/
-│           ├── application.properties               Porta 8080, H2 em arquivo, Swagger, JPA
-│           └── static/
-│               ├── index.html                       SPA com login por persona e navegação lateral
-│               ├── styles.css                       Estilos da interface
-│               └── app.js                           Chamadas REST, estado da aplicação
+│           └── application.properties               Porta 8080, H2 em arquivo, Swagger, JPA
 │
-├── apresentacao-frontend/           Placeholder Maven (packaging=pom, sem código Java)
-│   └── README.md                   Explica por que o módulo existe sem arquivos de frontend
+├── apresentacao-frontend/           Camada de apresentação web (packaging=jar)
+│   └── src/main/resources/static/
+│       ├── index.html               SPA com login por persona e navegação lateral
+│       ├── styles.css               Estilos da interface
+│       ├── app.js                   Lógica principal da SPA
+│       └── js/                      Módulos JS auxiliares (apiClient, config, errors,
+│                                    navigation, session, store, utils, views/ui)
 │
 ├── bdd/acadtrackbdd/                Módulo de testes BDD
 │   └── src/test/
@@ -697,9 +698,9 @@ O domínio (`dominio-*`) não tem nenhuma anotação Spring ou JPA. Isso garante
 
 H2 elimina pré-requisitos de instalação para rodar o projeto. O uso de `spring.jpa.hibernate.ddl-auto=update` faz o schema ser gerenciado automaticamente. A troca para PostgreSQL exigiria apenas alterar `application.properties` e o driver — os repositórios JPA não mudam.
 
-### Por que o frontend está em `apresentacao-backend/static/` e não em `apresentacao-frontend/`?
+### Por que o frontend está em `apresentacao-frontend/` e não em `apresentacao-backend/static/`?
 
-`apresentacao-frontend/` existe como módulo Maven (`packaging=pom`, sem código Java) para representar conceitualmente a camada de apresentação web dentro da arquitetura multi-módulo. Os arquivos reais (`index.html`, `styles.css`, `app.js`) ficam em `apresentacao-backend/src/main/resources/static/` porque é de lá que o Tomcat embutido do Spring Boot serve arquivos estáticos automaticamente — nenhuma configuração extra é necessária.
+O módulo `apresentacao-frontend` (`packaging=jar`) contém os arquivos da SPA em `src/main/resources/static/`. O `apresentacao-backend` declara `apresentacao-frontend` como dependência Maven, então os arquivos estáticos ficam no classpath do jar executável. O Spring Boot serve automaticamente qualquer `classpath:/static/` — sem configuração extra. Essa separação reflete a arquitetura multi-módulo: frontend e backend são camadas distintas.
 
 ### Por que não há autenticação?
 
