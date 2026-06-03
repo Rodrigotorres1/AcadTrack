@@ -18,11 +18,11 @@ public class CriarResponsavelUseCase {
 
     @Transactional
     public Responsavel executar(String nome, String email) {
-        String emailNormalizado = Email.normalizar(email);
-        if (responsavelRepository.existeResponsavelComEmailIgnorandoMaiusculas(emailNormalizado)) {
+        Email emailVO = new Email(email);
+        if (responsavelRepository.existeResponsavelComEmailIgnorandoMaiusculas(emailVO.getEndereco())) {
             throw new ConflitoDeEstadoException("Já existe responsável cadastrado com este e-mail");
         }
-        Responsavel responsavel = new Responsavel(null, nome, emailNormalizado);
+        Responsavel responsavel = new Responsavel(null, nome, emailVO.getEndereco());
         return responsavelRepository.salvar(responsavel);
     }
 }

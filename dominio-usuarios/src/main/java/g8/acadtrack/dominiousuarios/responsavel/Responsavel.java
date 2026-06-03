@@ -7,7 +7,7 @@ public class Responsavel {
 
     private Long id;
     private String nome;
-    private String email;
+    private Email email;
 
     public Responsavel(Long id, String nome, String email) {
         if (nome == null || nome.isBlank()) {
@@ -15,7 +15,7 @@ public class Responsavel {
         }
         this.id = id;
         this.nome = nome;
-        this.email = Email.normalizar(email);
+        this.email = new Email(email);
     }
 
     public Long getId() {
@@ -27,6 +27,6 @@ public class Responsavel {
     }
 
     public String getEmail() {
-        return email;
+        return email.getEndereco();
     }
 }

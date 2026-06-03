@@ -15,7 +15,7 @@ public class Aluno {
 
     private Long id;
     private String nome;
-    private String email;
+    private Email email;
     private Long turmaId;
     private Long responsavelId;
     private boolean vinculoResponsavelAtivo;
@@ -117,7 +117,7 @@ public class Aluno {
         }
         this.id = id;
         this.nome = nome;
-        this.email = Email.normalizar(email);
+        this.email = new Email(email);
         this.turmaId = turmaId;
         this.responsavelId = responsavelId;
         this.vinculoResponsavelAtivo = vinculoResponsavelAtivo;
@@ -232,7 +232,7 @@ public class Aluno {
             throw new RegraDeNegocioException("Nome do aluno é obrigatório");
         }
         this.nome = nome.trim();
-        this.email = Email.normalizar(email);
+        this.email = new Email(email);
     }
 
     public void inativar() {
@@ -252,7 +252,7 @@ public class Aluno {
     }
 
     public String getEmail() {
-        return email;
+        return email.getEndereco();
     }
 
     public Long getTurmaId() {

@@ -6,7 +6,7 @@
 - Linguagem onipresente: secao propria em `docs/descricao_do_dominio.md`.
 - Story map/personas: `docs/story_map_personas.md` e `docs/story_map.pdf`.
 - Prototipos: `docs/prototipos.md`.
-- Modelo CML/Context Mapper: `docs/cml/acadtrack.cml`.
+- Modelo CML/Context Mapper: `acadtrack.cml` (raiz do projeto).
 - Bounded contexts/context map: `docs/cml/bounded_contexts.md`.
 - Cenarios BDD: `bdd/acadtrackbdd/src/test/resources/features`.
 - Automacao Cucumber: `bdd/acadtrackbdd` com `CucumberTest`.

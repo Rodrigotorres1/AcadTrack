@@ -27,14 +27,18 @@ public class NotaJpaEntity {
     @Column(name = "disciplina_id")
     private Long disciplinaId;
 
+    // REVISAR: possível código morto — campo de navegação JPA nunca acessado; repositórios usam alunoId (Long)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "aluno_id", insertable = false, updatable = false)
     private AlunoJpaEntity aluno;
 
+    // REVISAR: possível código morto — campo de navegação JPA nunca acessado; repositórios usam simuladoId (Long)
+    // SimuladoJpaEntity.@OneToMany(mappedBy="simulado") aponta para SimuladoDisciplinaJpaEntity, não para esta classe
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "simulado_id", insertable = false, updatable = false)
     private SimuladoJpaEntity simulado;
 
+    // MANTER: referenciado por DisciplinaJpaEntity.notas via @OneToMany(mappedBy = "disciplina")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "disciplina_id", insertable = false, updatable = false)
     private DisciplinaJpaEntity disciplina;

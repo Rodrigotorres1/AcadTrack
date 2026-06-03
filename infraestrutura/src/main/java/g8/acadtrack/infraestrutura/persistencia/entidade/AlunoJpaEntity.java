@@ -29,6 +29,8 @@ public class AlunoJpaEntity {
     @Column(name = "turma_id")
     private Long turmaId;
 
+    // REVISAR: possível código morto — campo de navegação JPA nunca acessado por código Java;
+    // nenhum @OneToMany(mappedBy="turma") referencia este campo; repositórios usam turmaId (Long)
     @ManyToOne(fetch = FetchType.LAZY, optional = true)
     @JoinColumn(name = "turma_id", insertable = false, updatable = false)
     private TurmaJpaEntity turma;
@@ -36,6 +38,8 @@ public class AlunoJpaEntity {
     @Column(name = "responsavel_id")
     private Long responsavelId;
 
+    // REVISAR: possível código morto — campo de navegação JPA nunca acessado por código Java;
+    // nenhum @OneToMany(mappedBy="responsavel") referencia este campo; repositórios usam responsavelId (Long)
     @ManyToOne(fetch = FetchType.LAZY, optional = true)
     @JoinColumn(name = "responsavel_id", insertable = false, updatable = false)
     private ResponsavelJpaEntity responsavel;

@@ -22,16 +22,14 @@ public class AtualizarAlunoUseCase {
         Aluno aluno = alunoRepository.buscarPorId(alunoId)
                 .orElseThrow(() -> new EntidadeNaoEncontradaException("Aluno não encontrado"));
 
-        String emailNovo = Email.normalizar(email);
-        String emailAtual = aluno.getEmail();
-
-        if (!emailNovo.equalsIgnoreCase(emailAtual)) {
-            if (alunoRepository.existeAlunoComEmailIgnorandoMaiusculas(emailNovo)) {
+        Email emailVO = new Email(email);
+        if (!emailVO.getEndereco().equalsIgnoreCase(aluno.getEmail())) {
+            if (alunoRepository.existeAlunoComEmailIgnorandoMaiusculas(emailVO.getEndereco())) {
                 throw new ConflitoDeEstadoException("Já existe outro aluno com este e-mail");
             }
         }
 
-        aluno.atualizar(nome, emailNovo);
+        aluno.atualizar(nome, emailVO.getEndereco());
         return alunoRepository.salvar(aluno);
     }
 }

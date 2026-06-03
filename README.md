@@ -9,254 +9,896 @@
   <img src="https://img.shields.io/badge/H2-Database-003545" />
 </p>
 
-Sistema web para gestão de simulados acadêmicos e acompanhamento do desempenho de alunos. Permite que coordenadores organizem avaliações, professores lancem notas e solicitem retificações, alunos acompanhem seu histórico e responsáveis consultem resultados de alunos vinculados — tudo com regras de negócio não triviais e validações orientadas ao domínio.
+Sistema web para gestão de simulados acadêmicos e acompanhamento do desempenho de alunos. Coordenadores organizam avaliações, professores lançam notas, alunos acompanham seu histórico e responsáveis consultam resultados — com regras de negócio não triviais, validações orientadas ao domínio e arquitetura limpa em módulos Maven separados.
 
 ---
 
 ## Sumário
 
-- [O que o sistema resolve](#o-que-o-sistema-resolve)
-- [Arquitetura geral](#arquitetura-geral)
-- [Estrutura de pastas](#estrutura-de-pastas)
-- [Como rodar](#como-rodar)
-- [Endpoints da API](#endpoints-da-api)
-- [Regras de negócio principais](#regras-de-negócio-principais)
-- [Padrões de projeto](#padrões-de-projeto)
-- [Como rodar os testes](#como-rodar-os-testes)
-- [Decisões arquiteturais](#decisões-arquiteturais)
-- [Glossário do domínio](#glossário-do-domínio)
-- [Documentação acadêmica](#documentação-acadêmica)
-- [Membros](#membros)
+**Parte 1 — 1ª Entrega**
+- [Domínio e linguagem onipresente](#1-domínio-e-linguagem-onipresente)
+- [Mapa de histórias do usuário](#2-mapa-de-histórias-do-usuário)
+- [Protótipos](#3-protótipos)
+- [Modelo DDD — Context Mapper](#4-modelo-ddd--context-mapper)
+- [DDD nos 4 níveis](#5-ddd-nos-4-níveis)
+- [Cenários BDD e testes Cucumber](#6-cenários-bdd-e-testes-cucumber)
+- [Arquitetura Limpa](#7-arquitetura-limpa)
+
+**Parte 2 — 2ª Entrega**
+- [Padrões de projeto](#8-padrões-de-projeto)
+- [Camada de persistência](#9-camada-de-persistência)
+- [Camada de apresentação web](#10-camada-de-apresentação-web)
+- [Como rodar o projeto](#11-como-rodar-o-projeto)
 
 ---
 
-## O que o sistema resolve
+---
 
-Instituições de ensino precisam acompanhar o desempenho de alunos ao longo de múltiplas avaliações (simulados), com diferentes disciplinas, pesos e critérios de aprovação. O fluxo manual é sujeito a erros: notas lançadas incorretamente, responsáveis sem acesso organizado às informações, e sem alertas automáticos quando um aluno entra em situação de risco.
-
-O AcadTrack resolve isso com:
-
-- **Criação estruturada de simulados**: cada simulado exige ao menos duas disciplinas distintas e ativas; a composição é validada antes de persistir.
-- **Lançamento de notas com efeito imediato**: ao lançar uma nota, o sistema recalcula automaticamente a média global do aluno e atualiza sua situação acadêmica (APROVADO / RECUPERACAO / REPROVADO).
-- **Fluxo de retificação**: o aluno pode solicitar revisão de uma nota; a solicitação percorre os estados PENDENTE → EM_ANALISE → APROVADA ou REPROVADA, e aprovações propagam o recálculo de situação.
-- **Análise de risco**: após cada lançamento ou aprovação de retificação, o sistema classifica o risco acadêmico do aluno (BAIXO / MODERADO / ALTO) e notifica automaticamente o responsável vinculado quando o risco não é BAIXO.
-- **Acesso controlado de responsáveis**: responsáveis só enxergam dados de alunos vinculados a eles, e apenas nas dimensões para as quais têm permissão (notas, simulados, desempenho).
+# PARTE 1 — 1ª Entrega
 
 ---
 
-## Arquitetura geral
+## 1. Domínio e linguagem onipresente
 
-O projeto segue **Clean Architecture** com separação estrita de camadas. As dependências sempre apontam para dentro: a camada de domínio não conhece Spring, JPA nem nenhuma infraestrutura.
+### O que o sistema resolve
 
-```
-┌─────────────────────────────────────────────┐
-│           apresentacao-backend              │  Controllers REST, DTOs,
-│           (Spring Boot + Tomcat)            │  Swagger, tratamento de erros
-└────────────────────┬────────────────────────┘
-                     │ chama use cases
-┌────────────────────▼────────────────────────┐
-│                 aplicacao                   │  Use Cases, padrões de projeto,
-│              (sem JPA)                      │  orquestração de fluxos
-└─────────┬───────────────────────┬───────────┘
-          │ acessa interfaces     │ usa entidades
-          │ de repositório        │ do domínio
-┌─────────▼──────────┐  ┌────────▼────────────┐
-│  infraestrutura    │  │  dominio-academico   │
-│  (JPA / Hibernate) │  │  dominio-avaliacao   │  Entidades, regras,
-│  Spring Data       │  │  dominio-usuarios    │  interfaces de repositório
-└────────────────────┘  │  dominio-compartilhado│
-                        └──────────────────────┘
-```
+Instituições de ensino precisam acompanhar o desempenho de alunos ao longo de múltiplas avaliações com diferentes disciplinas e critérios de aprovação. O fluxo manual é sujeito a erros: notas incorretas, responsáveis sem acesso organizado e sem alertas quando um aluno entra em risco.
 
-**Módulos Maven** (todos declarados no `pom.xml` raiz):
+O AcadTrack organiza esse processo em torno de cinco fluxos principais:
 
-| Módulo | Papel |
+1. **Criação de simulados** com composição validada (mínimo duas disciplinas distintas e ativas).
+2. **Lançamento de notas** com recálculo automático da média e da situação acadêmica do aluno.
+3. **Fluxo de retificação** com máquina de estados (PENDENTE → EM_ANALISE → APROVADA / REPROVADA).
+4. **Análise de risco** com classificação automática (BAIXO / MODERADO / ALTO) e notificação do responsável.
+5. **Portal do responsável** com acesso controlado por permissões granulares.
+
+### Subdomínios
+
+| Subdomínio | Tipo | Responsabilidade |
+|---|---|---|
+| **Gestão Acadêmica** | Core Domain | Alunos, turmas, simulados, ranking, análise de desempenho |
+| **Avaliação** | Supporting Domain | Notas, cálculo de médias, retificações |
+| **Usuários** | Generic Domain | Responsáveis, vínculos, notificações, controle de acesso |
+
+### Linguagem onipresente
+
+Os termos abaixo são usados de forma consistente no código (nomes de classes), nos cenários BDD (texto Gherkin) e na documentação:
+
+| Termo | Definição no domínio |
 |---|---|
-| `dominio-compartilhado` | Exceções de domínio, `Email`, `NivelRiscoAcademico` |
-| `dominio-academico` | `Aluno`, `Turma`, `Disciplina` e suas interfaces de repositório |
-| `dominio-avaliacao` | `Nota`, `Simulado`, `SimuladoDisciplina`, `SolicitacaoRetificacao` |
-| `dominio-usuarios` | `Responsavel`, `NotificacaoResponsavel` e interfaces |
-| `aplicacao` | Todos os use cases, padrões de projeto, serviços de domínio |
-| `infraestrutura` | Entidades JPA (`@Entity`), adaptadores de repositório, Spring Data |
-| `apresentacao-backend` | Aplicação Spring Boot executável, controllers REST, DTOs |
-| `apresentacao-frontend` | Camada de apresentação web — SPA (`index.html`, `styles.css`, `app.js` + módulos `js/`) |
-| `bdd/acadtrackbdd` | Testes BDD com Cucumber e Spring Test |
+| **Aluno** | Participante que realiza simulados; possui situação acadêmica e pode ter um responsável vinculado |
+| **Turma** | Agrupamento de alunos; um aluno pertence a no máximo uma turma por vez |
+| **Disciplina** | Componente curricular avaliado dentro de um simulado (ex.: Matemática); pode estar ATIVA ou INATIVA |
+| **Simulado** | Avaliação composta por pelo menos duas disciplinas distintas e ativas, cada uma com peso padrão interno |
+| **SimuladoDisciplina** | Associação entre um Simulado e uma Disciplina com peso padrão `1.0` |
+| **Nota** | Resultado de um aluno para um par *(simulado, disciplina)*; valor entre 0 e 10 |
+| **Média global simples** | Aritmética de *todas* as notas do aluno, sem peso; base para atualizar a `SituacaoAcademica` persistida no cadastro |
+| **Média por simulado** | Média das notas do aluno restrita às disciplinas da composição de um simulado específico; usada em rankings e análise histórica |
+| **SituacaoAcademica** | Estado calculado a partir da média global: `APROVADO` (≥ 7.0) / `RECUPERACAO` (≥ 5.0) / `REPROVADO` (< 5.0) |
+| **NivelRiscoAcademico** | Classificação de risco calculada pela Strategy: `ALTO` / `MODERADO` / `BAIXO` |
+| **SolicitacaoRetificacao** | Pedido de revisão de nota com estados PENDENTE → EM_ANALISE → APROVADA / REPROVADA |
+| **Responsavel** | Responsável legal do aluno; acessa dados do aluno mediante permissões explícitas |
+| **PermissaoResponsavel** | Enum com três permissões independentes: `VISUALIZAR_NOTAS`, `VISUALIZAR_SIMULADOS`, `VISUALIZAR_DESEMPENHO` |
+| **NotificacaoResponsavel** | Alerta criado automaticamente quando o aluno entra em risco MODERADO ou ALTO |
+| **Coordenador / Professor** | Personas de negócio documentadas no story map e nos cenários BDD; não têm role técnica de autenticação nesta entrega |
+
+> Documentação completa: [`docs/descricao_do_dominio.md`](docs/descricao_do_dominio.md)
 
 ---
 
-## Estrutura de pastas
+## 2. Mapa de histórias do usuário
+
+O story map organiza as funcionalidades por persona e release, deixando claro o que está implementado e o que é evolução futura.
+
+### Personas
+
+| Persona | Foco no sistema |
+|---|---|
+| **Coordenador** | Gerencia disciplinas, turmas e simulados; organiza o ambiente acadêmico |
+| **Professor** | Lança e revisa notas; conduz o processo avaliativo |
+| **Aluno** | Acompanha desempenho e solicita retificação de notas |
+| **Responsável** | Consulta notas, simulados e desempenho do aluno vinculado com permissões |
+
+### Story Map resumido (Release 1 — implementado)
+
+| Persona | Atividade | Funcionalidades entregues |
+|---|---|---|
+| Coordenador | Gerenciar disciplinas | Cadastrar, inativar/ativar, bloquear duplicata normalizada |
+| Coordenador | Gerenciar simulados | Criar com composição válida (min 2 disciplinas ativas, sem repetidas), bloquear alteração com notas lançadas |
+| Coordenador | Organizar turmas | Vincular aluno a turma, trocar turma, limpar duplicatas |
+| Professor | Lançar e validar notas | Lançar nota (0–10), bloquear duplicidade, atualizar média e situação automaticamente |
+| Professor | Tratar retificações | Iniciar análise, aprovar (atualiza nota e situação) ou reprovar com justificativa |
+| Aluno | Solicitar retificação | Abrir solicitação com justificativa; impedir múltiplas em aberto para a mesma nota |
+| Responsável | Consultar informações | Notas, simulados e desempenho com vínculo e permissões validados pelo Proxy |
+
+> Artefatos: [`docs/story_map_personas.md`](docs/story_map_personas.md) · [`docs/story_map.pdf`](docs/story_map.pdf)
+
+---
+
+## 3. Protótipos
+
+O protótipo foi desenvolvido em **alta fidelidade no Figma** e cobre todas as telas implementadas. A interface final segue fielmente o protótipo.
+
+**Telas disponíveis** (capturas em [`docs/img/`](docs/img/)):
+
+| Tela | Arquivo |
+|---|---|
+| Dashboard | `tela-dashboard.png` |
+| Alunos | `tela-alunos.png` |
+| Disciplinas | `tela-disciplinas.png` |
+| Notas | `tela-notas.png` |
+| Simulados | `tela-simulado.png` |
+| Desempenho acadêmico | `tela-desempenho.png` |
+| Retificação de notas | `tela-retificacao.png` |
+| Responsáveis | `tela-responsaveis.png` |
+| Portal do responsável | `tela-portal-responsavel.png` |
+
+> Protótipo Figma: [https://stew-skip-70401626.figma.site](https://stew-skip-70401626.figma.site)  
+> Documentação: [`docs/prototipos.md`](docs/prototipos.md)
+
+---
+
+## 4. Modelo DDD — Context Mapper
+
+O arquivo **`acadtrack.cml`** na raiz do repositório é o modelo DDD estratégico legível por máquina, compatível com a ferramenta [Context Mapper](https://contextmapper.org/). Ele declara os quatro Bounded Contexts e seus relacionamentos.
 
 ```
 AcadTrack/
-│
-├── pom.xml                          POM pai: declara todos os 9 módulos e Spring Boot 3.5.14
-├── mvnw / mvnw.cmd                  Maven Wrapper — use no lugar de mvn quando não tiver Maven no PATH
-│
-├── aplicacao/                       Camada de aplicação (use cases, padrões de projeto)
-│   └── src/main/java/g8/acadtrack/aplicacao/
-│       ├── aluno/                   AtivarAluno, InativarAluno, CriarAluno, AtualizarAluno,
-│       │                            BuscarAlunoPorId, ListarAlunos (6 use cases)
-│       ├── disciplina/              Criar, Atualizar, Buscar, Listar, Inativar, Ativar, Excluir (7)
-│       ├── nota/
-│       │   ├── LancarNotaUseCase                  Orquestra validação + persiste + recalcula média
-│       │   ├── BuscarNotasPorAlunoUseCase
-│       │   ├── CalcularMediaPonderadaUseCase       Média do aluno restrita a um simulado
-│       │   ├── AnalisarDesempenhoAcademicoUseCase  Consolida histórico + classifica risco
-│       │   ├── AvaliacaoAcademicaService           Recalcula média global simples e SituacaoAcademica
-│       │   ├── FluxoAnaliseAcademicaTemplate       PADRÃO: Template Method (4 etapas fixas)
-│       │   ├── risco/
-│       │   │   ├── EstrategiaClassificacaoRiscoAcademico  (interface — PADRÃO: Strategy)
-│       │   │   ├── RiscoAltoStrategy               média < 5
-│       │   │   ├── RiscoBaixoStrategy              média >= 7
-│       │   │   └── RiscoModeradoStrategy           5 <= média < 7
-│       │   └── validacao/
-│       │       ├── ValidadorLancamentoNota         (interface do decorador)
-│       │       ├── ValidadorLancamentoNotaBase     Elo final da cadeia (sem validação)
-│       │       ├── ValidadorLancamentoNotaDecorator  (abstract — PADRÃO: Decorator)
-│       │       ├── ValidadorValorNotaDecorator     valor entre 0 e 10
-│       │       ├── ValidadorEntidadesLancamentoNotaDecorator  aluno/simulado/disciplina existem
-│       │       ├── ValidadorAlunoAtivoDecorator    aluno não pode estar inativo
-│       │       ├── ValidadorDisciplinaAtivaDecorator  disciplina não pode estar inativa
-│       │       ├── ValidadorDisciplinaVinculadaSimuladoDecorator  disciplina pertence ao simulado
-│       │       ├── ValidadorNotaDuplicadaDecorator duplo lançamento (aluno+simulado+disciplina)
-│       │       └── ValidacaoLancamentoNotaService  Monta a cadeia e dispara a validação
-│       ├── notificacao/             ListarNotificacoesResponsavel, MarcarNotificacaoLida (2)
-│       ├── ranking/
-│       │   ├── GerarRankingAcademicoUseCase        ranking geral com critério configurável
-│       │   ├── GerarRankingUseCase                 ranking de alunos por simulado
-│       │   ├── CriterioRankingAcademico            enum (MEDIA_DESC)
-│       │   └── OrdenarRankingAcademicoService
-│       ├── responsavel/
-│       │   ├── AcessoResponsavelAlunoProxy         PADRÃO: Proxy — verifica vínculo/permissão
-│       │   ├── ValidarAcessoResponsavelAlunoUseCase
-│       │   ├── ConsultarNotasAlunoPorResponsavelUseCase
-│       │   ├── ConsultarSimuladosAlunoPorResponsavelUseCase
-│       │   ├── ConsultarDesempenhoAlunoPorResponsavelUseCase
-│       │   ├── CriarResponsavel, ExcluirResponsavel, ListarResponsaveis
-│       │   ├── VincularResponsavel, DesvincularResponsavel (9 use cases)
-│       ├── retificacao/             Solicitar, IniciarAnalise, Aprovar, Reprovar,
-│       │                            Listar, Detalhar, MontarDetalhe (7 use cases)
-│       ├── evento/
-│       │   └── DomainEventPublisher                porta para publicação de eventos de domínio
-│       ├── riscoacademico/
-│       │   └── NotificarResponsavelRiscoAcademicoHandler  cria NotificacaoResponsavel a partir de evento de domínio
-│       ├── simulado/                Criar, Atualizar, Detalhar, Listar, ListarComResumo,
-│       │                            ValidarComposicao, AnalisarConsistencia (10 use cases/services)
-│       └── turma/                  Criar, Listar, VincularAlunoTurma, LimparDuplicadas (4)
-│
-├── apresentacao-backend/            Módulo Spring Boot — único módulo com main() executável
-│   └── src/main/
-│       ├── java/g8/acadtrack/apresentacao/
-│       │   ├── AcadTrackApplication.java            @SpringBootApplication — ponto de entrada
-│       │   ├── config/
-│       │   │   ├── CorsConfig.java                  Libera todas as origens para dev local
-│       │   │   ├── DadosIniciaisConfig.java          Cria as 6 turmas padrão (1º A…3º B) na inicialização
-│       │   │   └── OpenApiConfig.java               Configura título/versão do Swagger
-│       │   ├── controller/                          8 @RestController (ver seção Endpoints)
-│       │   ├── dto/request/                         14 classes de request com @Valid
-│       │   └── dto/response/                        12 arquivos de response (17 tipos incluindo os aninhados)
-│       │   └── exception/GlobalExceptionHandler     Mapeia exceções de domínio para HTTP
-│       └── resources/
-│           └── application.properties               Porta 8080, H2 em arquivo, Swagger, JPA
-│
-├── apresentacao-frontend/           Camada de apresentação web (packaging=jar)
-│   └── src/main/resources/static/
-│       ├── index.html               SPA com login por persona e navegação lateral
-│       ├── styles.css               Estilos da interface
-│       ├── app.js                   Lógica principal da SPA
-│       └── js/                      Módulos JS auxiliares (apiClient, config, errors,
-│                                    navigation, session, store, utils, views/ui)
-│
-├── bdd/acadtrackbdd/                Módulo de testes BDD
-│   └── src/test/
-│       ├── java/g8/acadtrack/bdd/
-│       │   ├── CucumberTest.java, CucumberSpringConfiguration.java, TestSpringConfiguration.java
-│       │   ├── steps/               12 classes de step definitions
-│       │   ├── support/             LimparBancoDeDadosHook.java, TestContext.java
-│       │   └── unit/               5 testes JUnit (ListarRetificacoes, RiscoStrategy, Email,
-│       │                            AvaliacaoAcademicaService, OrdenarRankingAcademicoService)
-│       └── resources/
-│           ├── application.properties   H2 em memória (isolado dos testes)
-│           └── features/
-│               ├── gestao_disciplina.feature
-│               ├── vincular_responsavel.feature
-│               ├── lancar_nota.feature
-│               ├── analise_desempenho.feature
-│               ├── criar_simulado.feature
-│               ├── solicitar_retificacao_nota.feature
-│               ├── cadastro_email.feature
-│               ├── desempenho_reprovado.feature
-│               ├── excluir_responsavel.feature
-│               ├── notificacao_risco_academico.feature
-│               ├── retificacao_guards.feature
-│               └── extra/
-│                   ├── calcular_media_ponderada.feature
-│                   ├── gerar_ranking.feature
-│                   └── vincular_aluno_turma.feature
-│
-├── data/                            Banco H2 em arquivo (gerado automaticamente na 1ª execução)
-│                                    Não commitar — está no .gitignore
-│
-├── dominio-academico/               Domínio: Aluno, Turma, Disciplina
-│   └── src/main/java/g8/acadtrack/dominioacademico/
-│       ├── aluno/    Aluno.java, AlunoRepository.java, PermissaoResponsavel.java, SituacaoAcademica.java
-│       │             evento/ RiscoAcademicoEvent.java (Domain Event publicado após análise de risco)
-│       ├── disciplina/ Disciplina.java, DisciplinaRepository.java, StatusDisciplina.java
-│       └── turma/    Turma.java, TurmaRepository.java
-│
-├── dominio-avaliacao/               Domínio: Nota, Simulado, Retificação
-│   └── src/main/java/g8/acadtrack/dominioavaliacao/
-│       ├── nota/       Nota.java, NotaRepository.java
-│       ├── retificacao/ SolicitacaoRetificacao.java, SolicitacaoRetificacaoRepository.java,
-│       │                StatusSolicitacaoRetificacao.java (enum: PENDENTE, EM_ANALISE, APROVADA, REPROVADA)
-│       └── simulado/   Simulado.java, SimuladoDisciplina.java, SimuladoRepository.java,
-│                        SimuladoDisciplinaRepository.java
-│
-├── dominio-compartilhado/           Artefatos transversais
-│   └── src/main/java/g8/acadtrack/dominiocompartilhado/
-│       ├── email/      Email.java (Value Object com validação de formato)
-│       ├── evento/     DomainEvent.java (interface base para todos os eventos de domínio)
-│       ├── excecao/    EntidadeNaoEncontradaException, RegraDeNegocioException,
-│       │               ConflitoDeEstadoException, AcessoDenegadoException
-│       └── risco/      NivelRiscoAcademico.java (enum: BAIXO, MODERADO, ALTO)
-│
-├── dominio-usuarios/                Domínio: Responsável, Notificação
-│   └── src/main/java/g8/acadtrack/dominiousuarios/
-│       ├── notificacao/ NotificacaoResponsavel.java, NotificacaoResponsavelRepository.java,
-│       │                PrioridadeNotificacao.java, StatusNotificacao.java
-│       └── responsavel/ Responsavel.java, ResponsavelRepository.java
-│
-├── infraestrutura/                  Implementações de persistência (JPA) e eventos
-│   └── src/main/java/g8/acadtrack/infraestrutura/
-│       ├── evento/      SpringDomainEventPublisher.java (implementa DomainEventPublisher via ApplicationEventPublisher)
-│       └── persistencia/
-│           ├── entidade/    9 classes @Entity (uma por agregado):
-│           │                AlunoJpaEntity, DisciplinaJpaEntity, NotaJpaEntity,
-│           │                NotificacaoResponsavelJpaEntity, ResponsavelJpaEntity,
-│           │                SimuladoJpaEntity, SimuladoDisciplinaJpaEntity,
-│           │                SolicitacaoRetificacaoJpaEntity, TurmaJpaEntity
-│           ├── repositorio/ 9 adaptadores RepositoryJpa — implementam interfaces do domínio,
-│           │                delegam para Spring Data, convertem Entity ↔ domínio
-│           └── springdata/  9 interfaces JpaRepository (Spring Data)
-│
-├── scripts/                         Scripts PowerShell utilitários
-│   ├── run-backend.ps1              Sobe o backend na primeira porta livre (8080–8299)
-│   ├── demo-fluxo-api.ps1          Executa fluxo completo via API já em execução
-│   ├── free-ports-if-needed.ps1    Mata processos Java nas portas 8080 e 9001
-│   └── README.md                   Descrição de cada script
-│
-└── docs/                            Documentação acadêmica (ver docs/README.md)
-    ├── cml/acadtrack.cml            Modelo Context Mapper
-    ├── img/                         Capturas de tela da interface (9 PNGs)
-    ├── validacoes/                  Prints de validações via Swagger/API
-    └── *.md                         Artefatos DDD, BDD, padrões, etc.
+└── acadtrack.cml   ← modelo DDD estratégico (Context Mapper)
 ```
+
+### Bounded Contexts declarados no CML
+
+| Bounded Context | Implementado no módulo | Conteúdo principal |
+|---|---|---|
+| `CompartilhadoContext` | `dominio-compartilhado` | `Email` (Value Object), `NivelRiscoAcademico`, `DomainEvent` |
+| `GestaoAcademicaContext` | `dominio-academico` | `Aluno`, `Turma`, `Disciplina`, `RiscoAcademicoEvent` |
+| `AvaliacaoDesempenhoContext` | `dominio-avaliacao` | `Nota`, `Simulado`, `SimuladoDisciplina`, `SolicitacaoRetificacao` |
+| `UsuariosContext` | `dominio-usuarios` | `Responsavel`, `NotificacaoResponsavel` |
+
+### Relacionamentos entre contextos
+
+- `GestaoAcademicaContext` usa `CompartilhadoContext` (Shared Kernel)
+- `AvaliacaoDesempenhoContext` usa `CompartilhadoContext` (Shared Kernel)
+- `UsuariosContext` usa `GestaoAcademicaContext` para vincular responsável a aluno
+
+> Resumo textual dos contextos: [`docs/cml/bounded_contexts.md`](docs/cml/bounded_contexts.md)
 
 ---
 
-## Como rodar
+## 5. DDD nos 4 níveis
 
-### Com Docker (recomendado — sem instalar JDK ou Maven)
+### Nível Preliminar
+
+Problema identificado: gerenciar simulados acadêmicos e acompanhar o desempenho dos alunos de forma estruturada, com lançamento de notas, controle de retificações e acesso organizado para responsáveis.
+
+Conceitos centrais identificados na exploração inicial: *aluno, turma, disciplina, simulado, nota, média, ranking, retificação, responsável*.
+
+### Nível Estratégico
+
+O sistema foi dividido em três subdomínios com responsabilidades distintas (ver seção 1). O arquivo `acadtrack.cml` na raiz codifica o Context Map com os quatro Bounded Contexts e seus relacionamentos.
+
+### Nível Tático
+
+**Entidades** (objetos com identidade própria):
+
+| Entidade | Módulo | Invariantes principais |
+|---|---|---|
+| `Aluno` | `dominio-academico` | E-mail único; situação acadêmica recalculada a cada lançamento |
+| `Turma` | `dominio-academico` | Nome normalizado único |
+| `Disciplina` | `dominio-academico` | Nome normalizado único; status ATIVA/INATIVA |
+| `Nota` | `dominio-avaliacao` | Valor em [0,10]; par (aluno, simulado, disciplina) único |
+| `Simulado` | `dominio-avaliacao` | Mínimo 2 disciplinas distintas e ativas; descrição única normalizada |
+| `SolicitacaoRetificacao` | `dominio-avaliacao` | Máquina de estados com guardas de transição |
+| `Responsavel` | `dominio-usuarios` | E-mail único |
+
+**Value Objects** (objetos sem identidade, imutáveis):
+
+| Value Object | Módulo | O que representa |
+|---|---|---|
+| `Email` | `dominio-compartilhado` | Endereço de e-mail normalizado (trim + lowercase) com validação de formato. Campo: `String endereco`. Construtor lança `RegraDeNegocioException` se inválido. Possui `equals()` e `hashCode()` baseados no valor. |
+| `SimuladoDisciplina` | `dominio-avaliacao` | Associação simulado–disciplina com peso padrão `1.0` |
+| `NivelRiscoAcademico` | `dominio-compartilhado` | Enum: `BAIXO`, `MODERADO`, `ALTO` |
+| `SituacaoAcademica` | `dominio-academico` | Enum: `APROVADO`, `RECUPERACAO`, `REPROVADO` |
+
+**Repositórios** (interfaces no domínio, implementadas na infraestrutura):
+
+```
+dominio-academico:   AlunoRepository, TurmaRepository, DisciplinaRepository
+dominio-avaliacao:   NotaRepository, SimuladoRepository, SimuladoDisciplinaRepository,
+                     SolicitacaoRetificacaoRepository
+dominio-usuarios:    ResponsavelRepository, NotificacaoResponsavelRepository
+```
+
+**Domain Events** (publicados pelo domínio, consumidos por handlers na camada de aplicação):
+
+| Evento | Publicado por | Consumido por |
+|---|---|---|
+| `RiscoAcademicoEvent` | `Aluno.registrarRiscoAcademicoIdentificado()` | `NotificarResponsavelRiscoAcademicoHandler` |
+
+**Factory** (cria objetos com estado inicial garantido):
+
+| Factory | Cria | Invariante protegida |
+|---|---|---|
+| `SolicitacaoRetificacaoFabrica.nova(notaId, justificativa)` | `SolicitacaoRetificacao` | Status sempre `PENDENTE`; `justificativaDecisao` sempre `null` na criação |
+
+**Serviços de domínio** (lógica que não pertence a uma entidade específica):
+
+```
+AvaliacaoAcademicaService   — calcula média global simples e situação acadêmica
+ClassificadorRiscoAcademicoService — classifica risco usando Strategy pattern
+```
+
+### Nível Operacional
+
+Implementação completa com tecnologias concretas:
+
+- **Backend**: Spring Boot 3.5.14, Java 17
+- **Persistência**: JPA/Hibernate 6, Spring Data, H2 (arquivo), Flyway
+- **API**: REST com OpenAPI/Swagger
+- **Frontend**: SPA vanilla JS servida como recurso estático pelo Spring Boot
+- **Testes**: Cucumber 7.18.1 + JUnit Platform + Spring Test
+
+> Documentação completa: [`docs/ddd_niveis.md`](docs/ddd_niveis.md)
+
+---
+
+## 6. Cenários BDD e testes Cucumber
+
+### Abordagem
+
+Os cenários BDD especificam o comportamento do sistema em linguagem natural (Gherkin, em português) e são executados automaticamente contra a aplicação real — contexto Spring completo com H2 em memória e MockMvc para chamadas HTTP.
+
+### Estrutura do módulo de testes
+
+```
+bdd/acadtrackbdd/src/test/
+├── java/g8/acadtrack/bdd/
+│   ├── CucumberTest.java                    Runner com @Suite @IncludeEngines("cucumber")
+│   ├── CucumberSpringConfiguration.java     @CucumberContextConfiguration + @SpringBootTest
+│   ├── steps/                               14 classes de step definitions
+│   │   ├── GestaoAlunoSteps.java
+│   │   ├── GestaoTurmaSteps.java
+│   │   ├── GestaoDisciplinaSteps.java
+│   │   ├── GestaoSimuladoSteps.java
+│   │   ├── LancarNotaSteps.java
+│   │   ├── AnalisarDesempenhoSteps.java
+│   │   ├── SolicitarRetificacaoSteps.java
+│   │   ├── VincularResponsavelSteps.java
+│   │   ├── ExcluirResponsavelSteps.java
+│   │   ├── NotificacaoRiscoAcademicoSteps.java
+│   │   ├── CadastroEmailSteps.java
+│   │   ├── CalcularMediaPonderadaSteps.java
+│   │   ├── GerarRankingSteps.java
+│   │   └── VincularAlunoTurmaSteps.java
+│   ├── support/
+│   │   └── LimparBancoDeDadosHook.java      Limpa todas as tabelas antes de cada cenário
+│   └── unit/                                5 testes JUnit puros (sem Spring)
+│       ├── EmailTest.java
+│       ├── RiscoAcademicoStrategyTest.java
+│       ├── OrdenarRankingAcademicoServiceTest.java
+│       ├── AvaliacaoAcademicaServiceTest.java
+│       └── ListarRetificacoesUseCaseTest.java
+└── resources/
+    ├── application.properties               H2 memória, ddl-auto=update, Flyway desabilitado
+    └── features/                            14 arquivos .feature
+```
+
+### Cenários por funcionalidade
+
+| Feature file | Cenários | O que cobre |
+|---|---|---|
+| `gestao_disciplina.feature` | 4 | Criar disciplina ATIVA, rejeitar duplicata normalizada, bloquear nota em inativa, bloquear simulado com inativa |
+| `vincular_responsavel.feature` | 9 | Vincular responsável, rejeitar duplicata de vínculo, desvincular, bloquear acesso sem vínculo, bloquear por permissão insuficiente (notas, simulados, desempenho) |
+| `excluir_responsavel.feature` | 3 | Excluir sem aluno vinculado, excluir e limpar vínculo do aluno, rejeitar ID inexistente |
+| `lancar_nota.feature` | 9 | Nota válida, nota via API, nota fora de [0,10], aluno inativo, duplicata, recálculo de média, limiares de situação (5.0 e 7.0) |
+| `desempenho_reprovado.feature` | 1 | Confirmar REPROVADO e risco ALTO para média < 5.0 |
+| `analise_desempenho.feature` | 6 | Análise sem risco, risco ALTO, risco MODERADO, posição no ranking, aluno sem notas, erro 400 via API |
+| `notificacao_risco_academico.feature` | 6 | Notificação para risco ALTO/MODERADO, ausência para BAIXO, sem falha se aluno sem responsável, listar notificações, marcar como lida |
+| `criar_simulado.feature` | 8 | Criar com 2+ disciplinas, rejeitar sem disciplinas, com só 1, com repetidas, com inexistentes, descrição duplicada, com notas lançadas, com disciplina inativa |
+| `solicitar_retificacao_nota.feature` | 16 | Solicitação válida, sem justificativa, nota inexistente, múltiplas em aberto, PENDENTE → EM_ANALISE, aprovar (atualiza nota e situação), reprovar (nota intacta), guardas de estado, justificativas obrigatórias, aluno inativo pode solicitar, listagem enriquecida |
+| `retificacao_guards.feature` | 2 | Bloquear APROVADA → EM_ANALISE, bloquear REPROVADA → EM_ANALISE |
+| `cadastro_email.feature` | 5 | Aluno sem e-mail, e-mail inválido, e-mail duplicado por capitalização, responsável sem e-mail, responsável com e-mail inválido |
+| `extra/calcular_media_ponderada.feature` | 1 | Média ponderada correta para composição padrão do simulado |
+| `extra/gerar_ranking.feature` | 3 | Alunos ordenados por média, ranking vazio sem notas, consistência com análise de desempenho |
+| `extra/vincular_aluno_turma.feature` | 4 | Vincular, trocar turma, rejeitar turma duplicada, limpar duplicatas migrando alunos |
+| **Total** | **77** | |
+
+### Exemplo de cenário BDD
+
+```gherkin
+# features/lancar_nota.feature
+Feature: Lançar nota individual
+
+  Scenario: Recalcular média automaticamente após novo lançamento
+    Dado que o aluno "João Silva" possui nota 6.0 já lançada
+    Quando o professor lança uma nova nota 8.0 para o aluno "João Silva" em outra disciplina
+    Então o sistema atualiza a média do aluno para 7.0
+
+  Scenario: Definir situação acadêmica no limite de aprovação (média 7.0)
+    Dado que o aluno "João Silva" possui nota 6.0 já lançada
+    Quando o professor lança uma nova nota 8.0 para o aluno "João Silva" em outra disciplina
+    Então o sistema atualiza a situação acadêmica do aluno para "APROVADO"
+```
+
+### Como rodar os testes
+
+**Pré-requisitos**: JDK 17+ e Maven 3.8+ (ou use `mvnw.cmd` / `mvnw`).
+
+```powershell
+# Suite completa: 77 Cucumber + 24 JUnit = 101 testes
+.\mvnw.cmd test
+
+# Apenas o módulo BDD (o -am compila todos os módulos upstream antes)
+.\mvnw.cmd test -pl bdd/acadtrackbdd -am
+```
+
+```bash
+# Linux / macOS
+./mvnw test -pl bdd/acadtrackbdd -am
+```
+
+**Resultado esperado:**
+```
+Tests run: 101, Failures: 0, Errors: 0, Skipped: 0 — BUILD SUCCESS
+```
+
+> Os testes BDD usam H2 em memória, isolado do banco de desenvolvimento. O Flyway é desabilitado nos testes (`spring.flyway.enabled=false`); o schema é criado pelo `ddl-auto=update` do Hibernate no contexto de teste.
+
+> Documentação completa da cobertura BDD: [`docs/bdd.md`](docs/bdd.md)
+
+---
+
+## 7. Arquitetura Limpa
+
+### Princípio fundamental
+
+As dependências sempre apontam para dentro: o domínio não conhece Spring, JPA nem nenhuma infraestrutura. Uma troca de framework afetaria apenas `infraestrutura/` e `apresentacao-backend/`, não as regras de negócio.
+
+### Diagrama de camadas
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│                    apresentacao-backend                      │
+│  @RestController, DTOs, GlobalExceptionHandler, Swagger      │
+│  Único módulo com main() executável                          │
+└────────────────────────────┬─────────────────────────────────┘
+                             │ chama use cases por injeção
+┌────────────────────────────▼─────────────────────────────────┐
+│                       aplicacao                              │
+│  Use Cases, padrões de projeto, serviços de domínio          │
+│  Sem Spring (@Service é a única exceção), sem JPA            │
+│  Acessa repositórios por interfaces (nunca por implementação)│
+└────────────────┬──────────────────────┬──────────────────────┘
+    implementa   │                      │ usa entidades
+    interfaces   │                      │ do domínio
+┌───────────────▼──────┐  ┌────────────▼──────────────────────┐
+│    infraestrutura    │  │        dominio-academico           │
+│  @Entity, JPA,       │  │        dominio-avaliacao           │
+│  Spring Data,        │  │        dominio-usuarios            │
+│  Flyway,             │  │        dominio-compartilhado       │
+│  SpringDomainEvent   │  │                                    │
+│  Publisher           │  │  Entidades, Value Objects,         │
+└──────────────────────┘  │  interfaces de repositório,        │
+                          │  Domain Events, Factory            │
+                          │  Sem Spring. Sem JPA.              │
+                          └────────────────────────────────────┘
+         ▲
+         │ apresentacao-frontend
+         │  SPA (index.html + app.js) servida como
+         │  recurso estático via classpath:/static/
+```
+
+### Módulos Maven e regra de dependência
+
+| Módulo | Dependências permitidas |
+|---|---|
+| `dominio-compartilhado` | Nenhuma interna |
+| `dominio-academico` | `dominio-compartilhado` |
+| `dominio-avaliacao` | `dominio-compartilhado` |
+| `dominio-usuarios` | `dominio-compartilhado` |
+| `aplicacao` | Todos os `dominio-*` |
+| `infraestrutura` | `aplicacao` + todos os `dominio-*` |
+| `apresentacao-backend` | `infraestrutura` + `aplicacao` + todos os `dominio-*` |
+| `apresentacao-frontend` | Nenhuma Java — apenas recursos estáticos |
+| `bdd/acadtrackbdd` | `apresentacao-backend` (transitivamente tudo) |
+
+O compilador Maven impede que qualquer módulo de domínio importe algo de `infraestrutura` ou `aplicacao`. A regra de dependência é verificada em tempo de compilação, não por convenção.
+
+### Por que o frontend está num módulo separado?
+
+`apresentacao-frontend` tem `packaging=jar` e contém os arquivos estáticos da SPA em `src/main/resources/static/`. O `apresentacao-backend` o declara como dependência Maven — assim os arquivos ficam em `classpath:/static/` do jar executável. O Spring Boot serve automaticamente qualquer `classpath:/static/` sem configuração adicional. Essa separação reflete a arquitetura em módulos: frontend e backend têm ciclos de vida independentes.
+
+> Documentação detalhada: [`docs/arquitetura_limpa.md`](docs/arquitetura_limpa.md)
+
+---
+
+---
+
+# PARTE 2 — 2ª Entrega
+
+---
+
+## 8. Padrões de projeto
+
+Sete padrões GoF implementados, cada um mapeado a uma necessidade real do domínio. Nenhum foi adicionado artificialmente.
+
+---
+
+### Factory
+
+**Intenção:** centralizar a criação de objetos com estado inicial complexo, garantindo que invariantes de domínio sejam respeitados desde a criação — sem depender do chamador para saber os valores corretos.
+
+**Onde está:** `dominio-avaliacao/src/main/java/g8/acadtrack/dominioavaliacao/retificacao/SolicitacaoRetificacaoFabrica.java`
+
+**O problema resolvido:** o construtor de `SolicitacaoRetificacao` aceita todos os campos, incluindo `id`, `justificativaDecisao` e `status`. Isso é necessário para reconstituir objetos vindos do banco. Mas ao criar uma nova solicitação, três desses valores são sempre fixos: `id=null` (ainda não persistido), `justificativaDecisao=null` (nenhuma decisão tomada ainda) e `status=PENDENTE` (estado inicial obrigatório). Sem a factory, o chamador precisaria conhecer esses invariantes:
+
+```java
+// Antes: conhecimento de domínio vazando para o use case
+new SolicitacaoRetificacao(null, notaId, justificativa, null, StatusSolicitacaoRetificacao.PENDENTE)
+
+// Depois: intenção clara, invariante protegida pelo domínio
+SolicitacaoRetificacaoFabrica.nova(notaId, justificativa)
+```
+
+**Como é usado no fluxo real:** `SolicitarRetificacaoUseCase.executar()` chama `SolicitacaoRetificacaoFabrica.nova(notaId, justificativa)` após validar que a nota existe e não há solicitação em aberto para ela.
+
+---
+
+### Template Method
+
+**Intenção:** definir o esqueleto de um algoritmo em uma classe abstrata, delegando etapas específicas para subclasses, sem permitir que a ordem das etapas seja alterada.
+
+**Onde está:**
+- `aplicacao/src/main/java/g8/acadtrack/aplicacao/nota/FluxoAnaliseAcademicaTemplate.java` — classe abstrata
+- `aplicacao/src/main/java/g8/acadtrack/aplicacao/nota/AnalisarDesempenhoAcademicoUseCase.java` — subclasse concreta
+
+**Como funciona:** `FluxoAnaliseAcademicaTemplate.executar()` é `final` — ninguém pode alterar a sequência. Ele chama quatro etapas em ordem fixa:
+
+```java
+public final AnaliseDesempenhoAcademicoResultado executar(Long alunoId) {
+    List<Nota> notas = buscarNotas(alunoId);          // etapa 1 — abstrata
+    validarNotas(notas);                               // etapa 2 — com implementação padrão
+    double mediaGeral = calcularMediaGeral(notas);     // etapa 3 — abstrata
+    SituacaoAcademica situacao = calcularSituacaoAcademica(mediaGeral); // etapa 4 — abstrata
+    return montarResultado(alunoId, notas, mediaGeral, situacao);       // etapa 5 — abstrata
+}
+```
+
+**Como é usado no fluxo real:** `AlunoController.GET /alunos/{alunoId}/desempenho` chama `analisarDesempenhoAcademicoUseCase.executar(alunoId)`. O Template Method garante que qualquer análise sempre valide a existência de notas antes de calcular.
+
+---
+
+### Decorator
+
+**Intenção:** adicionar responsabilidades a um objeto dinamicamente, encadeando objetos que implementam a mesma interface. Cada elo da cadeia faz sua validação e repassa para o próximo.
+
+**Onde está:**
+- `aplicacao/src/main/java/g8/acadtrack/aplicacao/nota/validacao/ValidadorLancamentoNota.java` — interface
+- `aplicacao/src/main/java/g8/acadtrack/aplicacao/nota/validacao/ValidadorLancamentoNotaDecorator.java` — abstract
+- Seis decoradores concretos na mesma pasta
+
+**Cadeia de validação montada em `ValidacaoLancamentoNotaService`:**
+
+```java
+this.cadeiaValidacao =
+  new ValidadorValorNotaDecorator(               // valor entre 0 e 10
+    new ValidadorEntidadesLancamentoNotaDecorator( // aluno/simulado/disciplina existem
+      new ValidadorAlunoAtivoDecorator(           // aluno não pode estar inativo
+        new ValidadorDisciplinaAtivaDecorator(    // disciplina não pode estar inativa
+          new ValidadorDisciplinaVinculadaSimuladoDecorator( // disciplina ∈ composição
+            new ValidadorNotaDuplicadaDecorator(  // par (aluno, simulado, disciplina) único
+              new ValidadorLancamentoNotaBase()   // elo final — sem validação
+            , notaRepository)
+          )
+        , disciplinaRepository)
+      )
+    , alunoRepository, simuladoRepository, disciplinaRepository)
+  );
+```
+
+**Como é usado no fluxo real:** `LancarNotaUseCase.executar()` chama `validacaoLancamentoNotaService.validar(alunoId, simuladoId, disciplinaId, valor)`. A cadeia inteira é disparada em sequência. Se qualquer elo falhar, uma `RegraDeNegocioException` ou `EntidadeNaoEncontradaException` é lançada e o lançamento é abortado.
+
+---
+
+### Observer
+
+**Intenção:** definir uma dependência um-para-muitos entre objetos para que, quando um objeto mudar de estado, todos os seus dependentes sejam notificados automaticamente — sem acoplamento direto.
+
+**Onde está:**
+- `dominio-compartilhado/evento/DomainEvent.java` — interface base de todos os eventos
+- `dominio-academico/aluno/evento/RiscoAcademicoEvent.java` — evento concreto (record)
+- `aplicacao/evento/DomainEventPublisher.java` — porta de publicação (interface no domínio)
+- `infraestrutura/evento/SpringDomainEventPublisher.java` — implementação via `ApplicationEventPublisher`
+- `aplicacao/riscoacademico/NotificarResponsavelRiscoAcademicoHandler.java` — handler (observer)
+
+**Fluxo real completo:**
+
+```
+LancarNotaUseCase.executar()
+  → aluno.registrarRiscoAcademicoIdentificado(nivelRisco)
+       → Aluno adiciona RiscoAcademicoEvent à lista interna (se risco ≠ BAIXO)
+  → domainEventPublisher.publicar(aluno.liberarEventosDominio())
+       → SpringDomainEventPublisher chama applicationEventPublisher.publishEvent(evento)
+            → @TransactionalEventListener(AFTER_COMMIT) em NotificarResponsavelRiscoAcademicoHandler
+                 → Verifica se aluno tem responsável vinculado e ativo
+                 → Cria NotificacaoResponsavel com prioridade (ALTA para risco ALTO, MEDIA para MODERADO)
+                 → Persiste via NotificacaoResponsavelRepository
+```
+
+O handler usa `@TransactionalEventListener(phase = AFTER_COMMIT)`: a notificação só é criada se a transação de lançamento de nota for confirmada com sucesso. Se a nota falhar por erro de banco, nenhuma notificação espúria é gerada.
+
+---
+
+### Proxy
+
+**Intenção:** fornecer um substituto para outro objeto, controlando o acesso a ele. O proxy e o objeto real implementam a mesma interface; o proxy intercepta a chamada antes de delegar.
+
+**Onde está:**
+- `aplicacao/responsavel/AcessoResponsavelAlunoService.java` — interface comum
+- `aplicacao/responsavel/AlunoServiceReal.java` — objeto real (busca o aluno no repositório)
+- `aplicacao/responsavel/AcessoResponsavelAlunoProxy.java` — proxy `@Primary`
+- `aplicacao/responsavel/ValidarAcessoResponsavelAlunoUseCase.java` — lógica de validação
+
+**Como funciona:**
+
+```java
+// AcessoResponsavelAlunoProxy — @Primary garante que Spring injeta o proxy em vez do real
+@Override
+public Aluno executar(Long alunoId, Long responsavelId, PermissaoResponsavel permissao) {
+    // 1. Valida ANTES de delegar — se falhar, real nunca é chamado
+    validarAcessoResponsavelAlunoUseCase.executar(alunoId, responsavelId, permissao);
+    // 2. Delega ao serviço real somente se a validação passou
+    return alunoServiceReal.executar(alunoId, responsavelId, permissao);
+}
+```
+
+`ValidarAcessoResponsavelAlunoUseCase` busca o aluno por ID e chama `aluno.validarAcessoResponsavel(responsavelId, permissao)` — que verifica vínculo ativo e permissão específica, lançando `AcessoDenegadoException` se negado.
+
+**Como é usado no fluxo real:** qualquer endpoint `GET /responsaveis/{responsavelId}/alunos/{alunoId}/notas|simulados|desempenho` injeta `AcessoResponsavelAlunoService`. Como o proxy tem `@Primary`, ele é sempre quem responde. O responsável jamais alcança os dados sem vínculo ativo e permissão.
+
+---
+
+### Strategy
+
+**Intenção:** definir uma família de algoritmos intercambiáveis, encapsulando cada um em uma classe e tornando-os substituíveis sem alterar o código que os usa.
+
+**Onde está:**
+- `aplicacao/nota/risco/EstrategiaClassificacaoRiscoAcademico.java` — interface
+- `aplicacao/nota/risco/RiscoAltoStrategy.java` — `@Order(1)`
+- `aplicacao/nota/risco/RiscoModeradoStrategy.java` — `@Order(2)`
+- `aplicacao/nota/risco/RiscoBaixoStrategy.java` — `@Order(3)` (fallback)
+- `aplicacao/nota/risco/ClassificadorRiscoAcademicoService.java` — contexto
+
+**Critérios de cada strategy:**
+
+| Strategy | Condição de `aplica()` | Nível |
+|---|---|---|
+| `RiscoAltoStrategy @Order(1)` | `mediaGeral < 5.0 && simuladosComBaixoDesempenho >= 2` | `ALTO` |
+| `RiscoModeradoStrategy @Order(2)` | `mediaGeral < 6.0 && simuladosComBaixoDesempenho == 1` | `MODERADO` |
+| `RiscoBaixoStrategy @Order(3)` | `return true` (fallback universal) | `BAIXO` |
+
+**Como funciona no contexto:**
+
+```java
+// ClassificadorRiscoAcademicoService — Spring injeta a lista ordenada por @Order
+public NivelRiscoAcademico classificar(double mediaGeral, long simuladosComBaixoDesempenho) {
+    return estrategias.stream()                                  // [Alto, Moderado, Baixo]
+            .filter(e -> e.aplica(mediaGeral, simuladosComBaixoDesempenho))
+            .findFirst()                                         // primeira que se aplica
+            .map(EstrategiaClassificacaoRiscoAcademico::nivel)
+            .orElse(NivelRiscoAcademico.BAIXO);
+}
+```
+
+**Como é usado no fluxo real:** chamado em `LancarNotaUseCase` (via `AnalisarRiscoAcademicoAlunoService`), em `AnalisarDesempenhoAcademicoUseCase` e em `GerarRankingAcademicoUseCase` — toda classificação de risco do sistema passa por aqui.
+
+---
+
+### Iterator
+
+**Intenção:** prover uma forma de percorrer sequencialmente os elementos de uma coleção sem expor sua representação interna.
+
+**Onde está:**
+- `aplicacao/ranking/RankingAcademicoIterator.java` — interface (`hasNext()`, `next()`)
+- `aplicacao/ranking/ListaRankingAcademicoIterator.java` — implementação sobre `List<RankingAcademicoItem>`
+- `aplicacao/ranking/GerarRankingAcademicoUseCase.java` — consumidor
+
+**Como é usado no fluxo real:**
+
+```java
+// GerarRankingAcademicoUseCase.executar(limite, criterio)
+List<RankingAcademicoItem> ordenados = ordenarRankingAcademicoService.ordenar(itens, criterio);
+RankingAcademicoIterator iterator = new ListaRankingAcademicoIterator(ordenados);
+List<RankingAcademicoItem> resultado = new ArrayList<>(quantidadeMaxima);
+
+while (iterator.hasNext() && resultado.size() < quantidadeMaxima) {
+    resultado.add(iterator.next());
+}
+```
+
+O `limite` controla quantos itens são consumidos do iterator. O ranking completo pode ter dezenas de alunos, mas `GET /rankings?limite=10` retorna apenas os Top 10 — o iterator encapsula o controle de parada sem expor o índice.
+
+---
+
+> Documentação completa com justificativas: [`docs/padroes_entrega2.md`](docs/padroes_entrega2.md)
+
+---
+
+## 9. Camada de persistência
+
+### Visão geral
+
+A persistência segue o padrão **Repository Adapter**: interfaces de repositório são declaradas nos módulos de domínio (sem Spring, sem JPA); as implementações ficam em `infraestrutura/`, que é o único módulo autorizado a conhecer JPA.
+
+```
+Domínio declara:         AlunoRepository (interface pura)
+Infraestrutura implementa: AlunoRepositoryJpa implements AlunoRepository
+                                ↓ delega para
+                          AlunoSpringDataRepository extends JpaRepository<AlunoJpaEntity, Long>
+```
+
+### Entidades JPA
+
+Nove classes `@Entity` em `infraestrutura/src/main/java/g8/acadtrack/infraestrutura/persistencia/entidade/`:
+
+| Entidade JPA | Tabela | Relacionamentos mapeados |
+|---|---|---|
+| `AlunoJpaEntity` | `aluno` | `@ManyToOne` turma (FK), `@ManyToOne` responsavel (FK) |
+| `TurmaJpaEntity` | `turma` | — |
+| `DisciplinaJpaEntity` | `disciplina` | `@OneToMany` notas (bidirecional, mappedBy="disciplina") |
+| `SimuladoJpaEntity` | `simulado` | `@OneToMany` disciplinas (cascade=ALL, orphanRemoval=true) |
+| `SimuladoDisciplinaJpaEntity` | `simulado_disciplina` | `@ManyToOne` simulado (bidirecional) |
+| `NotaJpaEntity` | `nota` | `@ManyToOne` disciplina (bidirecional) |
+| `SolicitacaoRetificacaoJpaEntity` | `solicitacao_retificacao` | — |
+| `ResponsavelJpaEntity` | `responsavel` | — |
+| `NotificacaoResponsavelJpaEntity` | `notificacao_responsavel` | — |
+
+**Convenção de mapeamento:** as entidades JPA **não são** as entidades de domínio. Cada `*JpaEntity` é uma classe separada com anotações JPA. Os adaptadores de repositório (`*RepositoryJpa`) convertem manualmente entre JPA entity e objeto de domínio no método `salvar()` e nas consultas.
+
+### Flyway — gerenciamento do schema
+
+O schema do banco é criado e versionado pelo **Flyway**, não pelo Hibernate. O arquivo de migração está em:
+
+```
+infraestrutura/src/main/resources/db/migration/V1__schema.sql
+```
+
+Ele cria as 9 tabelas com todas as foreign keys e constraints. O Hibernate usa `ddl-auto=validate` — apenas verifica que as tabelas correspondem aos mapeamentos JPA, nunca altera o schema.
+
+**Comportamento na primeira execução:**
+1. Flyway detecta banco vazio → executa `V1__schema.sql` → cria as 9 tabelas
+2. Hibernate valida o schema → passa, pois as tabelas foram criadas pelo SQL
+
+**Comportamento em execuções seguintes (banco já existe):**
+1. `flyway.baseline-on-migrate=true` e `flyway.baseline-version=1` → Flyway reconhece que o banco já está na versão 1 e não tenta recriar as tabelas
+2. Hibernate valida → passa
+
+**Configuração em `apresentacao-backend/src/main/resources/application.properties`:**
+
+```properties
+spring.datasource.url=jdbc:h2:file:./data/acadtrack-db;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+spring.jpa.hibernate.ddl-auto=validate
+spring.flyway.baseline-on-migrate=true
+spring.flyway.baseline-version=1
+```
+
+### Spring Data Repositories
+
+Nove interfaces `JpaRepository` em `infraestrutura/persistencia/springdata/`, com queries derivadas do nome do método:
+
+```java
+// Exemplo: AlunoSpringDataRepository
+boolean existsByEmailIgnoreCase(String email);
+List<AlunoJpaEntity> findByResponsavelId(Long responsavelId);
+List<AlunoJpaEntity> findByIdIn(List<Long> ids);
+
+// NotaSpringDataRepository
+boolean existsByAlunoIdAndSimuladoIdAndDisciplinaId(Long a, Long s, Long d);
+List<NotaJpaEntity> findByAlunoIdIn(List<Long> alunoIds);
+```
+
+> Documentação completa: [`docs/persistencia_orm_entrega2.md`](docs/persistencia_orm_entrega2.md)
+
+---
+
+## 10. Camada de apresentação web
+
+A camada de apresentação é composta por dois elementos independentes: uma API REST (módulo `apresentacao-backend`) e uma SPA em JavaScript puro (módulo `apresentacao-frontend`).
+
+### SPA — Single Page Application
+
+A SPA está em `apresentacao-frontend/src/main/resources/static/` e é servida pelo Spring Boot como recurso estático. Não há build JS — são arquivos plain HTML/CSS/JS.
+
+**Estrutura:**
+
+```
+static/
+├── index.html     8 seções de navegação lateral
+├── styles.css
+├── app.js         2.300+ linhas — lógica de todas as telas
+└── js/
+    ├── apiClient.js    fetch com tratamento de erro centralizado
+    ├── config.js       base URL da API
+    ├── errors.js       mapeamento de erros HTTP → mensagens amigáveis
+    ├── navigation.js   roteamento entre seções
+    ├── session.js      perfil selecionado (persona)
+    ├── store.js        estado compartilhado entre módulos
+    ├── utils.js        formatação, normalização
+    └── views/ui.js     helpers de renderização
+```
+
+**Seções disponíveis na interface:**
+
+| Seção | Navegação lateral | Funcionalidades |
+|---|---|---|
+| Alunos | `#alunos` | Cadastrar, editar, ativar/inativar, vincular turma |
+| Disciplinas | `#disciplinas` | CRUD completo, ativar/inativar |
+| Notas | `#notas` | Lançar nota (dropdowns dinâmicos), consultar notas por aluno |
+| Desempenho | `#desempenho` | Análise consolidada com média, situação, nível de risco, ranking, histórico por simulado |
+| Simulados | `#simulados` | Criar com seleção de disciplinas por checkbox (mín 2), detalhar, editar |
+| Retificações | `#retificacoes` | Solicitar (visão aluno), listar e decidir com aprovação/reprovação (visão professor) |
+| Responsáveis | `#responsaveis` | Cadastrar, vincular com 3 permissões, desvincular, excluir |
+| Notificações | `#notificacoes` | Listar alertas de risco por responsável, marcar como lida |
+| Portal responsável | `#portal` | Consultar notas/simulados/desempenho do aluno vinculado |
+
+### API REST — Controllers
+
+Oito `@RestController` em `apresentacao-backend/src/main/java/g8/acadtrack/apresentacao/controller/`:
+
+#### Turmas — `GET/POST /turmas`
+
+| Método | Rota | Status |
+|---|---|---|
+| GET | `/turmas` | 200 |
+| POST | `/turmas` | 201, 400, 409 |
+
+> As turmas `1º A`, `1º B`, `2º A`, `2º B`, `3º A`, `3º B` são criadas automaticamente na inicialização.
+
+#### Alunos — `/alunos`
+
+| Método | Rota | O que faz | Status |
+|---|---|---|---|
+| GET | `/alunos` | Lista todos | 200 |
+| GET | `/alunos/{alunoId}` | Busca por ID | 200, 404 |
+| POST | `/alunos` | Cadastra (e-mail único) | 201, 400, 409 |
+| PATCH | `/alunos/{alunoId}` | Edita nome e/ou e-mail | 200, 400, 404, 409 |
+| PATCH | `/alunos/{alunoId}/inativar` | Soft-inativar | 200, 404 |
+| PATCH | `/alunos/{alunoId}/ativar` | Reativar | 200, 404 |
+| PUT | `/alunos/{alunoId}/turma` | Definir ou trocar turma | 200, 400, 404 |
+| PUT | `/alunos/{alunoId}/responsavel` | Vincular responsável com permissões | 200, 400, 404, 409 |
+| DELETE | `/alunos/{alunoId}/responsavel` | Desvincular responsável | 200, 404 |
+| GET | `/alunos/{alunoId}/desempenho` | Análise consolidada de desempenho | 200, 400, 404 |
+
+```json
+// POST /alunos
+{ "nome": "João Silva", "email": "joao.silva@escola.edu" }
+
+// PUT /alunos/{id}/responsavel — ao menos uma permissão true
+{ "responsavelId": 1, "podeVisualizarNotas": true,
+  "podeVisualizarSimulados": true, "podeVisualizarDesempenho": false }
+
+// GET /alunos/{id}/desempenho — response
+{ "alunoId": 1, "mediaGeral": 7.25, "situacaoAcademica": "APROVADO",
+  "nivelRisco": "BAIXO", "riscoAcademico": false,
+  "posicaoRanking": 2, "totalAlunosRanking": 5, "alunoNoTop10": true,
+  "historicoSimulados": [...], "notasPorDisciplina": [...] }
+```
+
+#### Disciplinas — `/disciplinas`
+
+| Método | Rota | Status |
+|---|---|---|
+| GET | `/disciplinas` | 200 |
+| GET | `/disciplinas/{id}` | 200, 404 |
+| POST | `/disciplinas` | 201, 400, 409 |
+| PATCH | `/disciplinas/{id}` | 200, 400, 404, 409 |
+| PATCH | `/disciplinas/{id}/inativar` | 200, 400, 404 |
+| PATCH | `/disciplinas/{id}/ativar` | 200, 400, 404 |
+| DELETE | `/disciplinas/{id}` | 204, 400, 404 |
+
+#### Simulados — `/simulados`
+
+| Método | Rota | O que faz | Status |
+|---|---|---|---|
+| GET | `/simulados` | Lista com qtd de disciplinas | 200 |
+| GET | `/simulados/{id}` | Detalha composição, notas e alunos | 200, 404 |
+| GET | `/simulados/{id}/disciplinas` | Lista disciplinas vinculadas | 200, 404 |
+| POST | `/simulados` | Cria (mín 2 disciplinas ativas) | 201, 400, 404, 409 |
+| PATCH | `/simulados/{id}` | Edita (bloqueado se tem notas) | 200, 400, 404 |
+
+```json
+// POST /simulados
+{ "descricao": "Simulado 1 - Bimestre", "disciplinasIds": [1, 2] }
+```
+
+#### Notas — `/notas`
+
+| Método | Rota | Status |
+|---|---|---|
+| POST | `/notas` | 201, 400, 404, 409 |
+| GET | `/notas/aluno/{alunoId}` | 200, 404 |
+| GET | `/notas/aluno/{alunoId}/simulado/{simuladoId}/media` | 200, 400, 404 |
+
+```json
+// POST /notas
+{ "alunoId": 1, "simuladoId": 1, "disciplinaId": 1, "valor": 7.5 }
+```
+
+#### Rankings — `/rankings`
+
+| Método | Rota | Status |
+|---|---|---|
+| GET | `/rankings?limite=10&criterio=MEDIA_DESC` | 200 |
+| GET | `/rankings/{simuladoId}` | 200, 400, 404 |
+
+#### Responsáveis — `/responsaveis`
+
+| Método | Rota | O que faz | Status |
+|---|---|---|---|
+| GET | `/responsaveis` | Lista todos | 200 |
+| POST | `/responsaveis` | Cadastra (e-mail único) | 201, 400, 409 |
+| DELETE | `/responsaveis/{id}` | Exclui e limpa vínculos | 204, 404 |
+| GET | `/responsaveis/{id}/alunos/{alunoId}/notas` | Notas (requer VISUALIZAR_NOTAS) | 200, 403, 404 |
+| GET | `/responsaveis/{id}/alunos/{alunoId}/simulados` | Simulados (requer VISUALIZAR_SIMULADOS) | 200, 403, 404 |
+| GET | `/responsaveis/{id}/alunos/{alunoId}/desempenho` | Desempenho (requer VISUALIZAR_DESEMPENHO) | 200, 400, 403, 404 |
+| GET | `/responsaveis/{id}/notificacoes` | Lista notificações | 200, 404 |
+| PATCH | `/responsaveis/{id}/notificacoes/{notifId}/lida` | Marca como lida | 200, 404 |
+
+#### Retificações — `/retificacoes`
+
+| Método | Rota | O que faz | Status |
+|---|---|---|---|
+| GET | `/retificacoes` | Lista com aluno, disciplina, simulado | 200 |
+| GET | `/retificacoes/{id}` | Detalha | 200, 404 |
+| POST | `/retificacoes` | Solicita (justificativa obrigatória) | 201, 400, 404, 409 |
+| PATCH | `/retificacoes/{id}/em-analise` | PENDENTE → EM_ANALISE | 200, 404, 409 |
+| PATCH | `/retificacoes/{id}/aprovar` | EM_ANALISE → APROVADA (atualiza nota) | 200, 400, 404, 409 |
+| PATCH | `/retificacoes/{id}/reprovar` | EM_ANALISE → REPROVADA (nota intacta) | 200, 400, 404, 409 |
+
+```json
+// POST /retificacoes
+{ "notaId": 1, "justificativa": "Houve erro na correção da questão discursiva" }
+
+// PATCH /retificacoes/{id}/aprovar — justificativa de decisão obrigatória
+{ "novoValorNota": 9.0, "justificativaDecisao": "Erro confirmado na correção" }
+```
+
+### Swagger UI
+
+Todos os endpoints estão documentados e são testáveis interativamente em:
+
+```
+http://localhost:8080/swagger-ui/index.html
+```
+
+### Tratamento de erros
+
+`GlobalExceptionHandler` mapeia exceções de domínio para status HTTP:
+
+| Exceção de domínio | Status HTTP |
+|---|---|
+| `EntidadeNaoEncontradaException` | 404 Not Found |
+| `RegraDeNegocioException` | 400 Bad Request |
+| `ConflitoDeEstadoException` | 409 Conflict |
+| `AcessoDenegadoException` | 403 Forbidden |
+
+---
+
+## 11. Como rodar o projeto
+
+### Pré-requisitos
+
+| Requisito | Versão mínima | Como verificar |
+|---|---|---|
+| JDK | 17 | `java -version` |
+| Maven | 3.8+ | `mvn -version` (ou use o wrapper incluso) |
+
+Não é necessário instalar banco de dados. O H2 é embutido; o Flyway cria as tabelas automaticamente na primeira execução.
+
+---
+
+### Opção 1 — Docker (sem instalar JDK ou Maven)
 
 Requisito: [Docker Desktop](https://www.docker.com/products/docker-desktop/) instalado e em execução.
 
@@ -264,486 +906,102 @@ Requisito: [Docker Desktop](https://www.docker.com/products/docker-desktop/) ins
 docker compose up --build
 ```
 
-Aguarde o build (~2 min na primeira vez). Quando aparecer `Started AcadTrackApplication`, acesse `http://localhost:8080`.
+Build demora ~2 minutos na primeira vez. Quando aparecer `Started AcadTrackApplication`, acesse `http://localhost:8080`.
 
-Os dados do H2 ficam em um volume Docker nomeado (`acadtrack-data`) e persistem entre reinicializações.
-
-| O que fazer | Comando |
+| Comando | O que faz |
 |---|---|
-| Subir em segundo plano | `docker compose up -d` |
-| Ver logs em tempo real | `docker compose logs -f` |
-| Parar | `docker compose down` |
-| Rebuild após mudança de código | `docker compose up --build -d` |
+| `docker compose up -d` | Sobe em segundo plano |
+| `docker compose logs -f` | Acompanha logs em tempo real |
+| `docker compose down` | Para e remove containers |
+| `docker compose up --build -d` | Rebuild após mudança de código |
 
 ---
 
-### Pré-requisitos
+### Opção 2 — Rodando localmente
 
-| Requisito | Versão mínima | Observação |
-|---|---|---|
-| JDK | 17 | Validado também com JDK 25 |
-| Maven | 3.8+ | Ou use o wrapper `mvnw.cmd` / `mvnw` incluso |
-
-Não é necessário instalar banco de dados: o H2 é embutido e o arquivo de banco é criado automaticamente em `data/acadtrack-db.mv.db` na primeira execução.
-
-### Subir o backend (forma recomendada no Windows)
+#### Windows
 
 ```powershell
-# Na raiz do projeto (onde fica pom.xml)
+# Na raiz do projeto (onde fica o pom.xml raiz)
 .\mvnw.cmd -pl apresentacao-backend -am spring-boot:run
 ```
 
-Após a mensagem `Started AcadTrackApplication`, acesse:
-
-| URL | O que é |
-|---|---|
-| `http://localhost:8080/` | Interface web (SPA) |
-| `http://localhost:8080/swagger-ui/index.html` | Documentação interativa da API |
-| `http://localhost:8080/h2-console` | Console H2 (JDBC URL: `jdbc:h2:file:./data/acadtrack-db`) |
-
-### Linux / macOS / Git Bash
+#### Linux / macOS / Git Bash
 
 ```bash
 ./mvnw -pl apresentacao-backend -am spring-boot:run
 ```
 
-### Porta alternativa (se 8080 estiver ocupada)
+O flag `-am` (also-make) constrói todos os módulos dos quais `apresentacao-backend` depende antes de subir a aplicação.
+
+#### Quando a aplicação estiver rodando
+
+```
+Started AcadTrackApplication in X.XXX seconds
+```
+
+| URL | O que é |
+|---|---|
+| `http://localhost:8080` | Interface web (SPA) |
+| `http://localhost:8080/swagger-ui/index.html` | Documentação interativa da API |
+| `http://localhost:8080/h2-console` | Console H2 para inspecionar o banco |
+
+No H2 Console, use JDBC URL: `jdbc:h2:file:./data/acadtrack-db`
+
+#### Porta alternativa (se 8080 estiver ocupada)
 
 ```powershell
 .\mvnw.cmd -pl apresentacao-backend -am spring-boot:run "-Dspring-boot.run.arguments=--server.port=8081"
 ```
 
-### Script com porta automática
-
-O script `scripts/run-backend.ps1` escolhe automaticamente a primeira porta livre entre 8080 e 8299 e imprime o URL do Swagger no terminal:
+O script `scripts/run-backend.ps1` detecta automaticamente a primeira porta livre entre 8080 e 8299:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\run-backend.ps1
 ```
 
-### Liberar porta travada
+Para liberar portas travadas:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\free-ports-if-needed.ps1
 ```
 
-### Build completo de todos os módulos
+---
+
+### Ordem de criação de dados (para testar o fluxo completo)
+
+Os recursos têm dependências entre si. Na primeira vez que usar o sistema, crie nesta ordem:
+
+```
+1. Turmas         — já criadas automaticamente (1º A … 3º B)
+2. Disciplinas    — criar no mínimo 2 para usar em simulados
+3. Alunos         — cadastrar com nome e e-mail
+4. Responsáveis   — cadastrar e vincular ao aluno com permissões
+5. Vincular aluno → turma
+6. Simulados      — criar com pelo menos 2 disciplinas ativas
+7. Notas          — lançar para aluno + simulado + disciplina
+8. Retificações   — solicitar, analisar, aprovar/reprovar
+```
+
+---
+
+### Rodando os testes
 
 ```powershell
-.\mvnw.cmd clean install
-```
-
----
-
-## Endpoints da API
-
-> A forma mais cômoda de explorar e testar a API é o **Swagger UI** em `http://localhost:8080/swagger-ui/index.html`. Os exemplos abaixo refletem exatamente o código dos controllers.
-
-### Ordem de dependência para o fluxo completo
-
-Ao testar manualmente, crie os recursos nesta ordem, pois uns dependem dos outros:
-
-```
-Turmas → Disciplinas → Alunos → Responsáveis
-  → Vincular Aluno à Turma → Vincular Responsável ao Aluno
-  → Simulados (disciplinas devem existir) → Notas → Retificações
-```
-
----
-
-### Turmas — `GET/POST /turmas`
-
-| Método | Rota | O que faz | Status |
-|---|---|---|---|
-| GET | `/turmas` | Lista todas as turmas | 200 |
-| POST | `/turmas` | Cria uma turma | 201, 400, 409 |
-
-> Na inicialização, `DadosIniciaisConfig` já cria automaticamente as turmas `1º A`, `1º B`, `2º A`, `2º B`, `3º A` e `3º B`.
-
-**POST** `/turmas`
-```json
-// request
-{ "nome": "Turma Demo" }
-
-// response 201
-{ "id": 7, "nome": "Turma Demo" }
-```
-
----
-
-### Alunos — `/alunos`
-
-| Método | Rota | O que faz | Status |
-|---|---|---|---|
-| GET | `/alunos` | Lista todos os alunos | 200 |
-| GET | `/alunos/{alunoId}` | Busca aluno por ID | 200, 404 |
-| POST | `/alunos` | Cadastra aluno | 201, 400, 409 |
-| PATCH | `/alunos/{alunoId}` | Edita nome e/ou e-mail | 200, 400, 404, 409 |
-| PATCH | `/alunos/{alunoId}/inativar` | Inativa aluno (soft) | 200, 404 |
-| PATCH | `/alunos/{alunoId}/ativar` | Reativa aluno | 200, 404 |
-| PUT | `/alunos/{alunoId}/turma` | Define ou troca a turma | 200, 400, 404 |
-| PUT | `/alunos/{alunoId}/responsavel` | Vincula responsável com permissões | 200, 400, 404, 409 |
-| DELETE | `/alunos/{alunoId}/responsavel` | Desvincula responsável | 200, 404 |
-| GET | `/alunos/{alunoId}/desempenho` | Análise consolidada de desempenho | 200, 400, 404 |
-
-**POST** `/alunos`
-```json
-// request — e-mail é único (case-insensitive)
-{ "nome": "João Silva", "email": "joao.silva@escola.edu" }
-
-// response 201
-{ "id": 1, "nome": "João Silva", "email": "joao.silva@escola.edu",
-  "turmaId": null, "responsavelId": null, "situacao": "Ativo",
-  "vinculoResponsavelAtivo": false, "podeVisualizarNotas": false,
-  "podeVisualizarSimulados": false, "podeVisualizarDesempenho": false,
-  "mediaAritmetica": 0.0, "situacaoAcademica": "APROVADO" }
-```
-
-**PUT** `/alunos/{alunoId}/responsavel`
-```json
-// request — pelo menos uma permissão deve ser true
-{ "responsavelId": 1, "podeVisualizarNotas": true,
-  "podeVisualizarSimulados": true, "podeVisualizarDesempenho": false }
-```
-
-**GET** `/alunos/{alunoId}/desempenho` — response 200
-```json
-{
-  "alunoId": 1,
-  "mediaGeral": 7.25, "situacaoAcademica": "APROVADO",
-  "nivelRisco": "BAIXO", "riscoAcademico": false,
-  "posicaoRanking": 2, "totalAlunosRanking": 5, "alunoNoTop10": true,
-  "historicoSimulados": [
-    { "simuladoId": 1, "nomeSimulado": "Simulado 1", "mediaPonderada": 7.25,
-      "quantidadeNotas": 2, "baixoDesempenho": false }
-  ],
-  "notasPorDisciplina": [
-    { "disciplinaId": 1, "nomeDisciplina": "Matemática", "media": 7.5,
-      "status": "APROVADO", "nivelRisco": "BAIXO" }
-  ]
-}
-```
-
----
-
-### Disciplinas — `/disciplinas`
-
-| Método | Rota | O que faz | Status |
-|---|---|---|---|
-| GET | `/disciplinas` | Lista todas | 200 |
-| GET | `/disciplinas/{disciplinaId}` | Busca por ID | 200, 404 |
-| POST | `/disciplinas` | Cadastra disciplina | 201, 400, 409 |
-| PATCH | `/disciplinas/{disciplinaId}` | Edita nome | 200, 400, 404, 409 |
-| PATCH | `/disciplinas/{disciplinaId}/inativar` | Inativa (soft-delete) | 200, 400, 404 |
-| PATCH | `/disciplinas/{disciplinaId}/ativar` | Reativa | 200, 400, 404 |
-| DELETE | `/disciplinas/{disciplinaId}` | Exclui definitivamente | 204, 400, 404 |
-
-**POST** `/disciplinas`
-```json
-// request
-{ "nome": "Matemática" }
-
-// response 201
-{ "id": 1, "nome": "Matemática", "status": "ATIVA" }
-```
-
----
-
-### Simulados — `/simulados`
-
-| Método | Rota | O que faz | Status |
-|---|---|---|---|
-| GET | `/simulados` | Lista (resumo: id + descrição) | 200 |
-| GET | `/simulados/{simuladoId}` | Detalha: composição, notas, alunos | 200, 404 |
-| GET | `/simulados/{simuladoId}/disciplinas` | Disciplinas vinculadas | 200, 404 |
-| POST | `/simulados` | Cria simulado com composição | 201, 400, 404, 409 |
-| PATCH | `/simulados/{simuladoId}` | Edita descrição e/ou disciplinas | 200, 400, 404 |
-
-**POST** `/simulados`
-```json
-// request — mínimo 2 disciplinas distintas e ativas
-{ "descricao": "Simulado 1 - Bimestre", "disciplinasIds": [1, 2] }
-
-// response 201
-{ "id": 1, "descricao": "Simulado 1 - Bimestre" }
-```
-
----
-
-### Notas — `/notas`
-
-| Método | Rota | O que faz | Status |
-|---|---|---|---|
-| POST | `/notas` | Lança nota (valida + persiste + recalcula) | 201, 400, 404, 409 |
-| GET | `/notas/aluno/{alunoId}` | Lista notas do aluno enriquecidas | 200, 404 |
-| GET | `/notas/aluno/{alunoId}/simulado/{simuladoId}/media` | Média ponderada por simulado | 200, 400, 404 |
-
-**POST** `/notas`
-```json
-// request — disciplina deve estar na composição do simulado
-{ "alunoId": 1, "simuladoId": 1, "disciplinaId": 1, "valor": 7.5 }
-
-// response 201
-{ "id": 1, "alunoId": 1, "simuladoId": 1, "disciplinaId": 1, "valor": 7.5,
-  "nomeDisciplina": null, "descricaoSimulado": null }
-```
-
-**GET** `/notas/aluno/{alunoId}` — response 200 (enriquecido com nomes)
-```json
-[
-  { "id": 1, "alunoId": 1, "simuladoId": 1, "nomeDisciplina": "Matemática",
-    "descricaoSimulado": "Simulado 1 - Bimestre", "disciplinaId": 1, "valor": 7.5 }
-]
-```
-
-**GET** `/notas/aluno/1/simulado/1/media` — response 200
-```json
-7.5
-```
-
----
-
-### Rankings — `/rankings`
-
-| Método | Rota | O que faz | Status |
-|---|---|---|---|
-| GET | `/rankings?limite=10&criterio=MEDIA_DESC` | Ranking acadêmico geral | 200 |
-| GET | `/rankings/{simuladoId}` | Ranking de alunos por simulado | 200, 400, 404 |
-
-**GET** `/rankings?limite=5&criterio=MEDIA_DESC`
-```json
-[
-  { "posicao": 1, "alunoId": 2, "nomeAluno": "Maria", "media": 9.0, "situacaoAcademica": "APROVADO", "nivelRisco": "BAIXO" },
-  { "posicao": 2, "alunoId": 1, "nomeAluno": "João", "media": 7.5, "situacaoAcademica": "APROVADO", "nivelRisco": "BAIXO" }
-]
-```
-
----
-
-### Responsáveis — `/responsaveis`
-
-| Método | Rota | O que faz | Status |
-|---|---|---|---|
-| GET | `/responsaveis` | Lista todos | 200 |
-| POST | `/responsaveis` | Cadastra responsável | 201, 400, 409 |
-| DELETE | `/responsaveis/{responsavelId}` | Exclui e limpa vínculos | 204, 404 |
-| GET | `/responsaveis/{responsavelId}/alunos/{alunoId}/notas` | Notas (requer permissão VISUALIZAR_NOTAS) | 200, 403, 404 |
-| GET | `/responsaveis/{responsavelId}/alunos/{alunoId}/simulados` | Simulados (requer VISUALIZAR_SIMULADOS) | 200, 403, 404 |
-| GET | `/responsaveis/{responsavelId}/alunos/{alunoId}/desempenho` | Desempenho (requer VISUALIZAR_DESEMPENHO) | 200, 400, 403, 404 |
-| GET | `/responsaveis/{responsavelId}/notificacoes` | Lista notificações | 200, 404 |
-| PATCH | `/responsaveis/{responsavelId}/notificacoes/{notificacaoId}/lida` | Marca notificação como lida | 200, 404 |
-
-**POST** `/responsaveis`
-```json
-// request — e-mail único no sistema
-{ "nome": "Maria Santos", "email": "maria.santos@email.com" }
-
-// response 201
-{ "id": 1, "nome": "Maria Santos", "email": "maria.santos@email.com" }
-```
-
----
-
-### Retificações — `/retificacoes`
-
-| Método | Rota | O que faz | Status |
-|---|---|---|---|
-| GET | `/retificacoes` | Lista todas (enriquecido) | 200 |
-| GET | `/retificacoes/{solicitacaoId}` | Detalha | 200, 404 |
-| POST | `/retificacoes` | Solicita retificação | 201, 400, 404, 409 |
-| PATCH | `/retificacoes/{solicitacaoId}/em-analise` | Transição PENDENTE → EM_ANALISE | 200, 404, 409 |
-| PATCH | `/retificacoes/{solicitacaoId}/aprovar` | Transição EM_ANALISE → APROVADA | 200, 400, 404, 409 |
-| PATCH | `/retificacoes/{solicitacaoId}/reprovar` | Transição EM_ANALISE → REPROVADA | 200, 400, 404, 409 |
-
-**POST** `/retificacoes`
-```json
-// request — justificativa obrigatória
-{ "notaId": 1, "justificativa": "Houve erro na correção da questão discursiva" }
-
-// response 201
-{ "id": 1, "notaId": 1, "justificativa": "...", "status": "PENDENTE",
-  "alunoNome": "João Silva", "disciplinaNome": "Matemática", "simuladoDescricao": "Simulado 1" }
-```
-
-**PATCH** `/retificacoes/{id}/aprovar`
-```json
-// request — nota deve estar em EM_ANALISE; justificativa obrigatória
-{ "novoValorNota": 9.0, "justificativaDecisao": "Erro confirmado na correção" }
-```
-
----
-
-## Regras de negócio principais
-
-### Aluno
-- E-mail é único no sistema (comparação case-insensitive); duplicata retorna 409.
-- Aluno inativo não pode receber novas notas, mas pode solicitar retificação de notas já existentes.
-- Ao lançar uma nota ou aprovar uma retificação, a **média global simples** (média aritmética de *todas* as notas do aluno, sem peso) é recalculada e a `SituacaoAcademica` é atualizada:
-  - `>= 7.0` → APROVADO
-  - `>= 5.0 e < 7.0` → RECUPERACAO
-  - `< 5.0` → REPROVADO
-
-### Disciplina
-- Nome é único (comparação normalizada); duplicata retorna 409.
-- Disciplina inativa não pode receber novos lançamentos de nota.
-- `PATCH /{id}/inativar` é soft-delete: o registro permanece no banco.
-- `DELETE /{id}` é exclusão definitiva.
-
-### Simulado
-- Descrição é única (normalizada); duplicata retorna 409.
-- Exige pelo menos **2 disciplinas distintas** e **ativas** na composição.
-- Não é permitido repetir a mesma disciplina na mesma composição.
-- Peso padrão de cada disciplina na composição: `1.0` (definido internamente; não configurável pela API).
-- **Média por simulado**: média das notas do aluno *restrita* às disciplinas da composição daquele simulado. Usada em ranking e na análise de desempenho por simulado. Diferente da média global simples.
-
-### Nota
-- Valor deve estar entre **0** e **10** (inclusive).
-- Um aluno não pode ter duas notas para o mesmo par *(simulado, disciplina)*; duplicata retorna 409.
-- A disciplina lançada deve pertencer à composição do simulado.
-
-### Retificação
-- Estados: `PENDENTE → EM_ANALISE → APROVADA` ou `→ REPROVADA`.
-- Transições inválidas (ex.: aprovar uma solicitação PENDENTE, ou reabrir uma APROVADA) retornam 409.
-- Justificativa da solicitação é obrigatória (400 se ausente).
-- Justificativa da decisão (aprovação ou reprovação) também é obrigatória.
-- Não pode haver duas solicitações abertas (PENDENTE ou EM_ANALISE) para a mesma nota.
-- Aprovação atualiza o valor da nota e dispara recálculo de média global e situação do aluno.
-
-### Responsável e permissões
-- Responsável só pode consultar dados de alunos com os quais tem vínculo ativo.
-- O vínculo carrega três permissões independentes: `VISUALIZAR_NOTAS`, `VISUALIZAR_SIMULADOS`, `VISUALIZAR_DESEMPENHO`.
-- Ao vincular, pelo menos uma permissão deve ser `true`; duplicata de vínculo ativo retorna 409.
-- Excluir o responsável remove automaticamente vínculos existentes.
-
-### Risco acadêmico e notificações
-- Após lançamento de nota ou aprovação de retificação, o sistema classifica o risco:
-  - Média `< 5.0` → ALTO
-  - `>= 5.0 e < 7.0` → MODERADO
-  - `>= 7.0` → BAIXO
-- Se o risco for MODERADO ou ALTO e o aluno tiver responsável vinculado, uma `NotificacaoResponsavel` é criada automaticamente com a prioridade correspondente.
-- O responsável pode listar suas notificações e marcá-las como lidas.
-
----
-
-## Padrões de projeto
-
-Seis padrões foram implementados como parte da Entrega 2, cada um mapeado a uma necessidade real do domínio:
-
-| Padrão | Onde está no código | Por que foi usado |
-|---|---|---|
-| **Template Method** | `FluxoAnaliseAcademicaTemplate` (`aplicacao/nota/`) | Define as 4 etapas fixas da análise acadêmica (coleta → consolidação → classificação → notificação); subclasses especializadas podem customizar etapas sem quebrar a sequência |
-| **Decorator** | `ValidadorLancamentoNotaDecorator` + 5 decoradores concretos (`aplicacao/nota/validacao/`) | Encadeia validações de nota em ordem sem acoplar `LancarNotaUseCase` a cada regra individual; adicionar uma nova validação não exige alterar o use case |
-| **Domain Events** | `DomainEvent`, `RiscoAcademicoEvent`, `DomainEventPublisher`, `SpringDomainEventPublisher`, `NotificarResponsavelRiscoAcademicoHandler` | Desacopla o domínio e os casos de uso da geração de notificações; novos publicadores assíncronos podem ser adicionados sem alterar os agregados |
-| **Proxy** | `AcessoResponsavelAlunoProxy` (`aplicacao/responsavel/`) | Intercepta qualquer consulta de responsável a dados de aluno e verifica vínculo ativo + permissão antes de delegar; centraliza o controle de acesso num único ponto |
-| **Strategy** | `EstrategiaClassificacaoRiscoAcademico` + `RiscoAltoStrategy`, `RiscoBaixoStrategy`, `RiscoModeradoStrategy` (`aplicacao/nota/risco/`) | Permite trocar o critério de classificação de risco (ex.: por frequência, por média combinada) sem alterar o fluxo de análise |
-| **Iterator** | `RankingAcademicoIterator`, `ListaRankingAcademicoIterator`, `GerarRankingAcademicoUseCase` (`aplicacao/ranking/`) | Percorre a coleção ordenada do ranking com limite configurável sem expor o índice interno; garante que o Top N seja sempre obtido de forma controlada |
-
----
-
-## Como rodar os testes
-
-### Todos os módulos (inclui BDD)
-
-```powershell
+# Suite completa: 77 cenários Cucumber + 24 JUnit = 101 testes
 .\mvnw.cmd test
+
+# Apenas o módulo BDD
+.\mvnw.cmd test -pl bdd/acadtrackbdd -am
+
+# Build completo de todos os módulos sem testes
+.\mvnw.cmd install -DskipTests
 ```
 
-### Apenas o módulo BDD
-
-```powershell
-.\mvnw.cmd -pl bdd/acadtrackbdd -am test
-```
-
-Os testes BDD usam H2 em memória (configurado em `bdd/acadtrackbdd/src/test/resources/application.properties`), isolado do banco de desenvolvimento em `data/`. O hook `LimparBancoDeDadosHook` limpa as tabelas antes de cada cenário.
-
-**Resultado esperado:**
+**Resultado esperado ao rodar os testes:**
 ```
 Tests run: 101, Failures: 0, Errors: 0, Skipped: 0 — BUILD SUCCESS
 ```
-
-Os 101 testes incluem 77 cenários Cucumber e 24 testes unitários JUnit, todos fisicamente no módulo `bdd/acadtrackbdd`.
-
-### Teste unitário
-
-Os 24 testes JUnit estão em `bdd/acadtrackbdd/src/test/java/.../unit/` (`ListarRetificacoesUseCaseTest`, `RiscoAcademicoStrategyTest`, `EmailTest`, `AvaliacaoAcademicaServiceTest`, `OrdenarRankingAcademicoServiceTest`) e em `bdd/acadtrackbdd/src/test/java/g8/acadtrack/aplicacao/nota/` (`AnalisarRiscoAcademicoSemRankingUseCaseTest`).
-
-### Features BDD (Gherkin)
-
-| Arquivo | Funcionalidade coberta | Cenários |
-|---|---|---|
-| `gestao_disciplina.feature` | F1 — Gestão de disciplinas | Criar, inativar, ativar, duplicidade |
-| `vincular_responsavel.feature` | F2 — Responsáveis | Vínculo, permissões, desvinculação, acesso negado |
-| `lancar_nota.feature` | F3 — Lançamento de notas | Nota válida, inválida, duplicada, recálculo de média e situação |
-| `analise_desempenho.feature` | F4 — Análise de desempenho | Histórico consolidado, classificação de risco |
-| `criar_simulado.feature` | F5 — Simulados | Composição válida, restrições de disciplinas |
-| `solicitar_retificacao_nota.feature` | F6 — Retificação | 16 cenários do fluxo completo de estados |
-| `notificacao_risco_academico.feature` | Observer / notificações | Criação e leitura de notificações |
-| `retificacao_guards.feature` | Guardas de estado | Transições inválidas bloqueadas |
-| `cadastro_email.feature` | Validação de e-mail | Formato inválido, duplicidade |
-| `desempenho_reprovado.feature` | Situação acadêmica | Cenários de reprovação |
-| `excluir_responsavel.feature` | Exclusão de responsável | Remoção com limpeza de vínculo |
-| `extra/calcular_media_ponderada.feature` | Média por simulado | Cálculo ponderado |
-| `extra/gerar_ranking.feature` | Ranking | Ordenação por média |
-| `extra/vincular_aluno_turma.feature` | Vínculo aluno-turma | Turma inexistente, troca de turma |
-
----
-
-## Decisões arquiteturais
-
-### Por que Clean Architecture com módulos Maven separados?
-
-O domínio (`dominio-*`) não tem nenhuma anotação Spring ou JPA. Isso garante que regras de negócio podem ser testadas sem subir contexto Spring e que uma troca de framework (ex.: Quarkus) afetaria apenas `infraestrutura/` e `apresentacao-backend/`, não o domínio.
-
-### Por que H2 em arquivo e não PostgreSQL?
-
-H2 elimina pré-requisitos de instalação para rodar o projeto. O uso de `spring.jpa.hibernate.ddl-auto=update` faz o schema ser gerenciado automaticamente. A troca para PostgreSQL exigiria apenas alterar `application.properties` e o driver — os repositórios JPA não mudam.
-
-### Por que o frontend está em `apresentacao-frontend/` e não em `apresentacao-backend/static/`?
-
-O módulo `apresentacao-frontend` (`packaging=jar`) contém os arquivos da SPA em `src/main/resources/static/`. O `apresentacao-backend` declara `apresentacao-frontend` como dependência Maven, então os arquivos estáticos ficam no classpath do jar executável. O Spring Boot serve automaticamente qualquer `classpath:/static/` — sem configuração extra. Essa separação reflete a arquitetura multi-módulo: frontend e backend são camadas distintas.
-
-### Por que não há autenticação?
-
-Nesta entrega, o controle de acesso é feito no nível de regra de negócio (Proxy de responsável) e não por sessão/token HTTP. O `Coordenador` é uma persona de negócio documentada, sem role técnica implementada. Autenticação (Spring Security + JWT, por exemplo) é evolução prevista para entregas futuras.
-
-### Por que os scripts ficam em `scripts/` e não na raiz?
-
-Convenção comum em projetos multi-módulo Maven: scripts de desenvolvimento e demo não pertencem ao código de produção e ficam numa pasta dedicada. Isso mantém a raiz limpa e os caminhos estáveis para referência no README.
-
-### Por que a média é calculada de duas formas diferentes?
-
-Duas métricas distintas coexistem intencionalmente:
-
-- **Média global simples**: média aritmética de *todas* as notas do aluno (sem peso, sem filtro por simulado). É a base para a `SituacaoAcademica` persistida no cadastro do aluno (APROVADO / RECUPERACAO / REPROVADO). Recalculada a cada lançamento ou aprovação de retificação.
-- **Média por simulado**: média das notas do aluno *restrita* às disciplinas da composição de um simulado específico, com peso padrão `1.0`. Usada para ranking por simulado e na análise de desempenho histórico por avaliação.
-
-A separação reflete uma distinção pedagógica real: a situação geral do aluno baseia-se em toda sua trajetória, enquanto o ranking de um simulado reflete apenas aquela avaliação.
-
----
-
-## Glossário do domínio
-
-Termos usados de forma consistente no código, nos testes e na documentação:
-
-| Termo | Definição | Onde aparece no código |
-|---|---|---|
-| **Aluno** | Participante que realiza simulados e acumula notas | `Aluno.java`, `AlunoJpaEntity` |
-| **Turma** | Agrupamento de alunos; um aluno pertence a no máximo uma turma | `Turma.java` |
-| **Disciplina** | Componente avaliado dentro de um simulado (ex.: Matemática) | `Disciplina.java` |
-| **Simulado** | Avaliação composta por pelo menos duas disciplinas distintas e ativas | `Simulado.java` |
-| **SimuladoDisciplina** | Associação entre simulado e disciplina com peso padrão interno | `SimuladoDisciplina.java` |
-| **Nota** | Resultado do aluno num par (simulado, disciplina); valor entre 0 e 10 | `Nota.java` |
-| **Média global simples** | Média aritmética de *todas* as notas do aluno; base para SituacaoAcademica | `AvaliacaoAcademicaService` |
-| **Média por simulado** | Média das notas do aluno restrita às disciplinas de um simulado; usada em rankings | `CalcularMediaPonderadaUseCase` |
-| **SituacaoAcademica** | Estado do aluno (APROVADO / RECUPERACAO / REPROVADO); persistido no cadastro | `SituacaoAcademica.java` |
-| **NivelRiscoAcademico** | Classificação de risco (BAIXO / MODERADO / ALTO) calculada pela média global | `NivelRiscoAcademico.java` |
-| **SolicitacaoRetificacao** | Pedido de revisão de uma nota; percorre estados PENDENTE → EM_ANALISE → APROVADA/REPROVADA | `SolicitacaoRetificacao.java` |
-| **StatusSolicitacaoRetificacao** | Enum com os 4 estados possíveis da retificação | `StatusSolicitacaoRetificacao.java` |
-| **Responsavel** | Usuário (pai/responsável legal) com acesso controlado a dados de alunos vinculados | `Responsavel.java` |
-| **PermissaoResponsavel** | Enum com as permissões granulares: `VISUALIZAR_NOTAS`, `VISUALIZAR_SIMULADOS`, `VISUALIZAR_DESEMPENHO` | `PermissaoResponsavel.java` |
-| **NotificacaoResponsavel** | Alerta criado automaticamente quando o aluno entra em risco MODERADO ou ALTO | `NotificacaoResponsavel.java` |
-| **Coordenador** | Persona de negócio responsável pela gestão acadêmica; não implementado como role técnica de autenticação nesta entrega | Documentação, cenários BDD |
-| **Professor** | Persona de negócio responsável pelo lançamento e análise de notas; não implementado como role técnica | Documentação, cenários BDD |
 
 ---
 
@@ -752,20 +1010,20 @@ Termos usados de forma consistente no código, nos testes e na documentação:
 | Artefato | Localização |
 |---|---|
 | Descrição do domínio + Linguagem Onipresente | [`docs/descricao_do_dominio.md`](docs/descricao_do_dominio.md) |
-| Mapa de histórias (Story Map) | [`docs/story_map_personas.md`](docs/story_map_personas.md), [`docs/story_map.pdf`](docs/story_map.pdf) |
-| Protótipos (Figma + capturas) | [`docs/prototipos.md`](docs/prototipos.md) |
-| Modelo CML (Context Mapper) | [`docs/cml/acadtrack.cml`](docs/cml/acadtrack.cml) |
-| Bounded Contexts (resumo) | [`docs/cml/bounded_contexts.md`](docs/cml/bounded_contexts.md) |
 | DDD nos 4 níveis | [`docs/ddd_niveis.md`](docs/ddd_niveis.md) |
 | Arquitetura Limpa | [`docs/arquitetura_limpa.md`](docs/arquitetura_limpa.md) |
-| Padrões de projeto (Entrega 2) | [`docs/padroes_entrega2.md`](docs/padroes_entrega2.md) |
-| Persistência ORM/JPA | [`docs/persistencia_orm_entrega2.md`](docs/persistencia_orm_entrega2.md) |
-| Cenários BDD | [`bdd/acadtrackbdd/src/test/resources/features/`](bdd/acadtrackbdd/src/test/resources/features/) |
+| Story Map + personas | [`docs/story_map_personas.md`](docs/story_map_personas.md) · [`docs/story_map.pdf`](docs/story_map.pdf) |
+| Protótipos (Figma + capturas) | [`docs/prototipos.md`](docs/prototipos.md) |
+| Modelo CML (Context Mapper) | [`acadtrack.cml`](acadtrack.cml) |
+| Bounded Contexts | [`docs/cml/bounded_contexts.md`](docs/cml/bounded_contexts.md) |
+| BDD — abordagem e cobertura | [`docs/bdd.md`](docs/bdd.md) |
+| Padrões de projeto | [`docs/padroes_entrega2.md`](docs/padroes_entrega2.md) |
+| Persistência ORM/JPA + Flyway | [`docs/persistencia_orm_entrega2.md`](docs/persistencia_orm_entrega2.md) |
 | Roteiro de demonstração | [`docs/script_demonstracao.md`](docs/script_demonstracao.md) |
 | Guia Swagger passo a passo | [`docs/demo_fluxo_swagger_passo_a_passo.md`](docs/demo_fluxo_swagger_passo_a_passo.md) |
-| Validações com prints | [`docs/validacoes.md`](docs/validacoes.md) |
 
 Links externos:
+
 - **Protótipo Figma**: [https://stew-skip-70401626.figma.site](https://stew-skip-70401626.figma.site)
 - **Story Map (Avion)**: [https://sistema-acadtrack.avion.io/share/8rNKdtSMQmCNdr3u3](https://sistema-acadtrack.avion.io/share/8rNKdtSMQmCNdr3u3)
 - **Slides (Gamma)**: [https://gamma.app/docs/AcadTrack-fbl5e19j5zy2rvi](https://gamma.app/docs/AcadTrack-fbl5e19j5zy2rvi)

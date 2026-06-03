@@ -18,11 +18,11 @@ public class CriarAlunoUseCase {
 
     @Transactional
     public Aluno executar(String nome, String email) {
-        String emailNormalizado = Email.normalizar(email);
-        if (alunoRepository.existeAlunoComEmailIgnorandoMaiusculas(emailNormalizado)) {
+        Email emailVO = new Email(email);
+        if (alunoRepository.existeAlunoComEmailIgnorandoMaiusculas(emailVO.getEndereco())) {
             throw new ConflitoDeEstadoException("Já existe aluno cadastrado com este e-mail");
         }
-        Aluno aluno = new Aluno(null, nome, emailNormalizado, null, null);
+        Aluno aluno = new Aluno(null, nome, emailVO.getEndereco(), null, null);
         return alunoRepository.salvar(aluno);
     }
 }

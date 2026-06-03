@@ -22,8 +22,7 @@ public class AcessoResponsavelAlunoProxy implements AcessoResponsavelAlunoServic
 
     @Override
     public Aluno executar(Long alunoId, Long responsavelId, PermissaoResponsavel permissaoResponsavel) {
-        Aluno aluno = alunoServiceReal.executar(alunoId, responsavelId, permissaoResponsavel);
-        validarAcessoResponsavelAlunoUseCase.executar(aluno, responsavelId, permissaoResponsavel);
-        return aluno;
+        validarAcessoResponsavelAlunoUseCase.executar(alunoId, responsavelId, permissaoResponsavel);
+        return alunoServiceReal.executar(alunoId, responsavelId, permissaoResponsavel);
     }
 }

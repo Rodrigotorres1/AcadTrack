@@ -9,19 +9,19 @@ class EmailTest {
 
     @Test
     void deveNormalizarEmailParaLowercase() {
-        assertEquals("alice@email.com", Email.normalizar("Alice@Email.com"));
+        assertEquals("alice@email.com", new Email("Alice@Email.com").getEndereco());
     }
 
     @Test
     void deveRemoverEspacosExtrasAoNormalizarEmail() {
-        assertEquals("alice@email.com", Email.normalizar("  alice@email.com  "));
+        assertEquals("alice@email.com", new Email("  alice@email.com  ").getEndereco());
     }
 
     @Test
     void deveGerarMesmoValorParaEmailsEquivalentesComCapitalizacaoDiferente() {
         assertEquals(
-                Email.normalizar("Alice@Email.com"),
-                Email.normalizar(" alice@email.com ")
+                new Email("Alice@Email.com").getEndereco(),
+                new Email(" alice@email.com ").getEndereco()
         );
     }
 }

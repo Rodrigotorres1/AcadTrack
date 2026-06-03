@@ -2,8 +2,8 @@ package g8.acadtrack.aplicacao.retificacao;
 
 import g8.acadtrack.dominioavaliacao.nota.NotaRepository;
 import g8.acadtrack.dominioavaliacao.retificacao.SolicitacaoRetificacao;
+import g8.acadtrack.dominioavaliacao.retificacao.SolicitacaoRetificacaoFabrica;
 import g8.acadtrack.dominioavaliacao.retificacao.SolicitacaoRetificacaoRepository;
-import g8.acadtrack.dominioavaliacao.retificacao.StatusSolicitacaoRetificacao;
 import g8.acadtrack.dominiocompartilhado.excecao.ConflitoDeEstadoException;
 import g8.acadtrack.dominiocompartilhado.excecao.EntidadeNaoEncontradaException;
 import org.springframework.stereotype.Service;
@@ -32,13 +32,7 @@ public class SolicitarRetificacaoUseCase {
             throw new ConflitoDeEstadoException("Já existe solicitação de retificação em aberto para esta nota");
         }
 
-        SolicitacaoRetificacao solicitacao = new SolicitacaoRetificacao(
-                null,
-                notaId,
-                justificativa,
-                null,
-                StatusSolicitacaoRetificacao.PENDENTE
-        );
+        SolicitacaoRetificacao solicitacao = SolicitacaoRetificacaoFabrica.nova(notaId, justificativa);
 
         return solicitacaoRetificacaoRepository.salvar(solicitacao);
     }
