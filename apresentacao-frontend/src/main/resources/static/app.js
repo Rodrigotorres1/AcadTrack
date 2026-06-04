@@ -55,7 +55,7 @@ function handleLoginSubmit(event) {
 }
 
 function handleChangeProfile() {
-    document.getElementById("loginForm").reset();
+    document.getElementById("loginForm")?.reset();
     showLogin();
 }
 
@@ -116,6 +116,14 @@ function showSection(sectionId) {
         showGuardiansList();
         loadGuardiansView();
     }
+
+    if (sectionId === "notificacoes") {
+        loadNotificationsView();
+    }
+
+    if (sectionId === "portal") {
+        loadPortalView();
+    }
 }
 
 function renderRiskPill(nivelRisco) {
@@ -130,28 +138,6 @@ function showPerformanceSelect(feedback = "") {
 
 function renderPerformanceStudentOptions() {
     const select = document.getElementById("performanceStudentSelect");
-    const input = document.getElementById("performanceStudentEnrollment");
-    const label = document.getElementById("performanceStudentLabel");
-
-    if (state.perfil === "aluno") {
-        label.textContent = "Matrícula";
-        label.setAttribute("for", "performanceStudentEnrollment");
-        select.hidden = true;
-        select.disabled = true;
-        select.required = false;
-        input.hidden = false;
-        input.disabled = false;
-        input.required = true;
-        input.value = state.alunoMatricula || input.value || "";
-        return;
-    }
-
-    label.textContent = "Selecionar Aluno";
-    label.setAttribute("for", "performanceStudentSelect");
-    input.hidden = true;
-    input.disabled = true;
-    input.required = false;
-    input.value = "";
     select.hidden = false;
     select.disabled = false;
     select.required = true;
@@ -161,26 +147,21 @@ function renderPerformanceStudentOptions() {
         return;
     }
 
+    const saved = state.alunoMatricula;
     const options = state.performanceAlunos.map((aluno) =>
-        `<option value="${escapeHtml(aluno.id)}">Matrícula ${escapeHtml(aluno.id)} - ${escapeHtml(aluno.nome || `Aluno ${aluno.id}`)}</option>`
+        `<option value="${escapeHtml(aluno.id)}"${String(aluno.id) === String(saved) ? " selected" : ""}>${escapeHtml(aluno.nome || "Aluno")}</option>`
     ).join("");
 
     select.innerHTML = `<option value="">Escolha um aluno</option>${options}`;
 }
 
 async function loadPerformanceView() {
-    if (state.perfil === "aluno") {
-        setState("performanceAlunos", []);
-        document.getElementById("performanceSelectSubtitle").textContent = "Informe sua matrícula para visualizar o desempenho completo";
-        document.getElementById("performanceSubmitButton").textContent = "Visualizar meu desempenho";
-        showPerformanceSelect(message("Digite sua matrícula para consultar os dados calculados pelo backend."));
-        renderPerformanceStudentOptions();
-        return;
-    }
-
-    document.getElementById("performanceSelectSubtitle").textContent = "Selecione um aluno para visualizar o desempenho completo";
-    document.getElementById("performanceStudentLabel").textContent = "Selecionar Aluno";
-    document.getElementById("performanceSubmitButton").textContent = "Visualizar Desempenho";
+    const isAluno = state.perfil === "aluno";
+    document.getElementById("performanceSelectSubtitle").textContent = isAluno
+        ? "Selecione seu nome para visualizar o desempenho completo"
+        : "Selecione um aluno para visualizar o desempenho completo";
+    document.getElementById("performanceStudentLabel").textContent = isAluno ? "Aluno" : "Selecionar Aluno";
+    document.getElementById("performanceSubmitButton").textContent = isAluno ? "Visualizar meu desempenho" : "Visualizar Desempenho";
     showPerformanceSelect(message("Carregando alunos..."));
 
     try {
@@ -257,27 +238,17 @@ function renderPerformancePanel(analise, aluno) {
 
 async function handlePerformanceSubmit(event) {
     event.preventDefault();
-    const alunoId = state.perfil === "aluno"
-        ? getStudentEnrollmentFromForm(event.currentTarget)
-        : new FormData(event.currentTarget).get("alunoId");
+    const alunoId = new FormData(event.currentTarget).get("alunoId");
     const feedback = document.getElementById("performanceFeedback");
 
     if (!alunoId) {
-        feedback.innerHTML = message("Informe a matrícula do aluno.", "error");
-        return;
-    }
-    if (state.perfil === "aluno" && !isPositiveEnrollment(alunoId)) {
-        feedback.innerHTML = message("A matrícula deve ser um número inteiro positivo.", "error");
+        feedback.innerHTML = message("Selecione um aluno.", "error");
         return;
     }
 
-    if (state.perfil === "aluno") {
-        rememberStudentEnrollment(alunoId);
-    }
+    rememberStudentEnrollment(alunoId);
 
-    const aluno = state.perfil === "aluno"
-        ? { id: alunoId, nome: `Matrícula ${alunoId}` }
-        : state.performanceAlunos.find((item) => String(item.id) === String(alunoId));
+    const aluno = state.performanceAlunos.find((item) => String(item.id) === String(alunoId));
     feedback.innerHTML = message("Carregando desempenho...");
 
     try {
@@ -289,7 +260,7 @@ async function handlePerformanceSubmit(event) {
 }
 
 function handleChangePerformanceStudent() {
-    document.getElementById("performanceForm").reset();
+    document.getElementById("performanceForm")?.reset();
     showPerformanceSelect();
     renderPerformanceStudentOptions();
 }
@@ -332,22 +303,44 @@ function renderNotifications(notifications) {
     }).join("");
 }
 
-async function handleNotificationsSubmit(event) {
-    event.preventDefault();
-    const alunoId = new FormData(event.currentTarget).get("alunoId");
+async function loadNotificationsView() {
+    const select = document.getElementById("notificationsResponsavelSelect");
     const list = document.getElementById("notificationsList");
-    list.innerHTML = message("Buscando vínculo do aluno...");
+    select.disabled = true;
+    select.innerHTML = `<option value="">Carregando responsáveis...</option>`;
+    list.innerHTML = "";
 
     try {
-        const aluno = await requestJson(`/alunos/${encodeURIComponent(alunoId)}`);
-        const responsavelId = aluno?.responsavelId;
-        if (!responsavelId) {
-            setState("notificationsResponsavelId", null);
-            list.innerHTML = message("Este aluno não possui responsável vinculado.", "error");
+        const responsaveis = await requestJson("/responsaveis");
+        setState("responsaveis", Array.isArray(responsaveis) ? responsaveis : []);
+        if (state.responsaveis.length === 0) {
+            select.innerHTML = `<option value="">Nenhum responsável cadastrado</option>`;
             return;
         }
-        setState("notificationsResponsavelId", responsavelId);
-        list.innerHTML = message("Carregando notificações...");
+        select.disabled = false;
+        select.innerHTML = `<option value="">Selecione o responsável</option>${state.responsaveis.map((r) =>
+            `<option value="${escapeHtml(r.id)}">${escapeHtml(r.nome || "Responsável")}</option>`
+        ).join("")}`;
+    } catch (error) {
+        select.innerHTML = `<option value="">Erro ao carregar responsáveis</option>`;
+        renderError(list, error, "Não foi possível carregar os responsáveis.");
+    }
+}
+
+async function handleNotificationsSubmit(event) {
+    event.preventDefault();
+    const responsavelId = new FormData(event.currentTarget).get("responsavelId");
+    const list = document.getElementById("notificationsList");
+
+    if (!responsavelId) {
+        list.innerHTML = message("Selecione um responsável.", "error");
+        return;
+    }
+
+    setState("notificationsResponsavelId", responsavelId);
+    list.innerHTML = message("Carregando notificações...");
+
+    try {
         const notifications = await requestJson(`/responsaveis/${encodeURIComponent(responsavelId)}/notificacoes`);
         list.innerHTML = renderNotifications(notifications);
     } catch (error) {
@@ -402,33 +395,31 @@ function portalBlockedCard(title, error) {
     `;
 }
 
-function portalRiskCard(desempenhoResult) {
-    if (!desempenhoResult.ok) {
+function portalRiskCard(riscoResult) {
+    if (!riscoResult.ok) {
         return `
             <article class="card portal-risk-card blocked">
                 <h3>Risco Acadêmico</h3>
-                <p class="muted">Campo obrigatório do portal do responsável.</p>
-                ${message("Risco bloqueado. Libere a permissão de desempenho para visualizar este dado.", "error")}
+                ${message(riscoResult.error || "Não foi possível calcular o risco acadêmico.", "error")}
             </article>
         `;
     }
 
-    const desempenho = desempenhoResult.data || {};
-    const className = riskClass(desempenho.nivelRisco);
+    const risco = riscoResult.data || {};
+    const className = riskClass(risco.nivelRisco);
 
     return `
         <article class="card portal-risk-card ${className}">
             <h3>Risco Acadêmico</h3>
-            <p class="muted">Visível somente quando a permissão de desempenho está liberada.</p>
             <div class="portal-risk-value">
-                ${renderRiskPill(desempenho.nivelRisco)}
-                <strong>${escapeHtml(desempenho.alerta || "Sem alerta registrado.")}</strong>
+                ${renderRiskPill(risco.nivelRisco)}
+                <strong>${escapeHtml(risco.alerta || "Sem alerta registrado.")}</strong>
             </div>
         </article>
     `;
 }
 
-function renderPortalSuccess(desempenhoResult, notasResult, simuladosResult) {
+function renderPortalSuccess(desempenhoResult, notasResult, simuladosResult, riscoResult) {
     const desempenho = desempenhoResult.data || {};
     const notas = Array.isArray(notasResult.data) ? notasResult.data : [];
     const simulados = Array.isArray(simuladosResult.data) ? simuladosResult.data : [];
@@ -444,7 +435,7 @@ function renderPortalSuccess(desempenhoResult, notasResult, simuladosResult) {
                 </div>
             </article>
         ` : portalBlockedCard("Desempenho", desempenhoResult.error)}
-        ${portalRiskCard(desempenhoResult)}
+        ${portalRiskCard(riscoResult)}
         ${notasResult.ok ? `
             <article class="card">
                 <h3>Notas</h3>
@@ -476,35 +467,83 @@ function renderPortalSuccess(desempenhoResult, notasResult, simuladosResult) {
     `;
 }
 
+async function loadPortalView() {
+    const feedback = document.getElementById("portalFeedback");
+    const select = document.getElementById("portalResponsavelSelect");
+    const result = document.getElementById("portalResult");
+    select.disabled = true;
+    select.innerHTML = `<option value="">Carregando responsáveis...</option>`;
+    result.innerHTML = "";
+    feedback.innerHTML = message("Carregando lista de responsáveis...");
+
+    try {
+        const responsaveis = await requestJson("/responsaveis");
+        setState("responsaveis", Array.isArray(responsaveis) ? responsaveis : []);
+        renderPortalResponsavelOptions();
+        feedback.innerHTML = state.responsaveis.length > 0
+            ? message("Selecione o responsável para ver os dados do aluno vinculado.")
+            : message("Nenhum responsável cadastrado.", "error");
+    } catch (error) {
+        setState("responsaveis", []);
+        renderPortalResponsavelOptions();
+        renderError(feedback, error, "Não foi possível carregar os responsáveis.");
+    }
+}
+
+function renderPortalResponsavelOptions() {
+    const select = document.getElementById("portalResponsavelSelect");
+    if (state.responsaveis.length === 0) {
+        select.disabled = true;
+        select.innerHTML = `<option value="">Nenhum responsável disponível</option>`;
+        return;
+    }
+    select.disabled = false;
+    select.innerHTML = `<option value="">Selecione o responsável</option>${state.responsaveis.map((r) =>
+        `<option value="${escapeHtml(r.id)}">${escapeHtml(r.nome || "Responsável")}</option>`
+    ).join("")}`;
+}
+
 async function handlePortalSubmit(event) {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
-    const alunoId = formData.get("alunoId");
+    const responsavelId = formData.get("responsavelId");
+    const feedback = document.getElementById("portalFeedback");
     const result = document.getElementById("portalResult");
-    result.innerHTML = message("Buscando vínculo do aluno...");
+
+    if (!responsavelId) {
+        feedback.innerHTML = message("Selecione um responsável.", "error");
+        return;
+    }
+
+    result.innerHTML = "";
+    feedback.innerHTML = message("Buscando aluno vinculado...");
 
     try {
-        const aluno = await requestJson(`/alunos/${encodeURIComponent(alunoId)}`);
-        const responsavelId = aluno?.responsavelId;
-        if (!responsavelId) {
-            result.innerHTML = `<div class="card">${message("Este aluno não possui responsável vinculado.", "error")}</div>`;
+        const aluno = await requestJson(`/responsaveis/${encodeURIComponent(responsavelId)}/aluno`);
+        const alunoId = aluno?.id;
+        if (!alunoId) {
+            feedback.innerHTML = message("Aluno vinculado não encontrado.", "error");
             return;
         }
 
-        result.innerHTML = message("Validando acesso no backend...");
+        feedback.innerHTML = message("Carregando dados do aluno...");
         const base = `/responsaveis/${encodeURIComponent(responsavelId)}/alunos/${encodeURIComponent(alunoId)}`;
-        const [desempenhoResponse, notasResponse, simuladosResponse] = await Promise.allSettled([
+        const [desempenhoResponse, notasResponse, simuladosResponse, riscoResponse] = await Promise.allSettled([
             requestJson(`${base}/desempenho`),
             requestJson(`${base}/notas`),
-            requestJson(`${base}/simulados`)
+            requestJson(`${base}/simulados`),
+            requestJson(`${base}/risco`)
         ]);
 
+        feedback.innerHTML = "";
         const desempenho = portalResultFromSettled(desempenhoResponse);
         const notas = portalResultFromSettled(notasResponse);
         const simulados = portalResultFromSettled(simuladosResponse);
+        const risco = portalResultFromSettled(riscoResponse);
 
-        result.innerHTML = renderPortalSuccess(desempenho, notas, simulados);
+        result.innerHTML = renderPortalSuccess(desempenho, notas, simulados, risco);
     } catch (error) {
+        feedback.innerHTML = "";
         result.innerHTML = `<div class="card">${message(`Acesso bloqueado pela API: ${error.message}`, "error")}</div>`;
     }
 }
@@ -584,7 +623,7 @@ function renderClassesTable() {
 function renderStudentsTable() {
     const tbody = document.getElementById("studentsTableBody");
     if (state.alunos.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" class="muted">Nenhum aluno cadastrado.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5" class="muted">Nenhum aluno cadastrado.</td></tr>`;
         return;
     }
 
@@ -596,7 +635,6 @@ function renderStudentsTable() {
 
         return `
             <tr>
-                <td>${escapeHtml(aluno.id)}</td>
                 <td>${escapeHtml(aluno.nome)}</td>
                 <td>${escapeHtml(aluno.email)}</td>
                 <td>${escapeHtml(aluno.turma)}</td>
@@ -681,7 +719,7 @@ async function loadClassesView() {
 async function showStudentForm() {
     document.getElementById("studentsListView").hidden = true;
     document.getElementById("studentFormView").hidden = false;
-    document.getElementById("studentForm").reset();
+    document.getElementById("studentForm")?.reset();
     document.getElementById("studentFormFeedback").innerHTML = "";
     renderClassOptions();
     await loadClasses(true);
@@ -690,7 +728,7 @@ async function showStudentForm() {
 function showClassForm() {
     document.getElementById("classesListView").hidden = true;
     document.getElementById("classFormView").hidden = false;
-    document.getElementById("classForm").reset();
+    document.getElementById("classForm")?.reset();
     document.getElementById("classFormFeedback").innerHTML = "";
 }
 
@@ -927,7 +965,7 @@ async function loadSubjects() {
 function showSubjectForm() {
     document.getElementById("subjectsListView").hidden = true;
     document.getElementById("subjectFormView").hidden = false;
-    document.getElementById("subjectForm").reset();
+    document.getElementById("subjectForm")?.reset();
     document.getElementById("subjectFormFeedback").innerHTML = "";
     closeSubjectDetails();
 }
@@ -1098,21 +1136,21 @@ function renderNoteFormOptions() {
         state.notaAlunos,
         "Escolha um aluno",
         "Nenhum aluno cadastrado",
-        (aluno) => `Matrícula ${aluno.id} - ${aluno.nome || `Aluno ${aluno.id}`}`
+        (aluno) => aluno.nome || "Aluno"
     );
     renderNoteSelect(
         "noteExamSelect",
         state.notaSimulados,
         "Escolha um simulado",
         "Nenhum simulado cadastrado",
-        (simulado) => simulado.descricao || `Simulado ${simulado.id}`
+        (simulado) => simulado.descricao || "Simulado"
     );
     renderNoteSelect(
         "noteSubjectSelect",
         state.notaDisciplinas,
         "Escolha uma disciplina",
         state.notaSimuladoSelecionadoId ? "Nenhuma disciplina vinculada ao simulado" : "Selecione um simulado primeiro",
-        (disciplina) => disciplina.nome || `Disciplina ${disciplina.id}`
+        (disciplina) => disciplina.nome || "Disciplina"
     );
 }
 
@@ -1163,29 +1201,53 @@ async function handleNoteExamChange(event) {
 }
 
 function renderStudentNotesOptions() {
-    if (state.perfil === "aluno") {
-        const input = document.getElementById("studentNotesEnrollment");
-        input.value = state.alunoMatricula || input.value || "";
+    const select = document.getElementById("studentNotesEnrollment");
+    if (state.notaAlunos.length === 0) {
+        select.disabled = true;
+        select.innerHTML = `<option value="">Nenhum aluno disponível</option>`;
         return;
     }
+    const saved = state.alunoMatricula;
+    select.disabled = false;
+    select.innerHTML = `<option value="">Selecione o aluno</option>${state.notaAlunos.map((aluno) =>
+        `<option value="${escapeHtml(aluno.id)}"${String(aluno.id) === String(saved) ? " selected" : ""}>${escapeHtml(aluno.nome || "Aluno")}</option>`
+    ).join("")}`;
 }
 
-function renderStudentNotesList(notas) {
+function renderStudentNotesGrouped(grupos) {
     const list = document.getElementById("studentNotesList");
-    if (!notas || notas.length === 0) {
-        list.innerHTML = message("Nenhuma nota encontrada para este aluno.");
-        return;
-    }
-
-    list.innerHTML = notas.map((nota, index) => `
-        <div class="compact-row">
-            <div>
-                <span class="row-title">Nota ${escapeHtml(index + 1)}</span>
-                <span class="row-subtitle">${escapeHtml(nota.nomeDisciplina || `Disciplina ${nota.disciplinaId}`)} | ${escapeHtml(nota.descricaoSimulado || `Simulado ${nota.simuladoId}`)}</span>
+    list.className = "notes-simulado-list";
+    list.innerHTML = grupos.map((grupo) => `
+        <div class="notes-simulado" data-simulado-id="${escapeHtml(grupo.simuladoId)}">
+            <button class="notes-simulado-header" type="button" aria-expanded="false">
+                <span>
+                    <span class="row-title">${escapeHtml(grupo.descricao)}</span>
+                    <span class="row-subtitle">${escapeHtml(grupo.disciplinas.length)} disciplina(s)</span>
+                </span>
+                <span class="notes-simulado-chevron" aria-hidden="true">▾</span>
+            </button>
+            <div class="notes-simulado-body" hidden>
+                ${grupo.disciplinas.map((d) => `
+                    <div class="notes-simulado-discipline ${d.nota !== null ? "has-note" : "no-note"}">
+                        <span>${escapeHtml(d.nome)}</span>
+                        <strong>${d.nota !== null ? `${formatNumber(d.nota)}/10` : "---/10"}</strong>
+                    </div>
+                `).join("")}
             </div>
-            <strong>${formatNumber(nota.valor)}</strong>
         </div>
     `).join("");
+}
+
+function handleStudentNotesListClick(event) {
+    const header = event.target.closest(".notes-simulado-header");
+    if (!header) {
+        return;
+    }
+    const item = header.closest(".notes-simulado");
+    const body = item.querySelector(".notes-simulado-body");
+    const expanded = header.getAttribute("aria-expanded") === "true";
+    header.setAttribute("aria-expanded", String(!expanded));
+    body.hidden = expanded;
 }
 
 async function loadNotesView() {
@@ -1196,9 +1258,19 @@ async function loadNotesView() {
     if (state.perfil === "aluno") {
         document.getElementById("noteLaunchView").hidden = true;
         document.getElementById("studentNoteView").hidden = false;
-        renderStudentNotesOptions();
-        studentFeedback.innerHTML = message("Informe sua matrícula para consultar suas notas.");
+        studentFeedback.innerHTML = message("Carregando alunos...");
         studentList.innerHTML = "";
+        try {
+            if (state.notaAlunos.length === 0) {
+                setState("notaAlunos", await requestJson("/alunos"));
+            }
+            renderStudentNotesOptions();
+            studentFeedback.innerHTML = message("Selecione o aluno para consultar as notas.");
+        } catch (error) {
+            setState("notaAlunos", []);
+            renderStudentNotesOptions();
+            renderError(studentFeedback, error, "Não foi possível carregar os alunos.");
+        }
         return;
     }
 
@@ -1233,7 +1305,7 @@ async function loadNotesView() {
 }
 
 function clearNoteForm(clearFeedback = true) {
-    document.getElementById("noteForm").reset();
+    document.getElementById("noteForm")?.reset();
     patchState({
         notaSimuladoSelecionadoId: null,
         notaDisciplinas: []
@@ -1243,7 +1315,7 @@ function clearNoteForm(clearFeedback = true) {
         [],
         "Escolha uma disciplina",
         "Selecione um simulado primeiro",
-        (disciplina) => disciplina.nome || `Disciplina ${disciplina.id}`
+        (disciplina) => disciplina.nome || "Disciplina"
     );
     if (clearFeedback) {
         document.getElementById("noteFormFeedback").innerHTML = "";
@@ -1318,55 +1390,55 @@ async function handleNoteSubmit(event) {
 
 async function handleStudentNotesSubmit(event) {
     event.preventDefault();
-    const alunoId = state.perfil === "aluno"
-        ? getStudentEnrollmentFromForm(event.currentTarget)
-        : new FormData(event.currentTarget).get("alunoId");
+    const alunoId = new FormData(event.currentTarget).get("alunoId");
     const feedback = document.getElementById("studentNotesFeedback");
     const list = document.getElementById("studentNotesList");
 
     if (!alunoId) {
-        feedback.innerHTML = message("Informe a matrícula do aluno.", "error");
-        return;
-    }
-    if (state.perfil === "aluno" && !isPositiveEnrollment(alunoId)) {
-        feedback.innerHTML = message("A matrícula deve ser um número inteiro positivo.", "error");
+        feedback.innerHTML = message("Selecione um aluno.", "error");
         return;
     }
 
-    if (state.perfil === "aluno") {
-        rememberStudentEnrollment(alunoId);
-    }
-
-    feedback.innerHTML = message("Carregando notas...");
+    rememberStudentEnrollment(alunoId);
+    feedback.innerHTML = message("Carregando histórico de notas...");
     list.innerHTML = "";
 
     try {
-        if (!state.disciplinaNomePorId || Object.keys(state.disciplinaNomePorId).length === 0) {
-            const disciplinas = await requestJson("/disciplinas");
-            setState(
-                "disciplinaNomePorId",
-                Array.isArray(disciplinas)
-                    ? disciplinas.reduce((acc, disciplina) => {
-                        acc[String(disciplina.id)] = disciplina.nome || `ID ${disciplina.id}`;
-                        return acc;
-                    }, {})
-                    : {}
-            );
-        }
-        if (!state.simuladoDescricaoPorId || Object.keys(state.simuladoDescricaoPorId).length === 0) {
-            const simulados = await requestJson("/simulados");
-            setState(
-                "simuladoDescricaoPorId",
-                Array.isArray(simulados)
-                    ? simulados.reduce((acc, simulado) => {
-                        acc[String(simulado.id)] = simulado.descricao || `ID ${simulado.id}`;
-                        return acc;
-                    }, {})
-                    : {}
-            );
-        }
         const notas = await requestJson(`/notas/aluno/${encodeURIComponent(alunoId)}`);
-        renderStudentNotesList(notas);
+
+        if (!notas || notas.length === 0) {
+            list.className = "compact-list";
+            list.innerHTML = message("Nenhuma nota registrada para este aluno.");
+            feedback.innerHTML = "";
+            return;
+        }
+
+        // Agrupa as notas por simuladoId
+        const notasPorSimulado = new Map();
+        for (const nota of notas) {
+            const key = String(nota.simuladoId);
+            if (!notasPorSimulado.has(key)) {
+                notasPorSimulado.set(key, { simuladoId: nota.simuladoId, descricao: nota.descricaoSimulado || "Simulado", notas: [] });
+            }
+            notasPorSimulado.get(key).notas.push(nota);
+        }
+
+        // Busca detalhes de cada simulado em paralelo para obter lista completa de disciplinas
+        const simuladoIds = Array.from(notasPorSimulado.keys());
+        const detalhes = await Promise.all(
+            simuladoIds.map((id) => requestJson(`/simulados/${encodeURIComponent(id)}`))
+        );
+
+        const grupos = detalhes.map((detalhe) => {
+            const grupo = notasPorSimulado.get(String(detalhe.id));
+            const disciplinas = (detalhe.disciplinas || []).map((d) => {
+                const nota = grupo.notas.find((n) => String(n.disciplinaId) === String(d.id));
+                return { id: d.id, nome: d.nome || "Disciplina", nota: nota ? nota.valor : null };
+            });
+            return { simuladoId: detalhe.id, descricao: detalhe.descricao || grupo.descricao, disciplinas };
+        });
+
+        renderStudentNotesGrouped(grupos);
         feedback.innerHTML = "";
     } catch (error) {
         list.innerHTML = "";
@@ -1409,8 +1481,7 @@ function renderSimulationsTable() {
     tbody.innerHTML = state.simulados.map((simulado) => `
         <tr>
             <td>
-                <span class="row-title">${escapeHtml(simulado.descricao || `Simulado ${simulado.id}`)}</span>
-                <span class="row-subtitle">ID ${escapeHtml(simulado.id)}</span>
+                <span class="row-title">${escapeHtml(simulado.descricao || "Simulado")}</span>
             </td>
             <td>${escapeHtml(simulado.quantidadeDisciplinas ?? 0)}</td>
             <td>${renderSimulationConsistencyBadge(simulado)}</td>
@@ -1467,8 +1538,8 @@ async function showSimulationDetails(simuladoId) {
 
 function renderSimulationDetails(simulado) {
     document.getElementById("simulationDetailsTitle").textContent = "Detalhes do Simulado";
-    document.getElementById("simulationDetailsSubtitle").textContent = simulado.descricao || `Simulado ${simulado.id}`;
-    document.getElementById("simulationDescription").textContent = simulado.descricao || `Simulado ${simulado.id}`;
+    document.getElementById("simulationDetailsSubtitle").textContent = simulado.descricao || "Simulado";
+    document.getElementById("simulationDescription").textContent = simulado.descricao || "Simulado";
     document.getElementById("simulationConsistencyBadge").outerHTML = renderSimulationConsistencyBadge(simulado).replace("<span", `<span id="simulationConsistencyBadge"`);
 
     const consistencyAlert = document.getElementById("simulationConsistencyAlert");
@@ -1490,7 +1561,7 @@ function renderSimulationLinkedSubjects(subjects) {
 
     list.innerHTML = subjects.map((subject) => `
         <div class="simulation-subject-row">
-            <span>${escapeHtml(subject.nome || `Disciplina ${subject.id}`)}</span>
+            <span>${escapeHtml(subject.nome || "Disciplina")}</span>
             ${renderSimulationSubjectBadge(subject.status)}
         </div>
     `).join("");
@@ -1511,7 +1582,7 @@ function renderSimulationParticipants(participants) {
     list.innerHTML = participants.map((participant) => `
         <div class="compact-row simulation-participant-row">
             <span>
-                <span class="row-title">${escapeHtml(participant.nome || `Aluno ${participant.alunoId}`)}</span>
+                <span class="row-title">${escapeHtml(participant.nome || "Aluno")}</span>
                 <span class="row-subtitle">${escapeHtml(participant.quantidadeNotas ?? 0)} nota(s)</span>
             </span>
             <span class="muted">Média</span>
@@ -1524,7 +1595,7 @@ async function showSimulationCreateView() {
     document.getElementById("simulationsListView").hidden = true;
     document.getElementById("simulationDetailsView").hidden = true;
     document.getElementById("simulationCreateView").hidden = false;
-    document.getElementById("simulationForm").reset();
+    document.getElementById("simulationForm")?.reset();
     document.getElementById("simulationFormFeedback").innerHTML = message("Carregando disciplinas...");
     document.getElementById("simulationSubjectOptions").innerHTML = "";
     updateSimulationSelectedCounter();
@@ -1553,7 +1624,7 @@ function renderSimulationSubjectOptions() {
         return `
             <label class="simulation-subject-option ${ativa ? "" : "disabled"}">
                 <input name="disciplinasIds" type="checkbox" value="${escapeHtml(disciplina.id)}" ${ativa ? "" : "disabled"}>
-                <span>${escapeHtml(disciplina.nome || `Disciplina ${disciplina.id}`)}</span>
+                <span>${escapeHtml(disciplina.nome || "Disciplina")}</span>
                 ${renderSimulationSubjectBadge(disciplina.status)}
             </label>
         `;
@@ -1654,7 +1725,7 @@ function renderSimuladoEditSubjectOptions(selectedIds) {
         return `
             <label class="simulation-subject-option ${ativa ? "" : "disabled"}">
                 <input name="disciplinasIds" type="checkbox" value="${escapeHtml(disciplina.id)}" ${checked ? "checked" : ""} ${ativa ? "" : "disabled"}>
-                <span>${escapeHtml(disciplina.nome || `Disciplina ${disciplina.id}`)}</span>
+                <span>${escapeHtml(disciplina.nome || "Disciplina")}</span>
                 ${renderSimulationSubjectBadge(disciplina.status)}
             </label>
         `;
@@ -1723,16 +1794,29 @@ function handleSimulationTableClick(event) {
     }
 }
 
+function renderStudentCorrectionEnrollmentOptions() {
+    const select = document.getElementById("studentCorrectionEnrollment");
+    if (state.notaAlunos.length === 0) {
+        select.disabled = true;
+        select.innerHTML = `<option value="">Nenhum aluno disponível</option>`;
+        return;
+    }
+    const saved = state.alunoMatricula;
+    select.disabled = false;
+    select.innerHTML = `<option value="">Selecione o aluno</option>${state.notaAlunos.map((aluno) =>
+        `<option value="${escapeHtml(aluno.id)}"${String(aluno.id) === String(saved) ? " selected" : ""}>${escapeHtml(aluno.nome || "Aluno")}</option>`
+    ).join("")}`;
+}
+
 function showStudentCorrectionRequestView(feedback = "") {
     const form = document.getElementById("studentCorrectionForm");
-    const enrollment = document.getElementById("studentCorrectionEnrollment");
 
     document.getElementById("correctionStudentRequestView").hidden = false;
     document.getElementById("correctionsListView").hidden = true;
     document.getElementById("correctionReviewView").hidden = true;
     document.getElementById("studentCorrectionFeedback").innerHTML = feedback;
-    form.reset();
-    enrollment.value = state.alunoMatricula || "";
+    if (form) form.reset();
+    renderStudentCorrectionEnrollmentOptions();
     setState("retificacaoNotas", []);
     renderStudentCorrectionNoteOptions();
 }
@@ -1748,11 +1832,11 @@ function renderStudentCorrectionNoteOptions() {
 
     select.disabled = false;
     select.innerHTML = `<option value="">Selecione a nota</option>${state.retificacaoNotas.map((nota) => {
-        const disciplina = nota.nomeDisciplina || `Disciplina ${nota.disciplinaId}`;
-        const simulado = nota.descricaoSimulado || `Simulado ${nota.simuladoId}`;
+        const disciplina = nota.nomeDisciplina || "Disciplina";
+        const simulado = nota.descricaoSimulado || "Simulado";
         return `
             <option value="${escapeHtml(nota.id)}">
-                Nota ID ${escapeHtml(nota.id)} - ${formatNumber(nota.valor)} | ${escapeHtml(disciplina)} | ${escapeHtml(simulado)}
+                ${formatNumber(nota.valor)} | ${escapeHtml(disciplina)} | ${escapeHtml(simulado)}
             </option>
         `;
     }).join("")}`;
@@ -1763,11 +1847,7 @@ async function loadStudentCorrectionNotes() {
     const feedback = document.getElementById("studentCorrectionFeedback");
 
     if (!alunoId) {
-        feedback.innerHTML = message("Informe a matrícula do aluno.", "error");
-        return;
-    }
-    if (!isPositiveEnrollment(alunoId)) {
-        feedback.innerHTML = message("A matrícula deve ser um número inteiro positivo.", "error");
+        feedback.innerHTML = message("Selecione um aluno.", "error");
         return;
     }
 
@@ -1780,7 +1860,7 @@ async function loadStudentCorrectionNotes() {
         renderStudentCorrectionNoteOptions();
         feedback.innerHTML = state.retificacaoNotas.length > 0
             ? message("Selecione a nota e informe a justificativa.")
-            : message("Nenhuma nota encontrada para esta matrícula.", "error");
+            : message("Nenhuma nota encontrada para este aluno.", "error");
     } catch (error) {
         setState("retificacaoNotas", []);
         renderStudentCorrectionNoteOptions();
@@ -1791,18 +1871,15 @@ async function loadStudentCorrectionNotes() {
 async function handleStudentCorrectionSubmit(event) {
     event.preventDefault();
 
-    const formData = new FormData(event.currentTarget);
+    const form = event.currentTarget;
+    const formData = new FormData(form);
     const alunoId = String(formData.get("alunoId") || "").trim();
     const notaId = String(formData.get("notaId") || "").trim();
     const justificativa = String(formData.get("justificativa") || "").trim();
     const feedback = document.getElementById("studentCorrectionFeedback");
 
     if (!alunoId) {
-        feedback.innerHTML = message("Informe a matrícula do aluno.", "error");
-        return;
-    }
-    if (!isPositiveEnrollment(alunoId)) {
-        feedback.innerHTML = message("A matrícula deve ser um número inteiro positivo.", "error");
+        feedback.innerHTML = message("Selecione um aluno.", "error");
         return;
     }
     if (!notaId) {
@@ -1827,10 +1904,10 @@ async function handleStudentCorrectionSubmit(event) {
             })
         });
 
-        event.currentTarget.reset();
-        document.getElementById("studentCorrectionEnrollment").value = alunoId;
+        if (form) form.reset();
+        renderStudentCorrectionEnrollmentOptions();
         renderStudentCorrectionNoteOptions();
-        feedback.innerHTML = message("Solicitação de retificação enviada com sucesso.", "ok");
+        feedback.innerHTML = message("Retificação enviada, esperando resposta do professor", "ok");
     } catch (error) {
         renderError(feedback, error, "Não foi possível solicitar a retificação.");
     }
@@ -1892,6 +1969,15 @@ function renderCorrectionsTable() {
 
 async function loadCorrectionsView() {
     if (state.perfil === "aluno") {
+        const feedback = document.getElementById("studentCorrectionFeedback");
+        if (state.notaAlunos.length === 0) {
+            feedback.innerHTML = message("Carregando alunos...");
+            try {
+                setState("notaAlunos", await requestJson("/alunos"));
+            } catch (error) {
+                renderError(feedback, error, "Não foi possível carregar os alunos.");
+            }
+        }
         showStudentCorrectionRequestView();
         return;
     }
@@ -1929,7 +2015,7 @@ function renderCorrectionReview(retificacao, readOnly = false) {
     renderCorrectionReviewInfo(retificacao);
 
     const form = document.getElementById("correctionDecisionForm");
-    form.reset();
+    if (form) form.reset();
     document.getElementById("correctionDecisionFeedback").innerHTML = readOnly && retificacao.justificativaDecisao
         ? message(`Decisão registrada: ${retificacao.justificativaDecisao}`)
         : "";
@@ -2127,13 +2213,13 @@ function renderGuardianSelects() {
     studentSelect.innerHTML = state.alunos.length === 0
         ? `<option value="" disabled selected>Nenhum aluno cadastrado</option>`
         : `<option value="">Selecione o aluno</option>${state.alunos.map((aluno) =>
-            `<option value="${escapeHtml(aluno.id)}">${escapeHtml(aluno.nome || `Aluno ${aluno.id}`)}</option>`
+            `<option value="${escapeHtml(aluno.id)}">${escapeHtml(aluno.nome || "Aluno")}</option>`
         ).join("")}`;
 
     guardianSelect.innerHTML = state.responsaveis.length === 0
         ? `<option value="" disabled selected>Nenhum responsável cadastrado</option>`
         : `<option value="">Selecione o responsável</option>${state.responsaveis.map((responsavel) =>
-            `<option value="${escapeHtml(responsavel.id)}">${escapeHtml(responsavel.nome || `Responsável ${responsavel.id}`)}</option>`
+            `<option value="${escapeHtml(responsavel.id)}">${escapeHtml(responsavel.nome || "Responsável")}</option>`
         ).join("")}`;
 }
 
@@ -2141,7 +2227,7 @@ async function showGuardianLinkForm() {
     document.getElementById("guardiansListView").hidden = true;
     document.getElementById("guardianLinkView").hidden = false;
     document.getElementById("guardianFormView").hidden = true;
-    document.getElementById("guardianLinkForm").reset();
+    document.getElementById("guardianLinkForm")?.reset();
     document.getElementById("guardianLinkFeedback").innerHTML = message("Carregando dados...");
 
     try {
@@ -2163,7 +2249,7 @@ function showGuardianForm() {
     document.getElementById("guardiansListView").hidden = true;
     document.getElementById("guardianLinkView").hidden = true;
     document.getElementById("guardianFormView").hidden = false;
-    document.getElementById("guardianForm").reset();
+    document.getElementById("guardianForm")?.reset();
     document.getElementById("guardianFormFeedback").innerHTML = "";
 }
 
@@ -2336,6 +2422,7 @@ document.getElementById("subjectsTableBody").addEventListener("click", handleSub
 document.getElementById("noteForm").addEventListener("submit", handleNoteSubmit);
 document.getElementById("noteExamSelect").addEventListener("change", handleNoteExamChange);
 document.getElementById("studentNotesForm").addEventListener("submit", handleStudentNotesSubmit);
+document.getElementById("studentNotesList").addEventListener("click", handleStudentNotesListClick);
 document.getElementById("clearNoteButton").addEventListener("click", () => clearNoteForm());
 document.getElementById("performanceForm").addEventListener("submit", handlePerformanceSubmit);
 document.getElementById("changePerformanceStudentButton").addEventListener("click", handleChangePerformanceStudent);

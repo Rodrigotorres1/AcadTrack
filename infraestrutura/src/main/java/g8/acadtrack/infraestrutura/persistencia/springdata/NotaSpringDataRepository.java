@@ -20,4 +20,6 @@ public interface NotaSpringDataRepository extends JpaRepository<NotaJpaEntity, L
     boolean existsByDisciplinaId(Long disciplinaId);
 
     boolean existsByAlunoIdAndSimuladoIdAndDisciplinaId(Long alunoId, Long simuladoId, Long disciplinaId);
+
+    void deleteBySimuladoId(Long simuladoId);
 }

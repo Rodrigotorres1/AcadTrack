@@ -3,6 +3,7 @@ package g8.acadtrack.apresentacao.controller;
 import g8.acadtrack.aplicacao.simulado.AtualizarSimuladoUseCase;
 import g8.acadtrack.aplicacao.simulado.CriarSimuladoUseCase;
 import g8.acadtrack.aplicacao.simulado.DetalharSimuladoUseCase;
+import g8.acadtrack.aplicacao.simulado.ExcluirSimuladoUseCase;
 import g8.acadtrack.aplicacao.simulado.ListarSimuladosComResumoUseCase;
 import g8.acadtrack.apresentacao.dto.request.AtualizarSimuladoRequest;
 import g8.acadtrack.apresentacao.dto.request.CriarSimuladoRequest;
@@ -11,6 +12,7 @@ import g8.acadtrack.apresentacao.dto.response.SimuladoDetalheResponse;
 import g8.acadtrack.apresentacao.dto.response.SimuladoResponse;
 import g8.acadtrack.dominioavaliacao.simulado.Simulado;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -33,17 +35,20 @@ public class SimuladoController {
     private final AtualizarSimuladoUseCase atualizarSimuladoUseCase;
     private final ListarSimuladosComResumoUseCase listarSimuladosComResumoUseCase;
     private final DetalharSimuladoUseCase detalharSimuladoUseCase;
+    private final ExcluirSimuladoUseCase excluirSimuladoUseCase;
 
     public SimuladoController(
             CriarSimuladoUseCase criarSimuladoUseCase,
             AtualizarSimuladoUseCase atualizarSimuladoUseCase,
             ListarSimuladosComResumoUseCase listarSimuladosComResumoUseCase,
-            DetalharSimuladoUseCase detalharSimuladoUseCase
+            DetalharSimuladoUseCase detalharSimuladoUseCase,
+            ExcluirSimuladoUseCase excluirSimuladoUseCase
     ) {
         this.criarSimuladoUseCase = criarSimuladoUseCase;
         this.atualizarSimuladoUseCase = atualizarSimuladoUseCase;
         this.listarSimuladosComResumoUseCase = listarSimuladosComResumoUseCase;
         this.detalharSimuladoUseCase = detalharSimuladoUseCase;
+        this.excluirSimuladoUseCase = excluirSimuladoUseCase;
     }
 
     @Operation(summary = "Listar simulados cadastrados")
@@ -145,5 +150,18 @@ public class SimuladoController {
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(new SimuladoResponse(simulado.getId(), simulado.getDescricao()));
+    }
+
+    @Operation(summary = "Excluir simulado", description = "Remove o simulado e todas as notas vinculadas a ele.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Simulado excluído"),
+            @ApiResponse(responseCode = "404", description = "Simulado não encontrado",
+                    content = @Content(schema = @Schema(implementation = ErroApiResponse.class)))
+    })
+    @DeleteMapping("/{simuladoId}")
+    public ResponseEntity<Void> excluir(
+            @Parameter(description = "Identificador do simulado") @PathVariable Long simuladoId) {
+        excluirSimuladoUseCase.executar(simuladoId);
+        return ResponseEntity.noContent().build();
     }
 }

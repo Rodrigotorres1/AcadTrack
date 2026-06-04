@@ -13,5 +13,9 @@ export function applyRoleNavigation(profile) {
         if (!allowed) {
             link.classList.remove("active");
         }
+        const label = profile === "aluno" && link.dataset.labelAluno
+            ? link.dataset.labelAluno
+            : link.dataset.labelDefault;
+        if (label) link.textContent = label;
     });
 }

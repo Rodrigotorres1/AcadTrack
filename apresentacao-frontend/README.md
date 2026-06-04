@@ -38,8 +38,8 @@ A SPA consome a API REST do backend via `fetch`. Não acessa banco de dados, rep
 | Turmas | Cadastrar e listar |
 | Disciplinas | Cadastrar, editar, ativar/inativar, excluir |
 | Simulados | Criar com composição de disciplinas, listar, detalhar |
-| Notas | Lançar nota (com seleção de aluno, simulado e disciplina), listar por aluno |
-| Desempenho | Consultar análise consolidada de desempenho de um aluno |
+| Notas / Histórico de Notas | Professor: lançar nota (seleção de aluno, simulado e disciplina). Aluno: histórico de notas lançadas por simulado e disciplina |
+| Análise de Desempenho | Consultar análise consolidada: média geral, nível de risco acadêmico, ranking e alertas |
 | Ranking | Visualizar ranking acadêmico geral |
 | Retificações | Solicitar retificação, iniciar análise, aprovar ou reprovar |
 | Responsáveis | Cadastrar, listar, excluir |

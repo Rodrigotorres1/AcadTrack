@@ -23,4 +23,6 @@ public interface NotaRepository {
 
     boolean existePorAlunoSimuladoDisciplina(Long alunoId, Long simuladoId, Long disciplinaId);
 
+    void excluirPorSimuladoId(Long simuladoId);
+
 }

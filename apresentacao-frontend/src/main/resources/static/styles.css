@@ -514,6 +514,71 @@ select {
     font-size: 0.85rem;
 }
 
+.notes-simulado-list {
+    display: grid;
+    gap: 8px;
+}
+
+.notes-simulado {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.notes-simulado-header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 12px 16px;
+    background: var(--card);
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    min-height: 52px;
+}
+
+.notes-simulado-header:hover {
+    background: var(--bg);
+}
+
+.notes-simulado-chevron {
+    font-size: 1.1rem;
+    color: var(--muted);
+    transition: transform 0.2s ease;
+    display: inline-block;
+}
+
+.notes-simulado-header[aria-expanded="true"] .notes-simulado-chevron {
+    transform: rotate(180deg);
+}
+
+.notes-simulado-body {
+    border-top: 1px solid var(--border);
+    padding: 12px 16px;
+    display: grid;
+    gap: 6px;
+    background: var(--bg);
+}
+
+.notes-simulado-discipline {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    font-size: 0.9rem;
+}
+
+.notes-simulado-discipline.no-note strong {
+    color: var(--muted);
+    font-weight: 500;
+}
+
 .table-wrap {
     overflow-x: auto;
 }

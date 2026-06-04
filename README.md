@@ -126,9 +126,9 @@ O protótipo foi desenvolvido em **alta fidelidade no Figma** e cobre todas as t
 | Dashboard | `tela-dashboard.png` |
 | Alunos | `tela-alunos.png` |
 | Disciplinas | `tela-disciplinas.png` |
-| Notas | `tela-notas.png` |
+| Notas / Histórico de Notas | `tela-notas.png` |
 | Simulados | `tela-simulado.png` |
-| Desempenho acadêmico | `tela-desempenho.png` |
+| Análise de Desempenho | `tela-desempenho.png` |
 | Retificação de notas | `tela-retificacao.png` |
 | Responsáveis | `tela-responsaveis.png` |
 | Portal do responsável | `tela-portal-responsavel.png` |
@@ -734,8 +734,8 @@ static/
 |---|---|---|
 | Alunos | `#alunos` | Cadastrar, editar, ativar/inativar, vincular turma |
 | Disciplinas | `#disciplinas` | CRUD completo, ativar/inativar |
-| Notas | `#notas` | Lançar nota (dropdowns dinâmicos), consultar notas por aluno |
-| Desempenho | `#desempenho` | Análise consolidada com média, situação, nível de risco, ranking, histórico por simulado |
+| Notas / Histórico de Notas | `#notas` | Professor: lançar nota (dropdowns dinâmicos). Aluno: histórico de notas por simulado e disciplina |
+| Desempenho / Análise de Desempenho | `#desempenho` | Análise consolidada com média, situação, nível de risco acadêmico, ranking, histórico por simulado |
 | Simulados | `#simulados` | Criar com seleção de disciplinas por checkbox (mín 2), detalhar, editar |
 | Retificações | `#retificacoes` | Solicitar (visão aluno), listar e decidir com aprovação/reprovação (visão professor) |
 | Responsáveis | `#responsaveis` | Cadastrar, vincular com 3 permissões, desvincular, excluir |
@@ -919,20 +919,35 @@ Build demora ~2 minutos na primeira vez. Quando aparecer `Started AcadTrackAppli
 
 ### Opção 2 — Rodando localmente
 
-#### Windows
+> **Recomendado:** use os scripts abaixo — eles liberam a porta 8080 automaticamente antes de subir, evitando o erro `Process terminated with exit code: 1` quando um processo anterior ainda está rodando.
+
+#### Windows (PowerShell) — recomendado
 
 ```powershell
-# Na raiz do projeto (onde fica o pom.xml raiz)
+powershell -ExecutionPolicy Bypass -File .\scripts\start-backend.ps1
+```
+
+#### Linux / macOS / Git Bash — recomendado
+
+```bash
+bash scripts/start-backend.sh
+```
+
+#### Comando direto (sem liberação automática de porta)
+
+```powershell
+# Windows
 .\mvnw.cmd -pl apresentacao-backend -am spring-boot:run
 ```
 
-#### Linux / macOS / Git Bash
-
 ```bash
+# Linux / macOS / Git Bash
 ./mvnw -pl apresentacao-backend -am spring-boot:run
 ```
 
 O flag `-am` (also-make) constrói todos os módulos dos quais `apresentacao-backend` depende antes de subir a aplicação.
+
+> **Erro `Process terminated with exit code: 1`?** A porta 8080 está ocupada por uma instância anterior. Use o script acima ou execute no PowerShell: `$p = Get-NetTCPConnection -LocalPort 8080 -State Listen | Select -Expand OwningProcess -First 1; Stop-Process -Id $p -Force`
 
 #### Quando a aplicação estiver rodando
 
@@ -947,6 +962,9 @@ Started AcadTrackApplication in X.XXX seconds
 | `http://localhost:8080/h2-console` | Console H2 para inspecionar o banco |
 
 No H2 Console, use JDBC URL: `jdbc:h2:file:./data/acadtrack-db`
+
+> **Localização do arquivo:** o banco é persistido em `apresentacao-backend/data/acadtrack-db.mv.db` (relativo à raiz do projeto). O `./data/` na JDBC URL é relativo ao diretório de trabalho do módulo `apresentacao-backend/`, não à raiz do projeto.  
+> **Para resetar todos os dados:** pare o backend e delete `apresentacao-backend/data/acadtrack-db.mv.db`. Na próxima inicialização o Flyway recria o schema e o `DadosIniciaisConfig` semeará as 6 turmas padrão.
 
 #### Porta alternativa (se 8080 estiver ocupada)
 

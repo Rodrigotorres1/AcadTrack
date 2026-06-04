@@ -212,6 +212,11 @@ public class NotaRepositoryJpa implements NotaRepository, ContadorParticipantesR
         );
     }
 
+    @Override
+    public void excluirPorSimuladoId(Long simuladoId) {
+        repository.deleteBySimuladoId(Objects.requireNonNull(simuladoId, "simuladoId é obrigatório"));
+    }
+
     private Aluno toAlunoDomain(AlunoJpaEntity entity) {
         return new Aluno(
                 entity.getId(),

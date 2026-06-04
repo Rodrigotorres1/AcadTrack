@@ -1,8 +1,8 @@
 package g8.acadtrack.aplicacao.responsavel;
 
-import g8.acadtrack.aplicacao.nota.BuscarNotasPorAlunoUseCase;
+import g8.acadtrack.aplicacao.nota.BuscarNotasEnriquecidaPorAlunoUseCase;
+import g8.acadtrack.aplicacao.nota.NotaEnriquecida;
 import g8.acadtrack.dominioacademico.aluno.PermissaoResponsavel;
-import g8.acadtrack.dominioavaliacao.nota.Nota;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -11,18 +11,18 @@ import java.util.List;
 public class ConsultarNotasAlunoPorResponsavelUseCase {
 
     private final AcessoResponsavelAlunoService acessoResponsavelAlunoService;
-    private final BuscarNotasPorAlunoUseCase buscarNotasPorAlunoUseCase;
+    private final BuscarNotasEnriquecidaPorAlunoUseCase buscarNotasEnriquecidaPorAlunoUseCase;
 
     public ConsultarNotasAlunoPorResponsavelUseCase(
             AcessoResponsavelAlunoService acessoResponsavelAlunoService,
-            BuscarNotasPorAlunoUseCase buscarNotasPorAlunoUseCase
+            BuscarNotasEnriquecidaPorAlunoUseCase buscarNotasEnriquecidaPorAlunoUseCase
     ) {
         this.acessoResponsavelAlunoService = acessoResponsavelAlunoService;
-        this.buscarNotasPorAlunoUseCase = buscarNotasPorAlunoUseCase;
+        this.buscarNotasEnriquecidaPorAlunoUseCase = buscarNotasEnriquecidaPorAlunoUseCase;
     }
 
-    public List<Nota> executar(Long responsavelId, Long alunoId) {
+    public List<NotaEnriquecida> executar(Long responsavelId, Long alunoId) {
         acessoResponsavelAlunoService.executar(alunoId, responsavelId, PermissaoResponsavel.VISUALIZAR_NOTAS);
-        return buscarNotasPorAlunoUseCase.executar(alunoId);
+        return buscarNotasEnriquecidaPorAlunoUseCase.executar(alunoId);
     }
 }

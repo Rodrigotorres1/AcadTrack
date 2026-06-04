@@ -2,6 +2,8 @@ package g8.acadtrack.apresentacao.controller;
 
 import g8.acadtrack.aplicacao.notificacao.ListarNotificacoesResponsavelUseCase;
 import g8.acadtrack.aplicacao.notificacao.MarcarNotificacaoLidaUseCase;
+import g8.acadtrack.aplicacao.responsavel.BuscarAlunoVinculadoAoResponsavelUseCase;
+import g8.acadtrack.aplicacao.responsavel.ConsultarRiscoAlunoPorResponsavelUseCase;
 import g8.acadtrack.aplicacao.responsavel.CriarResponsavelUseCase;
 import g8.acadtrack.aplicacao.responsavel.ExcluirResponsavelUseCase;
 import g8.acadtrack.aplicacao.responsavel.ListarResponsaveisUseCase;
@@ -9,13 +11,15 @@ import g8.acadtrack.aplicacao.responsavel.ConsultarDesempenhoAlunoPorResponsavel
 import g8.acadtrack.aplicacao.responsavel.ConsultarNotasAlunoPorResponsavelUseCase;
 import g8.acadtrack.aplicacao.responsavel.ConsultarSimuladosAlunoPorResponsavelUseCase;
 import g8.acadtrack.apresentacao.dto.request.CriarResponsavelRequest;
+import g8.acadtrack.apresentacao.dto.response.AlunoResponse;
 import g8.acadtrack.apresentacao.dto.response.AnaliseDesempenhoResponse;
+import g8.acadtrack.apresentacao.dto.response.RiscoAcademicoResponse;
 import g8.acadtrack.apresentacao.dto.response.ErroApiResponse;
 import g8.acadtrack.apresentacao.dto.response.NotificacaoResponsavelResponse;
 import g8.acadtrack.apresentacao.dto.response.NotaResponse;
 import g8.acadtrack.apresentacao.dto.response.ResponsavelResponse;
 import g8.acadtrack.apresentacao.dto.response.SimuladoResponse;
-import g8.acadtrack.dominioavaliacao.nota.Nota;
+import g8.acadtrack.aplicacao.nota.NotaEnriquecida;
 import g8.acadtrack.dominiousuarios.responsavel.Responsavel;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -41,9 +45,11 @@ public class ResponsavelController {
     private final CriarResponsavelUseCase criarResponsavelUseCase;
     private final ExcluirResponsavelUseCase excluirResponsavelUseCase;
     private final ListarResponsaveisUseCase listarResponsaveisUseCase;
+    private final BuscarAlunoVinculadoAoResponsavelUseCase buscarAlunoVinculadoAoResponsavelUseCase;
     private final ConsultarNotasAlunoPorResponsavelUseCase consultarNotasAlunoPorResponsavelUseCase;
     private final ConsultarSimuladosAlunoPorResponsavelUseCase consultarSimuladosAlunoPorResponsavelUseCase;
     private final ConsultarDesempenhoAlunoPorResponsavelUseCase consultarDesempenhoAlunoPorResponsavelUseCase;
+    private final ConsultarRiscoAlunoPorResponsavelUseCase consultarRiscoAlunoPorResponsavelUseCase;
     private final ListarNotificacoesResponsavelUseCase listarNotificacoesResponsavelUseCase;
     private final MarcarNotificacaoLidaUseCase marcarNotificacaoLidaUseCase;
 
@@ -51,18 +57,22 @@ public class ResponsavelController {
             CriarResponsavelUseCase criarResponsavelUseCase,
             ExcluirResponsavelUseCase excluirResponsavelUseCase,
             ListarResponsaveisUseCase listarResponsaveisUseCase,
+            BuscarAlunoVinculadoAoResponsavelUseCase buscarAlunoVinculadoAoResponsavelUseCase,
             ConsultarNotasAlunoPorResponsavelUseCase consultarNotasAlunoPorResponsavelUseCase,
             ConsultarSimuladosAlunoPorResponsavelUseCase consultarSimuladosAlunoPorResponsavelUseCase,
             ConsultarDesempenhoAlunoPorResponsavelUseCase consultarDesempenhoAlunoPorResponsavelUseCase,
+            ConsultarRiscoAlunoPorResponsavelUseCase consultarRiscoAlunoPorResponsavelUseCase,
             ListarNotificacoesResponsavelUseCase listarNotificacoesResponsavelUseCase,
             MarcarNotificacaoLidaUseCase marcarNotificacaoLidaUseCase
     ) {
         this.criarResponsavelUseCase = criarResponsavelUseCase;
         this.excluirResponsavelUseCase = excluirResponsavelUseCase;
         this.listarResponsaveisUseCase = listarResponsaveisUseCase;
+        this.buscarAlunoVinculadoAoResponsavelUseCase = buscarAlunoVinculadoAoResponsavelUseCase;
         this.consultarNotasAlunoPorResponsavelUseCase = consultarNotasAlunoPorResponsavelUseCase;
         this.consultarSimuladosAlunoPorResponsavelUseCase = consultarSimuladosAlunoPorResponsavelUseCase;
         this.consultarDesempenhoAlunoPorResponsavelUseCase = consultarDesempenhoAlunoPorResponsavelUseCase;
+        this.consultarRiscoAlunoPorResponsavelUseCase = consultarRiscoAlunoPorResponsavelUseCase;
         this.listarNotificacoesResponsavelUseCase = listarNotificacoesResponsavelUseCase;
         this.marcarNotificacaoLidaUseCase = marcarNotificacaoLidaUseCase;
     }
@@ -132,6 +142,22 @@ public class ResponsavelController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Buscar aluno vinculado ao responsável")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Aluno encontrado",
+                    content = @Content(schema = @Schema(implementation = AlunoResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Responsável não encontrado ou sem aluno vinculado ativo",
+                    content = @Content(schema = @Schema(implementation = ErroApiResponse.class)))
+    })
+    @GetMapping("/{responsavelId}/aluno")
+    public ResponseEntity<AlunoResponse> buscarAlunoVinculado(
+            @Parameter(description = "Responsável") @PathVariable Long responsavelId
+    ) {
+        return ResponseEntity.ok(
+                AlunoResponse.fromDomain(buscarAlunoVinculadoAoResponsavelUseCase.executar(responsavelId))
+        );
+    }
+
     @Operation(summary = "Listar notas do aluno (com validação responsável/aluno)")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Lista pode ser vazia",
@@ -146,8 +172,10 @@ public class ResponsavelController {
             @Parameter(description = "Responsável") @PathVariable Long responsavelId,
             @Parameter(description = "Aluno") @PathVariable Long alunoId
     ) {
-        List<Nota> notas = consultarNotasAlunoPorResponsavelUseCase.executar(responsavelId, alunoId);
-        return ResponseEntity.ok(notas.stream().map(NotaResponse::fromDomain).toList());
+        List<NotaEnriquecida> notas = consultarNotasAlunoPorResponsavelUseCase.executar(responsavelId, alunoId);
+        return ResponseEntity.ok(notas.stream()
+                .map(n -> NotaResponse.fromDomain(n.nota(), n.nomeDisciplina(), n.descricaoSimulado()))
+                .toList());
     }
 
     @Operation(summary = "Listar simulados em que o aluno possui nota")
@@ -191,6 +219,28 @@ public class ResponsavelController {
         return ResponseEntity.ok(
                 AnaliseDesempenhoResponse.fromApplication(
                         consultarDesempenhoAlunoPorResponsavelUseCase.executar(responsavelId, alunoId)
+                )
+        );
+    }
+
+    @Operation(summary = "Consultar risco acadêmico do aluno",
+            description = "Retorna nível de risco e alerta para qualquer responsável com vínculo ativo, independente da permissão de desempenho.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Risco calculado",
+                    content = @Content(schema = @Schema(implementation = RiscoAcademicoResponse.class))),
+            @ApiResponse(responseCode = "403", description = "Responsável sem vínculo ativo",
+                    content = @Content(schema = @Schema(implementation = ErroApiResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Aluno ou responsável não encontrado",
+                    content = @Content(schema = @Schema(implementation = ErroApiResponse.class)))
+    })
+    @GetMapping("/{responsavelId}/alunos/{alunoId}/risco")
+    public ResponseEntity<RiscoAcademicoResponse> consultarRisco(
+            @Parameter(description = "Responsável") @PathVariable Long responsavelId,
+            @Parameter(description = "Aluno") @PathVariable Long alunoId
+    ) {
+        return ResponseEntity.ok(
+                RiscoAcademicoResponse.fromApplication(
+                        consultarRiscoAlunoPorResponsavelUseCase.executar(responsavelId, alunoId)
                 )
         );
     }

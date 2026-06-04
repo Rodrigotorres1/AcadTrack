@@ -20,7 +20,7 @@ O protótipo foi desenvolvido em alta fidelidade no Figma e cobre as principais 
 
 ![Disciplinas](img/tela-disciplinas.png)
 
-### Notas
+### Notas / Histórico de Notas
 
 ![Notas](img/tela-notas.png)
 
@@ -28,7 +28,7 @@ O protótipo foi desenvolvido em alta fidelidade no Figma e cobre as principais 
 
 ![Simulados](img/tela-simulado.png)
 
-### Desempenho acadêmico
+### Análise de Desempenho
 
 ![Desempenho](img/tela-desempenho.png)
 

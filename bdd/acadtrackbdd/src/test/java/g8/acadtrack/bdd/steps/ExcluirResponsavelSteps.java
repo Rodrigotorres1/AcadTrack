@@ -69,8 +69,8 @@ public class ExcluirResponsavelSteps {
         vincularResponsavelUseCase.executar(aluno.getId(), responsavel.getId(), true, true, true);
     }
 
-    @Dado("que nao existe responsavel com o id informado para exclusao")
-    public void queNaoExisteResponsavelComOIdInformadoParaExclusao() {
+    @Dado("que nao existe responsavel com o nome informado para exclusao")
+    public void queNaoExisteResponsavelComONomeInformadoParaExclusao() {
         context.resetMensagens();
         excecao = null;
         responsavelIdInexistente = 999999L;

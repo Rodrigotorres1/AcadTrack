@@ -16,4 +16,7 @@ public interface SimuladoRepository {
     Optional<Simulado> buscarPorId(Long id);
 
     Optional<Simulado> buscarPorDescricaoNormalizada(String descricao);
+
+    void excluirPorId(Long simuladoId);
+
 }

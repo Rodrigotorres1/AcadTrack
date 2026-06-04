@@ -116,6 +116,14 @@ public class SimuladoRepositoryJpa implements SimuladoRepository {
                 .map(entity -> toDomain(entity, buscarDisciplinas(entity.getId())));
     }
 
+    @Override
+    @Transactional
+    public void excluirPorId(Long simuladoId) {
+        Objects.requireNonNull(simuladoId, "simuladoId é obrigatório");
+        simuladoDisciplinaRepository.deleteBySimuladoId(simuladoId);
+        repository.deleteById(simuladoId);
+    }
+
     private Map<Long, List<SimuladoDisciplina>> buscarDisciplinasPorSimulado(List<Long> simuladoIds) {
         if (simuladoIds.isEmpty()) {
             return Map.of();

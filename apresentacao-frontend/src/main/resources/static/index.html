@@ -73,8 +73,8 @@
         <button class="nav-link" type="button" data-section="alunos">Alunos</button>
         <button class="nav-link" type="button" data-section="turmas">Turmas</button>
         <button class="nav-link" type="button" data-section="disciplinas">Disciplinas</button>
-        <button class="nav-link" type="button" data-section="notas">Notas</button>
-        <button class="nav-link" type="button" data-section="desempenho">Desempenho</button>
+        <button class="nav-link" type="button" data-section="notas" data-label-default="Notas" data-label-aluno="Histórico de Notas">Notas</button>
+        <button class="nav-link" type="button" data-section="desempenho" data-label-default="Desempenho" data-label-aluno="Análise de Desempenho">Desempenho</button>
         <button class="nav-link" type="button" data-section="simulados">Simulados</button>
         <button class="nav-link" type="button" data-section="retificacoes">Retificações</button>
         <button class="nav-link" type="button" data-section="responsaveis">Responsáveis</button>
@@ -110,7 +110,6 @@
                     <table class="students-table">
                         <thead>
                         <tr>
-                            <th>Matrícula</th>
                             <th>Nome</th>
                             <th>Email</th>
                             <th>Turma</th>
@@ -386,15 +385,17 @@
         <div id="studentNoteView" hidden>
             <div class="section-header">
                 <div>
-                    <h2>Consulta de Notas</h2>
-                    <p>Acompanhar notas lançadas no backend</p>
+                    <h2>Histórico de Notas</h2>
+                    <p>Notas lançadas por simulado e disciplina</p>
                 </div>
             </div>
 
             <article class="card note-form-card">
                 <form id="studentNotesForm" class="inline-form">
-                    <label for="studentNotesEnrollment">Matrícula</label>
-                    <input id="studentNotesEnrollment" name="alunoId" type="number" min="1" placeholder="Ex.: 1" required>
+                    <label for="studentNotesEnrollment">Aluno</label>
+                    <select id="studentNotesEnrollment" name="alunoId" required disabled>
+                        <option value="">Carregando alunos...</option>
+                    </select>
                     <button class="primary-button" type="submit">Consultar</button>
                 </form>
                 <div id="studentNotesFeedback" class="note-feedback"></div>
@@ -419,7 +420,6 @@
                         <select id="performanceStudentSelect" name="alunoId" required>
                             <option value="">Escolha um aluno</option>
                         </select>
-                        <input id="performanceStudentEnrollment" name="alunoId" type="number" min="1" placeholder="Ex.: 1" hidden disabled>
                     </div>
 
                     <div id="performanceFeedback" class="note-feedback"></div>
@@ -657,8 +657,10 @@
             <article class="card correction-form-card">
                 <form id="studentCorrectionForm" class="student-form" novalidate>
                     <div class="form-field">
-                        <label for="studentCorrectionEnrollment">Matrícula</label>
-                        <input id="studentCorrectionEnrollment" name="alunoId" type="number" min="1" placeholder="Ex.: 1" required>
+                        <label for="studentCorrectionEnrollment">Aluno</label>
+                        <select id="studentCorrectionEnrollment" name="alunoId" required disabled>
+                            <option value="">Carregando alunos...</option>
+                        </select>
                     </div>
 
                     <div class="form-actions">
@@ -668,7 +670,7 @@
                     <div class="form-field">
                         <label for="studentCorrectionNoteSelect">Nota</label>
                         <select id="studentCorrectionNoteSelect" name="notaId" required disabled>
-                            <option value="">Informe a matrícula para carregar as notas</option>
+                            <option value="">Selecione o aluno para carregar as notas</option>
                         </select>
                     </div>
 
@@ -868,8 +870,10 @@
                 <p>Lista persistida criada pelo Observer de risco acadêmico.</p>
             </div>
             <form id="notificationsForm" class="inline-form">
-                <label for="notificationsAlunoId">Matrícula do Aluno</label>
-                <input id="notificationsAlunoId" name="alunoId" type="number" min="1" placeholder="Ex.: 1" required>
+                <label for="notificationsResponsavelSelect">Responsável</label>
+                <select id="notificationsResponsavelSelect" name="responsavelId" required disabled>
+                    <option value="">Carregando responsáveis...</option>
+                </select>
                 <button class="primary-button" type="submit">Listar</button>
             </form>
         </div>
@@ -881,19 +885,29 @@
         <div class="section-header">
             <div>
                 <h2>Portal do responsável</h2>
-                <p>Acesso validado pelo backend conforme vínculo ativo e permissões.</p>
+                <p>Selecione o responsável para visualizar automaticamente os dados do aluno vinculado.</p>
             </div>
-            <form id="portalForm" class="inline-form">
-                <label for="portalAlunoId">Matrícula do Aluno</label>
-                <input id="portalAlunoId" name="alunoId" type="number" min="1" placeholder="Ex.: 1" required>
-                <button class="primary-button" type="submit">Consultar</button>
-            </form>
         </div>
+
+        <article class="card note-form-card">
+            <form id="portalForm" class="student-form" novalidate>
+                <div class="form-field">
+                    <label for="portalResponsavelSelect">Responsável</label>
+                    <select id="portalResponsavelSelect" name="responsavelId" required disabled>
+                        <option value="">Carregando responsáveis...</option>
+                    </select>
+                </div>
+                <div id="portalFeedback" class="note-feedback"></div>
+                <div class="form-actions">
+                    <button id="portalSubmitButton" class="primary-button" type="submit">Consultar</button>
+                </div>
+            </form>
+        </article>
 
         <div id="portalResult" class="portal-grid"></div>
     </section>
 </main>
 
-<script type="module" src="app.js?v=4"></script>
+<script type="module" src="app.js?v=5"></script>
 </body>
 </html>

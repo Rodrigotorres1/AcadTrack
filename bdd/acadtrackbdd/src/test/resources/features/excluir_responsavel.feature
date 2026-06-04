@@ -12,6 +12,6 @@ Feature: Excluir responsavel
     E o aluno "Pedro Excluir" nao possui mais responsavel vinculado
 
   Scenario: Nao permitir excluir responsavel inexistente
-    Dado que nao existe responsavel com o id informado para exclusao
+    Dado que nao existe responsavel com o nome informado para exclusao
     Quando o coordenador tenta excluir o responsavel inexistente
     Entao o sistema informa que o responsavel nao foi encontrado

@@ -81,9 +81,17 @@ public class NotaController {
                 request.getValor()
         );
 
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(NotaResponse.fromDomain(nota));
+        NotaEnriquecida enriquecida = buscarNotasEnriquecidaPorAlunoUseCase.executar(nota.getAlunoId())
+                .stream()
+                .filter(n -> n.nota().getId().equals(nota.getId()))
+                .findFirst()
+                .orElse(null);
+
+        NotaResponse body = enriquecida != null
+                ? NotaResponse.fromDomain(enriquecida.nota(), enriquecida.nomeDisciplina(), enriquecida.descricaoSimulado())
+                : NotaResponse.fromDomain(nota);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(body);
     }
 
     @Operation(summary = "Listar notas do aluno", description = "Informe alunoId no caminho usando o campo id devolvido no corpo ao criar com POST /alunos. Valores apenas de exemplo como 1 so funcionam se existir esse registo.")
