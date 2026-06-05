@@ -53,11 +53,6 @@ O AcadTrack organiza esse processo em torno de cinco fluxos principais:
 5. **Portal do responsável** com acesso controlado por permissões granulares.
 
 
-### Prévia do screencast
-
-[Assistir screencast do AcadTrack](https://www.loom.com/share/33626c63524f4091921125d26fdfe3aa)
-
-
 ---
 
 ### Subdomínios
@@ -126,6 +121,10 @@ O story map organiza as funcionalidades por persona e release, deixando claro o 
 ## 3. Protótipos
 
 O protótipo foi desenvolvido em **alta fidelidade no Figma** e cobre todas as telas implementadas. A interface final segue fielmente o protótipo.
+
+### Screencast
+
+[Assistir screencast do AcadTrack](https://www.loom.com/share/33626c63524f4091921125d26fdfe3aa)
 
 **Telas disponíveis** (capturas em [`docs/img/`](docs/img/)):
 
