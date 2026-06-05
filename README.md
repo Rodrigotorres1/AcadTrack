@@ -15,7 +15,7 @@ Sistema web para gestão de simulados acadêmicos e acompanhamento do desempenho
 
 ## Sumário
 
-**Parte 1 — 1ª Entrega**
+**Parte 1 — 1ª Entrega ("COMMIT FINAL DA ENTREGA 1" - 29 de abril de 2026)**
 - [Domínio e linguagem onipresente](#1-domínio-e-linguagem-onipresente)
 - [Mapa de histórias do usuário](#2-mapa-de-histórias-do-usuário)
 - [Protótipos](#3-protótipos)
@@ -34,7 +34,7 @@ Sistema web para gestão de simulados acadêmicos e acompanhamento do desempenho
 
 ---
 
-# PARTE 1 — 1ª Entrega
+# PARTE 1 — 1ª Entrega ("COMMIT FINAL DA ENTREGA 1" - 29 de abril de 2026)
 
 ---
 
