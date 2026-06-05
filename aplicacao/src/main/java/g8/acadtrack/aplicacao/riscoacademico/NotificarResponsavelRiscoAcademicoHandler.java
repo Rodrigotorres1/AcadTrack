@@ -10,6 +10,8 @@ import g8.acadtrack.dominiousuarios.notificacao.PrioridadeNotificacao;
 import g8.acadtrack.dominiousuarios.notificacao.StatusNotificacao;
 import g8.acadtrack.dominiocompartilhado.risco.NivelRiscoAcademico;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
@@ -30,6 +32,7 @@ public class NotificarResponsavelRiscoAcademicoHandler {
         this.notificacaoResponsavelRepository = notificacaoResponsavelRepository;
     }
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, fallbackExecution = true)
     public void aoIdentificarRisco(RiscoAcademicoEvent event) {
         alunoRepository.buscarPorId(event.alunoId())
