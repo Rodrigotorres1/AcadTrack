@@ -213,6 +213,7 @@ function renderPerformanceExamHistory(historico) {
 }
 
 
+
 function renderPerformancePanel(analise, aluno) {
     document.getElementById("performanceSelectView").hidden = true;
     document.getElementById("performancePanelView").hidden = false;
