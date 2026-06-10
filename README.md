@@ -429,6 +429,8 @@ Sete padrões GoF implementados, cada um mapeado a uma necessidade real do domí
 
 **Intenção:** centralizar a criação de objetos com estado inicial complexo, garantindo que invariantes de domínio sejam respeitados desde a criação — sem depender do chamador para saber os valores corretos.
 
+**Implementado por:** Erick Belo
+
 **Onde está:** `dominio-avaliacao/src/main/java/g8/acadtrack/dominioavaliacao/retificacao/SolicitacaoRetificacaoFabrica.java`
 
 **O problema resolvido:** o construtor de `SolicitacaoRetificacao` aceita todos os campos, incluindo `id`, `justificativaDecisao` e `status`. Isso é necessário para reconstituir objetos vindos do banco. Mas ao criar uma nova solicitação, três desses valores são sempre fixos: `id=null` (ainda não persistido), `justificativaDecisao=null` (nenhuma decisão tomada ainda) e `status=PENDENTE` (estado inicial obrigatório). Sem a factory, o chamador precisaria conhecer esses invariantes:
@@ -448,6 +450,8 @@ SolicitacaoRetificacaoFabrica.nova(notaId, justificativa)
 ### Template Method
 
 **Intenção:** definir o esqueleto de um algoritmo em uma classe abstrata, delegando etapas específicas para subclasses, sem permitir que a ordem das etapas seja alterada.
+
+**Implementado por:** Rodrigo Torres
 
 **Onde está:**
 - `aplicacao/src/main/java/g8/acadtrack/aplicacao/nota/FluxoAnaliseAcademicaTemplate.java` — classe abstrata
@@ -472,6 +476,8 @@ public final AnaliseDesempenhoAcademicoResultado executar(Long alunoId) {
 ### Decorator
 
 **Intenção:** adicionar responsabilidades a um objeto dinamicamente, encadeando objetos que implementam a mesma interface. Cada elo da cadeia faz sua validação e repassa para o próximo.
+
+**Implementado por:** Erick Belo
 
 **Onde está:**
 - `aplicacao/src/main/java/g8/acadtrack/aplicacao/nota/validacao/ValidadorLancamentoNota.java` — interface
@@ -505,6 +511,8 @@ this.cadeiaValidacao =
 
 **Intenção:** definir uma dependência um-para-muitos entre objetos para que, quando um objeto mudar de estado, todos os seus dependentes sejam notificados automaticamente — sem acoplamento direto.
 
+**Implementado por:** Erick Belo
+
 **Onde está:**
 - `dominio-compartilhado/evento/DomainEvent.java` — interface base de todos os eventos
 - `dominio-academico/aluno/evento/RiscoAcademicoEvent.java` — evento concreto (record)
@@ -534,6 +542,8 @@ O handler usa `@TransactionalEventListener(phase = AFTER_COMMIT)`: a notificaç�
 
 **Intenção:** fornecer um substituto para outro objeto, controlando o acesso a ele. O proxy e o objeto real implementam a mesma interface; o proxy intercepta a chamada antes de delegar.
 
+**Implementado por:** João Marcelo
+
 **Onde está:**
 - `aplicacao/responsavel/AcessoResponsavelAlunoService.java` — interface comum
 - `aplicacao/responsavel/AlunoServiceReal.java` — objeto real (busca o aluno no repositório)
@@ -562,6 +572,8 @@ public Aluno executar(Long alunoId, Long responsavelId, PermissaoResponsavel per
 ### Strategy
 
 **Intenção:** definir uma família de algoritmos intercambiáveis, encapsulando cada um em uma classe e tornando-os substituíveis sem alterar o código que os usa.
+
+**Implementado por:** Rodrigo Torres
 
 **Onde está:**
 - `aplicacao/nota/risco/EstrategiaClassificacaoRiscoAcademico.java` — interface
@@ -598,6 +610,8 @@ public NivelRiscoAcademico classificar(double mediaGeral, long simuladosComBaixo
 ### Iterator
 
 **Intenção:** prover uma forma de percorrer sequencialmente os elementos de uma coleção sem expor sua representação interna.
+
+**Implementado por:** Rodrigo Torres
 
 **Onde está:**
 - `aplicacao/ranking/RankingAcademicoIterator.java` — interface (`hasNext()`, `next()`)
