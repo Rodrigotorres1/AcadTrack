@@ -34,7 +34,7 @@ Sistema web para gestão de simulados acadêmicos e acompanhamento do desempenho
 
 ---
 
-# PARTE 1 — 1ª Entrega
+# PARTE 1 — 1ª Entrega ("COMMIT FINAL DA ENTREGA 1" - 29 de abril de 2026)
 
 ---
 
@@ -51,6 +51,9 @@ O AcadTrack organiza esse processo em torno de cinco fluxos principais:
 3. **Fluxo de retificação** com máquina de estados (PENDENTE → EM_ANALISE → APROVADA / REPROVADA).
 4. **Análise de risco** com classificação automática (BAIXO / MODERADO / ALTO) e notificação do responsável.
 5. **Portal do responsável** com acesso controlado por permissões granulares.
+
+
+---
 
 ### Subdomínios
 
@@ -118,6 +121,10 @@ O story map organiza as funcionalidades por persona e release, deixando claro o 
 ## 3. Protótipos
 
 O protótipo foi desenvolvido em **alta fidelidade no Figma** e cobre todas as telas implementadas. A interface final segue fielmente o protótipo.
+
+### Screencast
+
+[Assistir screencast do AcadTrack](https://www.loom.com/share/33626c63524f4091921125d26fdfe3aa)
 
 **Telas disponíveis** (capturas em [`docs/img/`](docs/img/)):
 
@@ -320,6 +327,23 @@ Feature: Lançar nota individual
     Quando o professor lança uma nova nota 8.0 para o aluno "João Silva" em outra disciplina
     Então o sistema atualiza a situação acadêmica do aluno para "APROVADO"
 ```
+## API e Swagger
+
+Com o backend em execução, a documentação interativa da API pode ser acessada em:
+
+- **Swagger UI:** <http://localhost:8080/swagger-ui/index.html>
+- **OpenAPI (JSON):** <http://localhost:8080/v3/api-docs>
+
+Observações para demonstração e testes:
+
+- É necessário iniciar o backend antes de abrir o Swagger.
+- A porta pode ser outra se usar `scripts/run-backend.ps1`, pois o script escolhe uma porta livre e imprime a URL.
+- Fluxo automático: com o servidor já rodando, execute:
+
+```powershell
+.\scripts\demo-fluxo-api.ps1 -BaseUrl 'http://localhost:PORT'
+```
+
 
 ### Como rodar os testes
 
